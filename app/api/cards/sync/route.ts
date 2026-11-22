@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       addedCount: result.addedCount,
       updatedCount: result.updatedCount,
+      persistedToDisk: result.persistedToDisk,
       totalPrints: result.catalog.totalPrints,
       syncedAt: result.catalog.syncedAt,
       catalog: result.catalog,

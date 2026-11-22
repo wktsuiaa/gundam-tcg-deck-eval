@@ -20,6 +20,7 @@ npm test
 2. **`__tests__/gundam-db.test.ts`**:
    - Loads `data/packages.json` and all 26 `data/collections/*.json` shards.
    - Verifies strict `printId` deduplication and automatic SQLite hydration (`ensureHydratedCatalogFromDb`) including synced `RulesPayload`.
+   - Verifies path-traversal sanitization (`resolveSafeCollectionPath`) and graceful fallback to split JSON shards when the SQLite path is read-only or unwritable.
 3. **`__tests__/sandbox-engine.test.ts`**:
    - Initializes a 2-deck Sandbox match (5-card hands, 6 Shields, Turn 1 active side).
    - Verifies reactive Top 3 Best-Move Advisor ranking (`evaluateSandboxBestMoves`).

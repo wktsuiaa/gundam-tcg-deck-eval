@@ -55,6 +55,19 @@ export function resolveSafeCollectionPath(code: string): string {
 
 let dbInstance: Database.Database | null = null;
 
+export function isDataDirectoryWritable(dirPath = DATA_DIR): boolean {
+  try {
+    fsSync.mkdirSync(dirPath, { recursive: true });
+    fsSync.accessSync(dirPath, fsSync.constants.W_OK);
+    const probe = path.join(dirPath, `.write-probe-${process.pid}-${Date.now()}`);
+    fsSync.writeFileSync(probe, '');
+    fsSync.unlinkSync(probe);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function getDb(dbPath = DB_FILE): Database.Database {
   if (dbInstance && dbPath === DB_FILE) return dbInstance;
   fsSync.mkdirSync(path.dirname(dbPath), { recursive: true });
@@ -427,38 +440,60 @@ async function getLatestShardMtimeMs(): Promise<number> {
   return latest;
 }
 
-export async function ensureHydratedCatalogFromDb(): Promise<CatalogPayload> {
-  const db = getDb();
-  let dbMtime = 0;
+export async function buildCatalogPayloadFromShards(dataDir = DATA_DIR): Promise<CatalogPayload> {
+  const split = await readSplitJsonCatalog(dataDir);
+  return {
+    syncedAt: split.syncedAt,
+    source: split.source,
+    totalPrints: split.cards.length,
+    packages: split.packages,
+    cards: split.cards,
+    rules: split.rules,
+  };
+}
+
+export async function ensureHydratedCatalogFromDb(dbPath = DB_FILE): Promise<CatalogPayload> {
+  const targetDir = path.dirname(dbPath);
+  if (!isDataDirectoryWritable(targetDir)) {
+    return buildCatalogPayloadFromShards(DATA_DIR);
+  }
+
   try {
-    const st = await fs.stat(DB_FILE);
-    dbMtime = st.mtimeMs;
-  } catch {
-    dbMtime = 0;
-  }
-
-  const shardMtime = await getLatestShardMtimeMs();
-  const existing = readCatalogFromSqlite(db);
-
-  if (existing && existing.cards.length > 0 && dbMtime >= shardMtime) {
-    return existing;
-  }
-
-  const split = await readSplitJsonCatalog(DATA_DIR);
-  if (split.cards.length > 0) {
-    writeCatalogToSqlite(db, split.packages, split.cards, split.syncedAt, split.source, split.rules);
-  }
-
-  return (
-    readCatalogFromSqlite(db) ?? {
-      syncedAt: split.syncedAt,
-      source: split.source,
-      totalPrints: split.cards.length,
-      packages: split.packages,
-      cards: split.cards,
-      rules: split.rules,
+    const db = getDb(dbPath);
+    let dbMtime = 0;
+    try {
+      const st = await fs.stat(dbPath);
+      dbMtime = st.mtimeMs;
+    } catch {
+      dbMtime = 0;
     }
-  );
+
+    const shardMtime = await getLatestShardMtimeMs();
+    const existing = readCatalogFromSqlite(db);
+
+    if (existing && existing.cards.length > 0 && dbMtime >= shardMtime) {
+      return existing;
+    }
+
+    const split = await readSplitJsonCatalog(DATA_DIR);
+    if (split.cards.length > 0) {
+      writeCatalogToSqlite(db, split.packages, split.cards, split.syncedAt, split.source, split.rules);
+    }
+
+    return (
+      readCatalogFromSqlite(db) ?? {
+        syncedAt: split.syncedAt,
+        source: split.source,
+        totalPrints: split.cards.length,
+        packages: split.packages,
+        cards: split.cards,
+        rules: split.rules,
+      }
+    );
+  } catch (err) {
+    console.warn('SQLite unavailable or read-only, serving catalog directly from JSON shards:', err);
+    return buildCatalogPayloadFromShards(DATA_DIR);
+  }
 }
 
 export async function writeSplitJsonShards(

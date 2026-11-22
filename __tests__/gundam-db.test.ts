@@ -34,4 +34,15 @@ describe('Split Collection Shards & SQLite DB Hydration', () => {
     expect(path.dirname(safe).endsWith(`${path.sep}data${path.sep}collections`)).toBe(true);
     expect(path.basename(safe)).toBe('______etc_passwd.json');
   });
+
+  it('falls back to split JSON shards when the SQLite path is read-only or unwritable', async () => {
+    const split = await readSplitJsonCatalog();
+    // Point dbPath inside an existing regular file so directory creation / SQLite open fails like a read-only FS
+    const unwritableDbPath = path.resolve(process.cwd(), 'package.json', 'gundam.db');
+    const catalog = await ensureHydratedCatalogFromDb(unwritableDbPath);
+
+    expect(catalog.totalPrints).toBe(split.cards.length);
+    expect(catalog.packages.length).toBe(split.packages.length);
+    expect(catalog.rules?.deckConstruction.mainDeckSize).toBe(50);
+  });
 });

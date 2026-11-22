@@ -9,9 +9,11 @@ import type {
   RulesPayload,
 } from '@/types/gundam';
 import {
+  buildCatalogPayloadFromShards,
   DEFAULT_RULES_PAYLOAD,
   ensureHydratedCatalogFromDb,
   getDb,
+  isDataDirectoryWritable,
   sortCards,
   writeCatalogToSqlite,
   writeSplitJsonShards,
@@ -197,21 +199,29 @@ export async function getCatalog(): Promise<CatalogPayload> {
     memoryCache = payload;
     return payload;
   } catch (err) {
-    console.error('Failed to hydrate catalog from SQLite:', err);
-    return {
-      syncedAt: new Date().toISOString(),
-      source: BASE_URL,
-      totalPrints: 0,
-      packages: [],
-      cards: [],
-      rules: DEFAULT_RULES_PAYLOAD,
-    };
+    console.warn('Catalog DB hydration failed, falling back to JSON shards:', err);
+    try {
+      const payload = await buildCatalogPayloadFromShards();
+      memoryCache = payload;
+      return payload;
+    } catch (shardErr) {
+      console.error('Failed to read catalog JSON shards:', shardErr);
+      return {
+        syncedAt: new Date().toISOString(),
+        source: BASE_URL,
+        totalPrints: 0,
+        packages: [],
+        cards: [],
+        rules: DEFAULT_RULES_PAYLOAD,
+      };
+    }
   }
 }
 
 export async function syncOfficialCatalog(forceRefreshAll = false): Promise<{
   addedCount: number;
   updatedCount: number;
+  persistedToDisk: boolean;
   catalog: CatalogPayload;
 }> {
   const existing = await getCatalog();
@@ -305,9 +315,18 @@ export async function syncOfficialCatalog(forceRefreshAll = false): Promise<{
   const sorted = sortCards([...existingMap.values()]);
   const syncedAt = new Date().toISOString();
 
-  await writeSplitJsonShards(packages, sorted, syncedAt, BASE_URL);
-  const db = getDb();
-  writeCatalogToSqlite(db, packages, sorted, syncedAt, BASE_URL, rules);
+  let persistedToDisk = false;
+  if (isDataDirectoryWritable()) {
+    try {
+      await writeSplitJsonShards(packages, sorted, syncedAt, BASE_URL);
+      const db = getDb();
+      writeCatalogToSqlite(db, packages, sorted, syncedAt, BASE_URL, rules);
+      persistedToDisk = true;
+    } catch (err) {
+      console.warn('Skipping disk persistence during catalog sync (read-only filesystem):', err);
+      persistedToDisk = false;
+    }
+  }
 
   const payload: CatalogPayload = {
     syncedAt,
@@ -319,5 +338,5 @@ export async function syncOfficialCatalog(forceRefreshAll = false): Promise<{
   };
 
   memoryCache = payload;
-  return { addedCount, updatedCount, catalog: payload };
+  return { addedCount, updatedCount, persistedToDisk, catalog: payload };
 }

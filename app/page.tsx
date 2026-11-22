@@ -1,7 +1,7 @@
 import { getCatalog } from '@/lib/gundam-sync';
 import { GundamAtlasApp } from '@/components/GundamAtlasApp';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export default async function HomePage() {
   const catalog = await getCatalog();

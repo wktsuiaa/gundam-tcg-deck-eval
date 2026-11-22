@@ -21,9 +21,10 @@ Competitive card catalog, strategy-driven deck builder, tactical analyzer, and 2
 4. **Interactive 2-Deck Match Sandbox (`Match Sandbox`)**:
    - Play any two saved or preset decks head-to-head across Battle Area, Shields, Base, Resources, Hand, and Trash.
    - Live **Best-Move Advisor** reacts to either side's latest action with Top 3 ranked moves, Win-Chance delta, and 1-click execution.
-5. **Split Collection Shards, Local SQLite DB & Weekly GitHub CI**:
-   - Cards stored per collection in `data/collections/<code>.json` + `data/packages.json` and rules in `data/rules.json`.
-   - Server-side `better-sqlite3` database (`data/gundam.db`) auto-hydrates and deduplicates prints on startup.
+5. **Split Collection Shards, Local SQLite DB & Vercel-Ready Deployment**:
+   - Cards are stored per collection in `data/collections/<code>.json` alongside `data/packages.json` and `data/rules.json`.
+   - Locally, server-side `better-sqlite3` (`data/gundam.db`) auto-hydrates and deduplicates prints on startup.
+   - On read-only serverless hosts (such as Vercel), the server automatically falls back to reading the bundled JSON shards into `memoryCache` (`outputFileTracingIncludes` bundles `./data/**/*`) without attempting SQLite writes, while live **Sync Cards** updates stay session-scoped in memory.
    - Weekly GitHub Actions workflow scrapes updated rules, FAQs, collections, and cards, runs tests/lint/build, and commits data updates.
 
 ## Quickstart

@@ -163,10 +163,12 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
         setCatalog(data.catalog);
       }
       setSyncNotice(
-        `Sync complete: ${data.totalPrints} official prints indexed (${data.addedCount} new, ${data.updatedCount} updated).`
+        data.persistedToDisk === false
+          ? `Sync complete (session-only on read-only host): ${data.totalPrints} official prints indexed (${data.addedCount} new, ${data.updatedCount} updated). Permanent updates come from GitHub Actions.`
+          : `Sync complete: ${data.totalPrints} official prints indexed (${data.addedCount} new, ${data.updatedCount} updated).`
       );
     } catch {
-      setSyncNotice('Unable to reach gundam-gcg.com right now; using local SQLite & JSON shards.');
+      setSyncNotice('Unable to reach gundam-gcg.com right now; using bundled catalog data.');
     } finally {
       setSyncing(false);
     }

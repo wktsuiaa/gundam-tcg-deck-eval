@@ -19,7 +19,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  output: 'standalone',
+  outputFileTracingIncludes: {
+    '/*': ['./data/**/*'],
+  },
   transpilePackages: ['motion'],
   webpack: (config, { dev, isServer }) => {
     if (isServer) {
