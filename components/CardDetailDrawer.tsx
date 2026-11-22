@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { X, Plus, Minus, ExternalLink, Layers, Link2, HelpCircle } from 'lucide-react';
-import type { CollectionMap, GundamCardGroup, GundamCardPrint } from '@/types/gundam';
+import { X, Plus, ExternalLink, Layers, Link2, HelpCircle } from 'lucide-react';
+import type { GundamCardGroup, GundamCardPrint } from '@/types/gundam';
 import {
   CARD_COLOR_META,
   doesPilotLinkUnit,
@@ -14,8 +14,6 @@ interface CardDetailDrawerProps {
   group: GundamCardGroup;
   initialPrintId?: string;
   allCards: GundamCardPrint[];
-  collection: CollectionMap;
-  onUpdateCollection: (printId: string, delta: number) => void;
   onAddToDeck?: (card: GundamCardPrint) => void;
   activeDeckName?: string;
   onSelectCardNo: (cardNo: string) => void;
@@ -26,8 +24,6 @@ export function CardDetailDrawer({
   group,
   initialPrintId,
   allCards,
-  collection,
-  onUpdateCollection,
   onAddToDeck,
   activeDeckName,
   onSelectCardNo,
@@ -43,7 +39,6 @@ export function CardDetailDrawer({
   const colorMeta = CARD_COLOR_META[activeCard.color] ?? CARD_COLOR_META.Colorless;
   const keywords = useMemo(() => extractCardKeywords(activeCard.effect), [activeCard.effect]);
 
-  // Find cross-linked Pilot / Unit partners
   const linkPartners = useMemo(() => {
     const baseByNo = new Map<string, GundamCardPrint>();
     for (const c of allCards) {
@@ -61,12 +56,6 @@ export function CardDetailDrawer({
     }
     return [];
   }, [activeCard, allCards]);
-
-  const totalOwnedForCardNo = group.variants.reduce(
-    (sum, v) => sum + (collection[v.printId] ?? 0),
-    0
-  );
-  const currentPrintOwned = collection[activeCard.printId] ?? 0;
 
   return (
     <div
@@ -122,12 +111,11 @@ export function CardDetailDrawer({
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
                   <Layers className="h-3.5 w-3.5" />
-                  <span>Prints & Alternate Arts ({group.variants.length})</span>
+                  <span>Prints &amp; Alternate Arts ({group.variants.length})</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5">
                   {group.variants.map((variant, idx) => {
                     const isSelected = variant.printId === activeCard.printId;
-                    const qty = collection[variant.printId] ?? 0;
                     const label = variant.isParallel
                       ? `Alt Art ${idx} (${variant.rarity})`
                       : `Standard (${variant.rarity})`;
@@ -143,11 +131,6 @@ export function CardDetailDrawer({
                         }`}
                       >
                         <span className="truncate">{label}</span>
-                        {qty > 0 && (
-                          <span className="ml-1.5 font-mono tabular-nums text-emerald-400">
-                            ×{qty}
-                          </span>
-                        )}
                       </button>
                     );
                   })}
@@ -155,39 +138,8 @@ export function CardDetailDrawer({
               </div>
             )}
 
-            {/* Collection + Deck Actions */}
+            {/* Deck & Official Site Actions */}
             <div className="space-y-3 border-t border-white/[0.08] pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-medium text-slate-300">Owned (This Print)</div>
-                  <div className="text-[11px] text-slate-400 font-mono tabular-nums">
-                    Total across prints: {totalOwnedForCardNo}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => onUpdateCollection(activeCard.printId, -1)}
-                    disabled={currentPrintOwned === 0}
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/10 disabled:opacity-40"
-                    aria-label="Decrease owned count"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="w-8 text-center font-mono text-sm font-semibold tabular-nums text-white">
-                    {currentPrintOwned}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => onUpdateCollection(activeCard.printId, 1)}
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/10"
-                    aria-label="Increase owned count"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
               {onAddToDeck && (
                 <button
                   type="button"
@@ -258,7 +210,7 @@ export function CardDetailDrawer({
             {/* Card Effect */}
             <div className="space-y-2">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Card Text & Abilities
+                Card Text &amp; Abilities
               </h3>
               <div className="rounded-lg border border-white/[0.08] bg-[#131822] p-4 text-sm leading-relaxed text-slate-100 whitespace-pre-line">
                 {activeCard.effect || 'No card text (Vanilla / Resource card).'}
@@ -299,7 +251,7 @@ export function CardDetailDrawer({
             {keywords.length > 0 && (
               <div className="space-y-2.5">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Mechanics & Keyword Glossary
+                  Mechanics &amp; Keyword Glossary
                 </h3>
                 <div className="space-y-2">
                   {keywords.map((kw) => (

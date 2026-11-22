@@ -1,0 +1,47 @@
+# Repository Architecture
+
+## Directory Layout
+
+- `app/`: Next.js App Router entry points & server-side API routes.
+  - `app/page.tsx`: Server Component calling `getCatalog()` to hydrate initial catalog & rules payload.
+  - `app/api/cards/route.ts` & `app/api/cards/sync/route.ts`: Read & live-sync catalog endpoints.
+  - `app/api/card-image/route.ts`: Card artwork image proxy with path validation.
+  - `app/api/exburst/import/route.ts`: Server-side ExBurst deck page fetcher & parser (`https://exburst.dev/gundam/...` allowlisted).
+- `components/`: Client UI workspaces and modular components.
+  - `GundamAtlasApp.tsx`: Top-level 3-workspace shell (`Catalog`, `Deck Builder`, `Match Sandbox`), `localStorage` deck persistence, and Card Detail Drawer orchestration.
+  - `CatalogFilterPanel.tsx` & `CatalogWorkspace.tsx`: Encapsulated multi-select filter sidebar + grid/table catalog viewer.
+  - `DeckWorkspace.tsx`: Consolidated `Build & Cards` generator/editor, `Hexagon & Matchups`, `Playbook & Mulligan`, strict/ExBurst import-export modals, and Official Rules trigger.
+  - `MatchSandbox.tsx`: Interactive 2-player board with manual controls, auto-step execution, and live Best-Move Advisor.
+  - `CardDetailDrawer.tsx`, `CardArtwork.tsx`, `HexagonRadar.tsx`, `RulesModal.tsx`.
+- `lib/`: Core TypeScript engines and storage layer.
+  - `gundam-db.ts`: `better-sqlite3` database initialization, automatic hydration from split JSON shards, parameterized CRUD, and path-confined shard writes.
+  - `gundam-sync.ts`: Live Asia-English catalog scraper + SQLite & split JSON shard writer.
+  - `deck-engine.ts`: Deck validation, Effect Style detection, Trait+Linkage coherence scoring, constraint feasibility & deck generator, Hexagon/Matchup analysis, Turn 1–6+ insights, Turn Win-Chance estimator, and strict `<qty> <cardNo>` serializer/parser.
+  - `sandbox-engine.ts`: 2-deck state machine, Gundam GCG combat/keyword resolution (`<Blocker>`, `<First Strike>`, `<Breach>`, `<Repair>`, `<High-Maneuver>`, `[Link]`), and reactive Best-Move Advisor.
+  - `gundam-keywords.ts`: Keyword glossary, `[Link]` matcher, and color tokens.
+- `data/`: Versioned game data shards.
+  - `data/packages.json`: Package metadata (`id`, `name`, `code`, `category`, `cardCount`).
+  - `data/collections/<code>.json`: Per-collection card print shards (e.g. `GD01.json`, `ST01.json`).
+  - `data/rules.json`: Synced official deck rules, turn phases, rule PDFs, general FAQs, and per-card FAQ index.
+  - `data/gundam.db`: Local SQLite database (git-ignored, auto-rebuilt on startup from JSON shards).
+- `scripts/`: Python automation scripts (`sync_catalog.py`, `sync_rules.py`).
+- `.github/workflows/sync-catalog.yml`: Weekly + manual CI automation workflow.
+
+## Data Storage & Deduplication Flow
+
+1. **Source of Truth in Git**: Cards are sharded by collection code into `data/collections/<code>.json` alongside `data/packages.json` and `data/rules.json`. Because multi-set reprints/promos can belong to multiple packages, a card print may appear in multiple collection shards.
+2. **SQLite Hydration (`lib/gundam-db.ts`)**:
+   - On server startup (`getCatalog()` -> `ensureHydratedCatalogFromDb()`), if `data/gundam.db` is empty or missing, `loadShardedCardsFromJson()` reads all `data/collections/*.json` files, deduplicates records by `printId`, merges `packageIds`/`packageNames`/`packageCodes`, attaches card FAQs from `data/rules.json`, and populates SQLite tables (`metadata`, `packages`, `cards`, `rules`).
+   - Subsequent reads serve from SQLite (`loadCatalogFromSqlite`) and in-memory cache (`memoryCache`).
+3. **Security Safeguards**:
+   - SQLite queries use parameterized statements exclusively.
+   - Split shard filenames are sanitized (`[A-Za-z0-9_-]+`) and path-confined to `data/collections/`.
+   - ExBurst import strictly validates HTTPS URLs whose hostname is `exburst.dev` or `www.exburst.dev` and whose pathname starts with `/gundam`, blocking SSRF targets.
+
+## GitHub Actions CI Automation
+
+`.github/workflows/sync-catalog.yml` runs every Monday at 03:00 UTC (or manually via `workflow_dispatch`):
+1. Runs `python3 scripts/sync_rules.py` to scrape official rules, PDFs, general FAQs, and card FAQs into `data/rules.json` and merge card FAQs into collection shards.
+2. Runs `python3 scripts/sync_catalog.py` to update `data/packages.json` and per-collection shards in `data/collections/*.json`.
+3. Runs `npm test`, `npm run lint`, and `npm run build` to verify schema/engine/UI integrity.
+4. Commits and pushes any changes under `data/` automatically.

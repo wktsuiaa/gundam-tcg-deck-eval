@@ -14,25 +14,44 @@ import {
   AlertTriangle,
   CheckCircle2,
   Swords,
-  Target,
   BookOpen,
   Layers,
   X,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Search,
+  Sparkles,
+  ShieldAlert,
+  TrendingUp,
+  Lock,
 } from 'lucide-react';
 import type {
   CardColor,
   DeckAnalysis,
+  DeckGenerationConstraints,
+  EffectStyleTag,
   GundamCardPrint,
+  GundamPackage,
   HexagonAxes,
+  OpeningHandQuality,
   PacingTier,
+  RulesPayload,
   SavedDeck,
   StrategyBlueprint,
   TacticalStyleTag,
+  TurnOrderSetting,
 } from '@/types/gundam';
 import {
   analyzeDeck,
   buildStarterDeckFromCatalog,
+  computeTurnWinChances,
+  createBlankCustomDeck,
+  DEFAULT_BLUEPRINT,
+  DEFAULT_CONSTRAINTS,
+  EFFECT_STYLE_META,
   encodeDeckShareParam,
+  evaluateConstraintFeasibility,
   evaluateMatchupBetween,
   exportDeckToText,
   generateStrategyDeck,
@@ -42,13 +61,17 @@ import {
   parseDeckFromText,
   resolveCardMap,
   STARTER_PRESETS,
+  TACTICAL_STYLE_META,
 } from '@/lib/deck-engine';
 import { CARD_COLOR_META } from '@/lib/gundam-keywords';
 import { CardArtwork } from '@/components/CardArtwork';
 import { HEXAGON_AXIS_META, HexagonRadar } from '@/components/HexagonRadar';
+import { RulesModal } from '@/components/RulesModal';
 
 interface DeckWorkspaceProps {
   allCards: GundamCardPrint[];
+  packages: GundamPackage[];
+  rules?: RulesPayload;
   decks: SavedDeck[];
   activeDeckId: string;
   onSelectDeck: (id: string) => void;
@@ -65,34 +88,33 @@ const PACING_OPTIONS: PacingTier[] = [
   'Late-Game Control',
   'Ramp / Combo',
 ];
-const STYLE_OPTIONS: TacticalStyleTag[] = [
-  'Link-Strike',
-  'High-Liquidity Draw',
-  'Repair Fortress',
-  'Shield Breach',
-  'Wide Swarm',
-  'Command Control',
-  'Resource Ramp',
-  'Balanced Midrange',
-];
 
-const DEFAULT_BLUEPRINT: StrategyBlueprint = {
-  colors: ['Blue', 'White'],
-  pacing: 'Midrange Tempo',
-  primaryStyle: 'Link-Strike',
-  traitFocus: '',
-  targetHexagon: {
-    aggro: 65,
-    defense: 60,
-    tempo: 70,
-    liquidity: 65,
-    synergy: 85,
-    control: 55,
-  },
-};
+function normalizeBlueprint(raw?: StrategyBlueprint): StrategyBlueprint {
+  if (!raw) return DEFAULT_BLUEPRINT;
+  const legacyPrimary = (raw as unknown as { primaryStyle?: TacticalStyleTag }).primaryStyle;
+  return {
+    colors: Array.isArray(raw.colors) ? raw.colors : DEFAULT_BLUEPRINT.colors,
+    pacing: raw.pacing ?? DEFAULT_BLUEPRINT.pacing,
+    styles:
+      Array.isArray(raw.styles) && raw.styles.length > 0
+        ? raw.styles
+        : legacyPrimary
+        ? [legacyPrimary]
+        : DEFAULT_BLUEPRINT.styles,
+    effectStyles: Array.isArray(raw.effectStyles) ? raw.effectStyles : [],
+    traitFocus: raw.traitFocus ?? '',
+    targetHexagon: raw.targetHexagon ?? DEFAULT_BLUEPRINT.targetHexagon,
+    constraints: {
+      ...DEFAULT_CONSTRAINTS,
+      ...(raw.constraints ?? {}),
+    },
+  };
+}
 
 export function DeckWorkspace({
   allCards,
+  packages,
+  rules,
   decks,
   activeDeckId,
   onSelectDeck,
@@ -101,21 +123,34 @@ export function DeckWorkspace({
   onDeleteDeck,
   onInspectCard,
 }: DeckWorkspaceProps) {
-  const [subTab, setSubTab] = useState<'build' | 'strategy' | 'analysis' | 'playbook'>('build');
+  const [subTab, setSubTab] = useState<'build' | 'analysis' | 'playbook'>('build');
+  const [strategyOpen, setStrategyOpen] = useState(true);
+  const [leftPoolTab, setLeftPoolTab] = useState<'search' | 'suggested'>('search');
   const [pickerSearch, setPickerSearch] = useState('');
   const [pickerType, setPickerType] = useState<string>('ALL');
   const [pickerColorOnly, setPickerColorOnly] = useState(false);
 
+  // Rules modal
+  const [rulesOpen, setRulesOpen] = useState(false);
+
   // Import / Export Modals
   const [importOpen, setImportOpen] = useState(false);
+  const [importMode, setImportMode] = useState<'strict' | 'exburst'>('strict');
   const [importText, setImportText] = useState('');
+  const [exburstUrl, setExburstUrl] = useState('');
+  const [exburstLoading, setExburstLoading] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const [copiedMode, setCopiedMode] = useState<'text' | 'url' | null>(null);
+  const [copiedMode, setCopiedMode] = useState<'text' | 'url' | 'exburst' | null>(null);
 
   // Head-to-head comparison selection
   const [compareTargetId, setCompareTargetId] = useState<string>('arch:0');
   const [selectedAxis, setSelectedAxis] = useState<keyof HexagonAxes | null>(null);
+
+  // Playbook Win Chance Settings
+  const [winTurnOrder, setWinTurnOrder] = useState<TurnOrderSetting>('first');
+  const [winOpponentIdx, setWinOpponentIdx] = useState<number>(0);
+  const [winHandQuality, setWinHandQuality] = useState<OpeningHandQuality>('average');
 
   // Test Hand Simulator State
   const [simHandIndices, setSimHandIndices] = useState<number[]>([]);
@@ -123,7 +158,6 @@ export function DeckWorkspace({
   const [mulliganUsed, setMulliganUsed] = useState(false);
 
   const { byPrintId, byCardNo } = useMemo(() => resolveCardMap(allCards), [allCards]);
-
   const activeDeck = decks.find((d) => d.id === activeDeckId) ?? decks[0];
 
   const analysis: DeckAnalysis | null = useMemo(() => {
@@ -131,8 +165,10 @@ export function DeckWorkspace({
     return analyzeDeck(activeDeck, byPrintId, byCardNo);
   }, [activeDeck, byPrintId, byCardNo]);
 
-  // Strategy Blueprint state synced with activeDeck or default
-  const blueprint: StrategyBlueprint = activeDeck?.strategyBlueprint ?? DEFAULT_BLUEPRINT;
+  const blueprint = useMemo(
+    () => normalizeBlueprint(activeDeck?.strategyBlueprint),
+    [activeDeck?.strategyBlueprint]
+  );
 
   const updateBlueprint = (patch: Partial<StrategyBlueprint>) => {
     if (!activeDeck) return;
@@ -140,6 +176,15 @@ export function DeckWorkspace({
       ...activeDeck,
       updatedAt: new Date().toISOString(),
       strategyBlueprint: { ...blueprint, ...patch },
+    });
+  };
+
+  const updateConstraints = (patch: Partial<DeckGenerationConstraints>) => {
+    updateBlueprint({
+      constraints: {
+        ...blueprint.constraints,
+        ...patch,
+      },
     });
   };
 
@@ -156,7 +201,7 @@ export function DeckWorkspace({
     return [...map.values()];
   }, [allCards]);
 
-  // Popular traits for Strategy Blueprint dropdown
+  // Popular traits for Trait Focus dropdown (Series is explicitly NOT included per Q9)
   const topTraits = useMemo(() => {
     const counts = new Map<string, number>();
     for (const c of uniqueBaseCards) {
@@ -186,20 +231,25 @@ export function DeckWorkspace({
           return false;
         }
         if (q) {
-          const hay = `${c.cardNo} ${c.name} ${c.effect} ${c.traits.join(' ')} ${c.link}`.toLowerCase();
+          const hay =
+            `${c.cardNo} ${c.name} ${c.effect} ${c.traits.join(' ')} ${c.link}`.toLowerCase();
           if (!hay.includes(q)) return false;
         }
         return true;
       })
-      .slice(0, 60);
+      .slice(0, 80);
   }, [uniqueBaseCards, pickerSearch, pickerType, pickerColorOnly, analysis]);
+
+  const feasibility = useMemo(
+    () => evaluateConstraintFeasibility(allCards, blueprint),
+    [allCards, blueprint]
+  );
 
   const strategyRecommendations = useMemo(() => {
     if (!activeDeck) return [];
-    return getRecommendedCardsForStrategy(allCards, blueprint, activeDeck.mainDeck, 18);
+    return getRecommendedCardsForStrategy(allCards, blueprint, activeDeck.mainDeck, 24);
   }, [allCards, blueprint, activeDeck]);
 
-  // Helper to adjust card qty in active deck
   const adjustDeckCard = (card: GundamCardPrint, delta: number) => {
     if (!activeDeck) return;
     const isResource = card.type === 'RESOURCE';
@@ -227,45 +277,51 @@ export function DeckWorkspace({
   };
 
   const handleGenerateFromStrategy = () => {
-    if (!activeDeck) return;
+    if (!activeDeck || !feasibility.feasible) return;
     const generated = generateStrategyDeck(allCards, blueprint);
+    if (generated.mainDeck.length === 0) return;
+
+    const styleLabel = blueprint.styles[0] ?? 'Custom';
+    const colorLabel = generated.resolvedColors.join('/') || 'Custom';
+
     onSaveDeck({
       ...activeDeck,
       name:
-        activeDeck.name === 'New Custom Deck'
-          ? `${blueprint.colors.join('/')} ${blueprint.primaryStyle}`
+        activeDeck.name.startsWith('Custom Deck')
+          ? `${colorLabel} ${styleLabel}`
           : activeDeck.name,
       updatedAt: new Date().toISOString(),
       mainDeck: generated.mainDeck,
       resourceDeck: generated.resourceDeck,
-      strategyBlueprint: blueprint,
+      strategyBlueprint: {
+        ...blueprint,
+        colors:
+          blueprint.colors.length === 0 ? generated.resolvedColors : blueprint.colors,
+      },
     });
+    setLeftPoolTab('suggested');
   };
 
   const handleCreateNewBlank = () => {
-    const newDeck: SavedDeck = {
-      id: `deck-${Date.now()}`,
-      name: `Custom Deck ${decks.length + 1}`,
-      updatedAt: new Date().toISOString(),
-      mainDeck: [],
-      resourceDeck: [],
-      strategyBlueprint: DEFAULT_BLUEPRINT,
-    };
+    const newDeck = createBlankCustomDeck(decks.length + 1);
     onCreateDeck(newDeck);
-    setSubTab('strategy');
+    setSubTab('build');
+    setStrategyOpen(true);
   };
 
   const handleCloneStarter = (code: string) => {
     const starter = buildStarterDeckFromCatalog(code, allCards);
     onCreateDeck(starter);
-    setSubTab('analysis');
+    setSubTab('build');
   };
 
-  const handleImportSubmit = () => {
+  const handleStrictImportSubmit = () => {
     if (!activeDeck) return;
     const parsed = parseDeckFromText(importText, byPrintId, byCardNo);
     if (parsed.mainDeck.length === 0 && parsed.resourceDeck.length === 0) {
-      setImportError('No valid Gundam card numbers recognized (e.g., "4 GD01-001 Gundam").');
+      setImportError(
+        'Strict format required: "<number> <cardNo>" only (e.g. "4 GD01-001"). Comments, "4x", or trailing card names are rejected.'
+      );
       return;
     }
     onSaveDeck({
@@ -275,14 +331,55 @@ export function DeckWorkspace({
       resourceDeck:
         parsed.resourceDeck.length > 0 ? parsed.resourceDeck : activeDeck.resourceDeck,
     });
-    setImportError(
-      parsed.unmatched.length > 0
-        ? `Imported with ${parsed.unmatched.length} unrecognized line(s).`
-        : null
-    );
-    if (parsed.unmatched.length === 0) {
+    if (parsed.unmatched.length > 0) {
+      setImportError(
+        `Imported valid lines, but rejected ${parsed.unmatched.length} non-strict or unknown line(s): ${parsed.unmatched
+          .slice(0, 3)
+          .join(' | ')}`
+      );
+    } else {
+      setImportError(null);
       setImportOpen(false);
       setImportText('');
+    }
+  };
+
+  const handleExBurstImportSubmit = async () => {
+    if (!activeDeck || !exburstUrl.trim()) return;
+    setExburstLoading(true);
+    setImportError(null);
+    try {
+      const res = await fetch('/api/exburst/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: exburstUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportError(data.error || 'Failed to fetch ExBurst deck.');
+        return;
+      }
+      const parsed = parseDeckFromText(data.strictText || '', byPrintId, byCardNo);
+      if (parsed.mainDeck.length === 0 && parsed.resourceDeck.length === 0) {
+        setImportError(
+          'ExBurst deck resolved zero matching cards. Copy the strict list from ExBurst and paste in Strict Text mode.'
+        );
+        return;
+      }
+      onSaveDeck({
+        ...activeDeck,
+        name: data.deckTitle ? String(data.deckTitle).slice(0, 48) : activeDeck.name,
+        updatedAt: new Date().toISOString(),
+        mainDeck: parsed.mainDeck,
+        resourceDeck:
+          parsed.resourceDeck.length > 0 ? parsed.resourceDeck : activeDeck.resourceDeck,
+      });
+      setImportOpen(false);
+      setExburstUrl('');
+    } catch {
+      setImportError('Network error fetching ExBurst deck. Try pasting the strict decklist directly.');
+    } finally {
+      setExburstLoading(false);
     }
   };
 
@@ -292,6 +389,14 @@ export function DeckWorkspace({
     await navigator.clipboard.writeText(txt);
     setCopiedMode('text');
     setTimeout(() => setCopiedMode(null), 1800);
+  };
+
+  const handleCopyForExBurst = async () => {
+    if (!activeDeck) return;
+    const txt = exportDeckToText(activeDeck, byPrintId, byCardNo);
+    await navigator.clipboard.writeText(txt);
+    setCopiedMode('exburst');
+    setTimeout(() => setCopiedMode(null), 2400);
   };
 
   const handleCopyShareUrl = async () => {
@@ -356,7 +461,12 @@ export function DeckWorkspace({
     return gradeSimulatedHand(simulatedHandCards.slice(0, 5), analysis.pacing, deckPool50);
   }, [analysis, simulatedHandCards, deckPool50]);
 
-  // Head-to-head comparison target resolution
+  const turnWinChances = useMemo(() => {
+    if (!analysis) return [];
+    const opp = META_ARCHETYPES[winOpponentIdx] ?? META_ARCHETYPES[0];
+    return computeTurnWinChances(analysis, deckPool50, winTurnOrder, opp, winHandQuality);
+  }, [analysis, deckPool50, winTurnOrder, winOpponentIdx, winHandQuality]);
+
   const h2hComparison = useMemo(() => {
     if (!analysis || !activeDeck) return null;
     if (compareTargetId.startsWith('arch:')) {
@@ -419,7 +529,7 @@ export function DeckWorkspace({
       <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-12 text-center">
         <h2 className="font-display text-2xl font-bold text-white">No Active Deck</h2>
         <p className="mt-2 text-sm text-slate-400">
-          Create a custom deck, build from a Strategy Blueprint, or clone an official Starter Deck.
+          Start with an empty Custom Deck or clone an official Starter Preset.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button
@@ -427,7 +537,7 @@ export function DeckWorkspace({
             onClick={handleCreateNewBlank}
             className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500"
           >
-            Create Strategy Deck
+            Create Custom Deck
           </button>
           {STARTER_PRESETS.map((st) => (
             <button
@@ -436,7 +546,7 @@ export function DeckWorkspace({
               onClick={() => handleCloneStarter(st.code)}
               className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium text-slate-200 hover:bg-white/10"
             >
-              Clone {st.name}
+              Load {st.name}
             </button>
           ))}
         </div>
@@ -446,6 +556,26 @@ export function DeckWorkspace({
 
   const mainQtyByNo = new Map(activeDeck.mainDeck.map((e) => [e.cardNo, e.qty]));
   const resQtyByNo = new Map(activeDeck.resourceDeck.map((e) => [e.cardNo, e.qty]));
+
+  const toggleStyle = (tag: TacticalStyleTag) => {
+    const next = blueprint.styles.includes(tag)
+      ? blueprint.styles.filter((s) => s !== tag)
+      : [...blueprint.styles, tag];
+    updateBlueprint({ styles: next.length > 0 ? next : [tag] });
+  };
+
+  const toggleEffectStyle = (tag: EffectStyleTag) => {
+    const next = blueprint.effectStyles.includes(tag)
+      ? blueprint.effectStyles.filter((s) => s !== tag)
+      : [...blueprint.effectStyles, tag];
+    updateBlueprint({ effectStyles: next });
+  };
+
+  const toggleAllowedSet = (code: string) => {
+    const prev = blueprint.constraints.allowedPackageCodes;
+    const next = prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code];
+    updateConstraints({ allowedPackageCodes: next });
+  };
 
   return (
     <div className="space-y-5">
@@ -485,7 +615,7 @@ export function DeckWorkspace({
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-slate-200 hover:bg-white/10 whitespace-nowrap"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>New Deck</span>
+            <span>New Custom Deck</span>
           </button>
 
           <select
@@ -493,10 +623,10 @@ export function DeckWorkspace({
             onChange={(e) => {
               if (e.target.value) handleCloneStarter(e.target.value);
             }}
-            aria-label="Clone starter deck"
+            aria-label="Load starter deck preset"
             className="rounded-lg border border-white/10 bg-[#0B0E14] px-2.5 py-2 text-xs text-slate-300"
           >
-            <option value="">Clone Starter Deck...</option>
+            <option value="">Starter Presets...</option>
             {STARTER_PRESETS.map((st) => (
               <option key={st.code} value={st.code}>
                 {st.name}
@@ -508,11 +638,14 @@ export function DeckWorkspace({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setImportOpen(true)}
+            onClick={() => {
+              setImportError(null);
+              setImportOpen(true);
+            }}
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-slate-200 hover:bg-white/10 whitespace-nowrap"
           >
             <Upload className="h-3.5 w-3.5" />
-            <span>Import Text</span>
+            <span>Import / ExBurst</span>
           </button>
           <button
             type="button"
@@ -520,7 +653,7 @@ export function DeckWorkspace({
             className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-slate-200 hover:bg-white/10 whitespace-nowrap"
           >
             <FileText className="h-3.5 w-3.5" />
-            <span>Export / Share</span>
+            <span>Export / ExBurst</span>
           </button>
           {decks.length > 1 && (
             <button
@@ -535,12 +668,11 @@ export function DeckWorkspace({
         </div>
       </div>
 
-      {/* Legal Status & Sub-Tab Navigation */}
+      {/* Legal Status & 3 Sub-Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-3">
         <div className="flex flex-wrap items-center gap-1 rounded-lg border border-white/10 bg-[#131822] p-1">
           {[
             { id: 'build', label: 'Build & Cards', icon: Layers },
-            { id: 'strategy', label: 'Strategy Blueprint', icon: Target },
             { id: 'analysis', label: 'Hexagon & Matchups', icon: Swords },
             { id: 'playbook', label: 'Playbook & Mulligan', icon: BookOpen },
           ].map((tab) => {
@@ -600,492 +732,816 @@ export function DeckWorkspace({
               </>
             )}
           </span>
+          {rules && (
+            <button
+              type="button"
+              onClick={() => setRulesOpen(true)}
+              className="flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1 font-sans text-[11px] font-medium text-blue-300 hover:bg-white/[0.08] whitespace-nowrap"
+            >
+              <BookOpen className="h-3 w-3" />
+              <span>Official Rules</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* TAB 1: BUILD & CARDS */}
+      {/* TAB 1: CONSOLIDATED BUILD & CARDS (STRATEGY GENERATOR + SEARCH/SUGGESTIONS + VISUAL DECKLIST) */}
       {subTab === 'build' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* Left: Fast Card Picker */}
-          <div className="lg:col-span-7 space-y-3 rounded-xl border border-white/[0.08] bg-[#131822] p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                type="text"
-                value={pickerSearch}
-                onChange={(e) => setPickerSearch(e.target.value)}
-                placeholder="Search card name, number, trait, or effect..."
-                className="min-w-[180px] flex-1 rounded-lg border border-white/10 bg-[#0B0E14] px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
-              />
-              <select
-                value={pickerType}
-                onChange={(e) => setPickerType(e.target.value)}
-                className="rounded-lg border border-white/10 bg-[#0B0E14] px-2.5 py-2 text-xs text-slate-200"
-              >
-                <option value="ALL">All Types</option>
-                <option value="UNIT">UNIT</option>
-                <option value="PILOT">PILOT</option>
-                <option value="COMMAND">COMMAND</option>
-                <option value="BASE">BASE</option>
-                <option value="RESOURCE">RESOURCE</option>
-              </select>
-              <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer whitespace-nowrap">
-                <input
-                  type="checkbox"
-                  checked={pickerColorOnly}
-                  onChange={(e) => setPickerColorOnly(e.target.checked)}
-                  className="accent-blue-500"
-                />
-                <span>Deck Colors Only</span>
-              </label>
-            </div>
-
-            <div className="grid max-h-[68vh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4">
-              {pickerCards.map((card) => {
-                const inDeck =
-                  card.type === 'RESOURCE'
-                    ? resQtyByNo.get(card.cardNo) ?? 0
-                    : mainQtyByNo.get(card.cardNo) ?? 0;
-                const max = card.type === 'RESOURCE' ? 10 : 4;
-                return (
-                  <div
-                    key={card.printId}
-                    className="flex flex-col rounded-lg border border-white/[0.07] bg-[#0B0E14] p-1.5"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => onInspectCard(card.cardNo, card.printId)}
-                      className="relative aspect-[5/7] w-full overflow-hidden rounded"
-                    >
-                      <CardArtwork card={card} className="h-full w-full" />
-                      {inDeck > 0 && (
-                        <span className="absolute right-1 top-1 rounded bg-blue-600 px-1.5 py-0.5 font-mono text-[11px] font-bold text-white">
-                          ×{inDeck}
-                        </span>
-                      )}
-                    </button>
-                    <div className="mt-1.5 truncate text-[11px] font-medium text-slate-100">
-                      {card.name}
-                    </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-                      <span>{card.cardNo}</span>
-                      <span>C:{card.cost ?? '-'}</span>
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => adjustDeckCard(card, -1)}
-                        disabled={inDeck === 0}
-                        className="flex h-7 flex-1 items-center justify-center rounded border border-white/10 text-xs text-slate-300 hover:bg-white/10 disabled:opacity-30"
-                      >
-                        -
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => adjustDeckCard(card, 1)}
-                        disabled={inDeck >= max}
-                        className="flex h-7 flex-[2] items-center justify-center rounded bg-blue-600/85 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-35"
-                      >
-                        + Add
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Right: Current Deck List & Validation */}
-          <div className="lg:col-span-5 space-y-4 rounded-xl border border-white/[0.08] bg-[#131822] p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display text-lg font-bold text-white">Decklist</h3>
-              <span className="text-xs text-slate-400">
-                {analysis.pacing} · {analysis.styles[0]}
-              </span>
-            </div>
-
-            {analysis.validation.errors.length > 0 && (
-              <div className="space-y-1 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
-                {analysis.validation.errors.map((err, i) => (
-                  <div key={i}>• {err}</div>
-                ))}
-              </div>
-            )}
-
-            <div className="max-h-[58vh] space-y-4 overflow-y-auto pr-1">
-              {(['UNIT', 'PILOT', 'COMMAND', 'BASE'] as const).map((cardType) => {
-                const entries = activeDeck.mainDeck
-                  .map((e) => ({
-                    entry: e,
-                    card: byPrintId.get(e.printId) ?? byCardNo.get(e.cardNo),
-                  }))
-                  .filter((x): x is { entry: typeof x.entry; card: GundamCardPrint } =>
-                    Boolean(x.card && x.card.type === cardType)
-                  )
-                  .sort((a, b) => (a.card.cost ?? 0) - (b.card.cost ?? 0));
-
-                const count = entries.reduce((s, x) => s + x.entry.qty, 0);
-                return (
-                  <div key={cardType} className="space-y-1.5">
-                    <div className="flex items-center justify-between border-b border-white/[0.06] pb-1 text-xs font-semibold text-slate-300">
-                      <span>{cardType}</span>
-                      <span className="font-mono tabular-nums text-slate-400">{count}</span>
-                    </div>
-                    {entries.length === 0 ? (
-                      <div className="py-1 text-[11px] text-slate-500">None added yet</div>
-                    ) : (
-                      entries.map(({ entry, card }) => {
-                        const cMeta = CARD_COLOR_META[card.color] ?? CARD_COLOR_META.Colorless;
-                        return (
-                          <div
-                            key={card.cardNo}
-                            className="flex items-center justify-between gap-2 rounded-md border border-white/[0.05] bg-[#0B0E14] px-2.5 py-1.5 text-xs"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => onInspectCard(card.cardNo, card.printId)}
-                              className="flex min-w-0 flex-1 items-center gap-2 text-left hover:text-blue-300"
-                            >
-                              <span
-                                className="h-2 w-2 shrink-0 rounded-xs"
-                                style={{ backgroundColor: cMeta.hex }}
-                              />
-                              <span className="font-mono text-[11px] text-slate-400 shrink-0">
-                                {card.cardNo}
-                              </span>
-                              <span className="truncate font-medium text-slate-100">
-                                {card.name}
-                              </span>
-                            </button>
-                            <div className="flex items-center gap-1.5 shrink-0 font-mono tabular-nums">
-                              <span className="text-[11px] text-slate-500">
-                                Lv{card.lv ?? '-'}·C{card.cost ?? '-'}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => adjustDeckCard(card, -1)}
-                                className="flex h-6 w-6 items-center justify-center rounded border border-white/10 text-slate-300 hover:bg-white/10"
-                              >
-                                <Minus className="h-3 w-3" />
-                              </button>
-                              <span className="w-4 text-center font-semibold text-white">
-                                {entry.qty}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => adjustDeckCard(card, 1)}
-                                disabled={entry.qty >= 4}
-                                className="flex h-6 w-6 items-center justify-center rounded border border-white/10 text-slate-300 hover:bg-white/10 disabled:opacity-30"
-                              >
-                                <Plus className="h-3 w-3" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Resource Deck */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-1 text-xs font-semibold text-slate-300">
-                  <span>RESOURCE DECK</span>
-                  <span className="font-mono tabular-nums text-slate-400">
-                    {analysis.validation.resourceCount} / 10
-                  </span>
-                </div>
-                {activeDeck.resourceDeck.length === 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const res = allCards.find((c) => c.type === 'RESOURCE');
-                      if (res) adjustDeckCard(res, 10);
-                    }}
-                    className="w-full rounded-md border border-dashed border-white/15 py-2 text-xs text-blue-300 hover:bg-white/[0.04]"
-                  >
-                    + Fill 10 Standard Resource Cards
-                  </button>
-                ) : (
-                  activeDeck.resourceDeck.map((entry) => {
-                    const card = byPrintId.get(entry.printId) ?? byCardNo.get(entry.cardNo);
-                    if (!card) return null;
-                    return (
-                      <div
-                        key={card.cardNo}
-                        className="flex items-center justify-between gap-2 rounded-md border border-white/[0.05] bg-[#0B0E14] px-2.5 py-1.5 text-xs"
-                      >
-                        <span className="font-medium text-slate-200">
-                          {card.cardNo} · {card.name}
-                        </span>
-                        <div className="flex items-center gap-1.5 font-mono tabular-nums">
-                          <button
-                            type="button"
-                            onClick={() => adjustDeckCard(card, -1)}
-                            className="flex h-6 w-6 items-center justify-center rounded border border-white/10 text-slate-300 hover:bg-white/10"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="w-5 text-center font-semibold text-white">
-                            {entry.qty}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => adjustDeckCard(card, 1)}
-                            disabled={entry.qty >= 10}
-                            className="flex h-6 w-6 items-center justify-center rounded border border-white/10 text-slate-300 hover:bg-white/10 disabled:opacity-30"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: STRATEGY BLUEPRINT BUILDER */}
-      {subTab === 'strategy' && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* Left: User Strategy Controls */}
-          <div className="lg:col-span-5 space-y-5 rounded-xl border border-white/[0.08] bg-[#131822] p-5">
-            <div>
-              <h3 className="font-display text-xl font-bold text-white">
-                Define Your Deck Strategy
-              </h3>
-              <p className="mt-1 text-xs text-slate-400">
-                Set your target colors, pacing, tactical style, and 6-axis Hexagon priorities to generate a legal 50+10 deck or coach manual edits.
-              </p>
-            </div>
-
-            {/* Colors (1-2) */}
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-slate-300">
-                Target Colors (select 1 or 2)
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {COLORS.map((col) => {
-                  const selected = blueprint.colors.includes(col);
-                  const meta = CARD_COLOR_META[col];
-                  return (
-                    <button
-                      key={col}
-                      type="button"
-                      onClick={() => {
-                        const next = selected
-                          ? blueprint.colors.filter((c) => c !== col)
-                          : blueprint.colors.length < 2
-                          ? [...blueprint.colors, col]
-                          : [blueprint.colors[1], col];
-                        updateBlueprint({ colors: next.length > 0 ? next : [col] });
-                      }}
-                      className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                        selected
-                          ? `${meta.softBg} ${meta.border} text-white`
-                          : 'border-white/10 bg-[#0B0E14] text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <span
-                        className="h-2.5 w-2.5 rounded-xs"
-                        style={{ backgroundColor: meta.hex }}
-                      />
-                      <span>{col}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Pacing */}
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-slate-300">Target Pacing</label>
-              <div className="grid grid-cols-2 gap-2">
-                {PACING_OPTIONS.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => updateBlueprint({ pacing: p })}
-                    className={`rounded-lg border px-3 py-2 text-left text-xs font-medium transition-colors ${
-                      blueprint.pacing === p
-                        ? 'border-blue-500/60 bg-blue-500/15 text-white'
-                        : 'border-white/10 bg-[#0B0E14] text-slate-300 hover:bg-white/[0.04]'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Primary Tactical Style */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Primary Style Focus
-                </label>
-                <select
-                  value={blueprint.primaryStyle}
-                  onChange={(e) =>
-                    updateBlueprint({ primaryStyle: e.target.value as TacticalStyleTag })
-                  }
-                  className="w-full rounded-lg border border-white/10 bg-[#0B0E14] px-3 py-2 text-xs text-white"
-                >
-                  {STYLE_OPTIONS.map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Optional Trait Theme
-                </label>
-                <select
-                  value={blueprint.traitFocus}
-                  onChange={(e) => updateBlueprint({ traitFocus: e.target.value })}
-                  className="w-full rounded-lg border border-white/10 bg-[#0B0E14] px-3 py-2 text-xs text-white"
-                >
-                  <option value="">Any Faction / Trait</option>
-                  {topTraits.map((tr) => (
-                    <option key={tr} value={tr}>
-                      {tr}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* 6-Axis Target Hexagon Sliders */}
-            <div className="space-y-3 border-t border-white/[0.08] pt-4">
-              <div className="text-xs font-medium text-slate-300">
-                Target 6-Axis Hexagon Profile
-              </div>
-              {HEXAGON_AXIS_META.map((ax) => (
-                <div key={ax.key} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300">{ax.label}</span>
-                    <span className="font-mono tabular-nums text-amber-300">
-                      {blueprint.targetHexagon[ax.key]}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={15}
-                    max={95}
-                    step={5}
-                    value={blueprint.targetHexagon[ax.key]}
-                    onChange={(e) =>
-                      updateBlueprint({
-                        targetHexagon: {
-                          ...blueprint.targetHexagon,
-                          [ax.key]: Number(e.target.value),
-                        },
-                      })
-                    }
-                    className="w-full accent-amber-400"
-                  />
-                </div>
-              ))}
-            </div>
-
+        <div className="space-y-5">
+          {/* Collapsible Strategy & Constraints Deck Generator */}
+          <section className="rounded-xl border border-white/[0.08] bg-[#131822]">
             <button
               type="button"
-              onClick={handleGenerateFromStrategy}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-500 transition-colors"
+              onClick={() => setStrategyOpen((v) => !v)}
+              className="flex w-full items-center justify-between px-5 py-3.5 text-left"
             >
-              <Wand2 className="h-4 w-4" />
-              <span>Generate Legal 50+10 Deck from Strategy</span>
+              <div className="flex items-center gap-2.5">
+                <Wand2 className="h-4 w-4 text-blue-400 shrink-0" />
+                <div>
+                  <h2 className="font-display text-base font-bold text-white">
+                    Strategy &amp; Constraints Deck Generator
+                  </h2>
+                  <p className="text-[11px] text-slate-400">
+                    Multi-select Build Strategies &amp; Effect Styles · Trait + Link Coherence (no Series) · Hard Generation Caps
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-slate-300 shrink-0">
+                <span className="hidden sm:inline font-mono text-[11px] text-slate-400">
+                  {blueprint.colors.length > 0 ? blueprint.colors.join('/') : 'Auto Best 2'} ·{' '}
+                  {blueprint.styles.length} style(s) · {blueprint.effectStyles.length} effect(s)
+                </span>
+                {strategyOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </div>
             </button>
-          </div>
 
-          {/* Right: Target vs Actual Hexagon + Ranked Card Recommendations */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-5">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <h3 className="font-display text-lg font-bold text-white">
-                  Current Deck vs. Target Strategy Hexagon
-                </h3>
-                <span className="text-xs text-slate-400">
-                  Solid = Current · Dashed = Target Blueprint
-                </span>
-              </div>
-              <div className="flex justify-center">
-                <HexagonRadar
-                  primary={analysis.hexagon}
-                  primaryLabel={activeDeck.name}
-                  secondary={blueprint.targetHexagon}
-                  secondaryLabel="Target Strategy"
-                  secondaryColor="#F59E0B"
-                  size={330}
-                />
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-lg font-bold text-white">
-                  Recommended Cards for Your Strategy
-                </h3>
-                <span className="text-xs text-slate-400">
-                  Ranked by fit + Link synergy
-                </span>
-              </div>
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                {strategyRecommendations.map(({ card, fitScore, reason }) => {
-                  const inDeck = mainQtyByNo.get(card.cardNo) ?? 0;
-                  return (
-                    <div
-                      key={card.printId}
-                      className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-[#0B0E14] p-2.5"
-                    >
+            {strategyOpen && (
+              <div className="border-t border-white/[0.08] p-5 space-y-6">
+                {/* Row 1: Colors, Pacing, Trait Focus */}
+                <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+                  <div className="lg:col-span-5 space-y-2">
+                    <label className="block text-xs font-medium text-slate-300">
+                      Target Colors (1–2 colors or Auto Best 2)
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
                       <button
                         type="button"
-                        onClick={() => onInspectCard(card.cardNo, card.printId)}
-                        className="h-16 w-12 shrink-0 overflow-hidden rounded"
+                        onClick={() => updateBlueprint({ colors: [] })}
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                          blueprint.colors.length === 0
+                            ? 'border-amber-400/60 bg-amber-500/15 text-amber-200'
+                            : 'border-white/10 bg-[#0B0E14] text-slate-400 hover:text-white'
+                        }`}
                       >
-                        <CardArtwork card={card} className="h-full w-full" />
+                        Any (Auto Best 2)
                       </button>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="truncate text-xs font-semibold text-white">
-                            {card.name}
-                          </span>
-                          <span className="font-mono text-[11px] text-amber-300 tabular-nums shrink-0">
-                            {fitScore}% fit
-                          </span>
+                      {COLORS.map((col) => {
+                        const selected = blueprint.colors.includes(col);
+                        const meta = CARD_COLOR_META[col];
+                        return (
+                          <button
+                            key={col}
+                            type="button"
+                            onClick={() => {
+                              const next = selected
+                                ? blueprint.colors.filter((c) => c !== col)
+                                : blueprint.colors.length < 2
+                                ? [...blueprint.colors, col]
+                                : [blueprint.colors[1], col];
+                              updateBlueprint({ colors: next });
+                            }}
+                            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                              selected
+                                ? `${meta.softBg} ${meta.border} text-white`
+                                : 'border-white/10 bg-[#0B0E14] text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <span
+                              className="h-2.5 w-2.5 rounded-xs"
+                              style={{ backgroundColor: meta.hex }}
+                            />
+                            <span>{col}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-4 space-y-2">
+                    <label className="block text-xs font-medium text-slate-300">
+                      Target Pacing
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {PACING_OPTIONS.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => updateBlueprint({ pacing: p })}
+                          className={`rounded-lg border px-2.5 py-1.5 text-left text-xs font-medium transition-colors ${
+                            blueprint.pacing === p
+                              ? 'border-blue-500/60 bg-blue-500/15 text-white'
+                              : 'border-white/10 bg-[#0B0E14] text-slate-300 hover:bg-white/[0.04]'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-3 space-y-2">
+                    <label className="block text-xs font-medium text-slate-300">
+                      Trait Focus (Coherence Anchor)
+                    </label>
+                    <select
+                      value={blueprint.traitFocus}
+                      onChange={(e) => updateBlueprint({ traitFocus: e.target.value })}
+                      className="w-full rounded-lg border border-white/10 bg-[#0B0E14] px-3 py-2 text-xs text-white"
+                    >
+                      <option value="">Any Trait / Faction</option>
+                      {topTraits.map((tr) => (
+                        <option key={tr} value={tr}>
+                          {tr}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[11px] text-slate-400">
+                      Coherence scores Traits + Pilot–Unit Linkage (Series excluded).
+                    </p>
+                  </div>
+                </div>
+
+                {/* Row 2: Multi-Select Build Deck Strategies (with descriptions) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-slate-300">
+                      Build Deck Strategies (select multiple)
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      {blueprint.styles.length} selected
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {TACTICAL_STYLE_META.map((item) => {
+                      const active = blueprint.styles.includes(item.tag);
+                      return (
+                        <button
+                          key={item.tag}
+                          type="button"
+                          onClick={() => toggleStyle(item.tag)}
+                          className={`rounded-lg border p-2.5 text-left transition-colors ${
+                            active
+                              ? 'border-blue-500/60 bg-blue-500/15 text-white'
+                              : 'border-white/[0.07] bg-[#0B0E14] text-slate-300 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold">{item.tag}</span>
+                            {active && <Check className="h-3.5 w-3.5 text-blue-400 shrink-0" />}
+                          </div>
+                          <p className="mt-1 text-[11px] leading-snug text-slate-400">
+                            {item.description}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Row 3: Multi-Select Effect Styles (with descriptions) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-slate-300">
+                      Effect Styles (card mechanics weighted during suggestion &amp; generation)
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      {blueprint.effectStyles.length} selected
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {EFFECT_STYLE_META.map((ef) => {
+                      const active = blueprint.effectStyles.includes(ef.tag);
+                      return (
+                        <button
+                          key={ef.tag}
+                          type="button"
+                          onClick={() => toggleEffectStyle(ef.tag)}
+                          className={`rounded-lg border p-2.5 text-left transition-colors ${
+                            active
+                              ? 'border-emerald-500/60 bg-emerald-500/12 text-white'
+                              : 'border-white/[0.07] bg-[#0B0E14] text-slate-300 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold">{ef.label}</span>
+                            {active && (
+                              <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                            )}
+                          </div>
+                          <p className="mt-1 text-[11px] leading-snug text-slate-400">
+                            {ef.description}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Row 4: Constraints & Target Hexagon Sliders */}
+                <div className="grid grid-cols-1 gap-5 border-t border-white/[0.08] pt-4 lg:grid-cols-12">
+                  {/* Constraints Panel */}
+                  <div className="lg:col-span-7 space-y-3 rounded-lg border border-white/[0.07] bg-[#0B0E14] p-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                        Deck Generation Limitations &amp; Constraints
+                      </h3>
+                      <span className="text-[11px] font-mono text-slate-400">
+                        Official 50+10 · ≤2 Colors · ≤4 Copies
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Max Copies</label>
+                        <select
+                          value={blueprint.constraints.maxCopiesPerCard}
+                          onChange={(e) =>
+                            updateConstraints({
+                              maxCopiesPerCard: Number(e.target.value) as 1 | 2 | 3 | 4,
+                            })
+                          }
+                          className="w-full rounded-md border border-white/10 bg-[#131822] px-2 py-1.5 text-xs text-white font-mono"
+                        >
+                          <option value={4}>4 (Official)</option>
+                          <option value={3}>3 copies</option>
+                          <option value={2}>2 copies</option>
+                          <option value={1}>1 (Highlander)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Max Cost</label>
+                        <select
+                          value={blueprint.constraints.maxCost ?? ''}
+                          onChange={(e) =>
+                            updateConstraints({
+                              maxCost: e.target.value ? Number(e.target.value) : null,
+                            })
+                          }
+                          className="w-full rounded-md border border-white/10 bg-[#131822] px-2 py-1.5 text-xs text-white font-mono"
+                        >
+                          <option value="">No Cap</option>
+                          {[2, 3, 4, 5, 6].map((n) => (
+                            <option key={n} value={n}>
+                              Cost ≤ {n}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Max Lv.</label>
+                        <select
+                          value={blueprint.constraints.maxLv ?? ''}
+                          onChange={(e) =>
+                            updateConstraints({
+                              maxLv: e.target.value ? Number(e.target.value) : null,
+                            })
+                          }
+                          className="w-full rounded-md border border-white/10 bg-[#131822] px-2 py-1.5 text-xs text-white font-mono"
+                        >
+                          <option value="">No Cap</option>
+                          {[3, 4, 5, 6, 7].map((n) => (
+                            <option key={n} value={n}>
+                              Lv. ≤ {n}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Rarity Cap</label>
+                        <select
+                          value={blueprint.constraints.rarityCap}
+                          onChange={(e) =>
+                            updateConstraints({
+                              rarityCap: e.target.value as DeckGenerationConstraints['rarityCap'],
+                            })
+                          }
+                          className="w-full rounded-md border border-white/10 bg-[#131822] px-2 py-1.5 text-xs text-white"
+                        >
+                          <option value="ALL">All Rarities</option>
+                          <option value="NO_LR">Budget (No LR)</option>
+                          <option value="C_U_R_ONLY">C / U / R Only</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Allowed Sets Multi-Select */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px] text-slate-400">
+                        <span>
+                          Allowed Set Pool (
+                          {blueprint.constraints.allowedPackageCodes.length === 0
+                            ? 'All Sets'
+                            : `${blueprint.constraints.allowedPackageCodes.length} selected`}
+                          )
+                        </span>
+                        {blueprint.constraints.allowedPackageCodes.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => updateConstraints({ allowedPackageCodes: [] })}
+                            className="text-blue-400 hover:text-blue-300"
+                          >
+                            Reset to All Sets
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex max-h-20 flex-wrap gap-1 overflow-y-auto pr-1">
+                        {packages.map((pkg) => {
+                          const active = blueprint.constraints.allowedPackageCodes.includes(pkg.code);
+                          return (
+                            <button
+                              key={pkg.id}
+                              type="button"
+                              onClick={() => toggleAllowedSet(pkg.code)}
+                              className={`rounded border px-2 py-0.5 font-mono text-[11px] transition-colors ${
+                                active
+                                  ? 'border-blue-500/60 bg-blue-500/20 text-blue-200'
+                                  : 'border-white/[0.08] bg-[#131822] text-slate-400 hover:text-white'
+                              }`}
+                            >
+                              {pkg.code}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Strict Trait / Link Lock */}
+                    <label className="flex items-start gap-2.5 rounded-md border border-white/[0.06] bg-[#131822] p-2.5 text-xs cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={blueprint.constraints.strictTraitLinkLock}
+                        onChange={(e) =>
+                          updateConstraints({ strictTraitLinkLock: e.target.checked })
+                        }
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-blue-500"
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5 font-medium text-white">
+                          <Lock className="h-3.5 w-3.5 text-amber-300" />
+                          <span>Strict Trait / Link Lock</span>
                         </div>
-                        <div className="text-[11px] font-mono text-slate-400">
-                          {card.cardNo} · {card.type} · C{card.cost ?? '-'}
-                        </div>
-                        <div className="mt-0.5 truncate text-[11px] text-slate-400">{reason}</div>
+                        <p className="mt-0.5 text-[11px] text-slate-400">
+                          When enabled, excludes all cards outside your selected Trait Focus &amp; its Link partners (or requires Units/Pilots to form a valid Link pair if no Trait is picked). Never filters by Series.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Target Hexagon Sliders + Feasibility & Generate */}
+                  <div className="lg:col-span-5 flex flex-col justify-between space-y-3 rounded-lg border border-white/[0.07] bg-[#0B0E14] p-4">
+                    <div className="space-y-2">
+                      <div className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                        Target 6-Axis Hexagon Weights
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                        {HEXAGON_AXIS_META.map((ax) => (
+                          <div key={ax.key} className="space-y-0.5">
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="text-slate-300">{ax.shortLabel}</span>
+                              <span className="font-mono tabular-nums text-amber-300">
+                                {blueprint.targetHexagon[ax.key]}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min={15}
+                              max={95}
+                              step={5}
+                              value={blueprint.targetHexagon[ax.key]}
+                              onChange={(e) =>
+                                updateBlueprint({
+                                  targetHexagon: {
+                                    ...blueprint.targetHexagon,
+                                    [ax.key]: Number(e.target.value),
+                                  },
+                                })
+                              }
+                              className="w-full accent-amber-400"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2.5 border-t border-white/[0.06] pt-3">
+                      <div
+                        className={`rounded-md border px-3 py-2 text-[11px] leading-snug ${
+                          feasibility.feasible
+                            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'
+                            : 'border-red-500/40 bg-red-500/10 text-red-200'
+                        }`}
+                      >
+                        {feasibility.reason}
                       </div>
                       <button
                         type="button"
-                        onClick={() => adjustDeckCard(card, 1)}
-                        disabled={inDeck >= 4}
-                        className="shrink-0 rounded-md bg-blue-600/85 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-35"
+                        onClick={handleGenerateFromStrategy}
+                        disabled={!feasibility.feasible}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-40 transition-colors"
                       >
-                        {inDeck > 0 ? `+1 (${inDeck})` : '+1'}
+                        <Wand2 className="h-4 w-4" />
+                        <span>Generate Legal 50+10 Deck</span>
                       </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Two-Column Build Area: Left (Search / Suggested Cards) | Right (Visual Decklist) */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            {/* Left Pool Panel */}
+            <div className="lg:col-span-7 space-y-3 rounded-xl border border-white/[0.08] bg-[#131822] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+                <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-[#0B0E14] p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setLeftPoolTab('search')}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                      leftPoolTab === 'search'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <Search className="h-3.5 w-3.5" />
+                    <span>Card Search</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLeftPoolTab('suggested')}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                      leftPoolTab === 'suggested'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>Suggested Cards ({strategyRecommendations.length})</span>
+                  </button>
+                </div>
+
+                {leftPoolTab === 'search' && (
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {pickerCards.length} shown
+                  </span>
+                )}
+              </div>
+
+              {leftPoolTab === 'search' ? (
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      value={pickerSearch}
+                      onChange={(e) => setPickerSearch(e.target.value)}
+                      placeholder="Search card name, number, trait, link, or effect..."
+                      className="min-w-[180px] flex-1 rounded-lg border border-white/10 bg-[#0B0E14] px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                    />
+                    <select
+                      value={pickerType}
+                      onChange={(e) => setPickerType(e.target.value)}
+                      className="rounded-lg border border-white/10 bg-[#0B0E14] px-2.5 py-2 text-xs text-slate-200"
+                    >
+                      <option value="ALL">All Types</option>
+                      <option value="UNIT">UNIT</option>
+                      <option value="PILOT">PILOT</option>
+                      <option value="COMMAND">COMMAND</option>
+                      <option value="BASE">BASE</option>
+                      <option value="RESOURCE">RESOURCE</option>
+                    </select>
+                    <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={pickerColorOnly}
+                        onChange={(e) => setPickerColorOnly(e.target.checked)}
+                        className="accent-blue-500"
+                      />
+                      <span>Deck Colors Only</span>
+                    </label>
+                  </div>
+
+                  <div className="grid max-h-[68vh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4">
+                    {pickerCards.map((card) => {
+                      const inDeck =
+                        card.type === 'RESOURCE'
+                          ? resQtyByNo.get(card.cardNo) ?? 0
+                          : mainQtyByNo.get(card.cardNo) ?? 0;
+                      const max = card.type === 'RESOURCE' ? 10 : 4;
+                      return (
+                        <div
+                          key={card.printId}
+                          className="flex flex-col rounded-lg border border-white/[0.07] bg-[#0B0E14] p-1.5"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => onInspectCard(card.cardNo, card.printId)}
+                            className="relative aspect-[5/7] w-full overflow-hidden rounded"
+                          >
+                            <CardArtwork card={card} className="h-full w-full" />
+                            {inDeck > 0 && (
+                              <span className="absolute right-1 top-1 rounded bg-blue-600 px-1.5 py-0.5 font-mono text-[11px] font-bold text-white">
+                                ×{inDeck}
+                              </span>
+                            )}
+                          </button>
+                          <div className="mt-1.5 truncate text-[11px] font-medium text-slate-100">
+                            {card.name}
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                            <span>{card.cardNo}</span>
+                            <span>
+                              Lv{card.lv ?? '-'}·C{card.cost ?? '-'}
+                            </span>
+                          </div>
+                          <div className="mt-1.5 flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => adjustDeckCard(card, -1)}
+                              disabled={inDeck === 0}
+                              className="flex h-7 flex-1 items-center justify-center rounded border border-white/10 text-xs text-slate-300 hover:bg-white/10 disabled:opacity-30"
+                            >
+                              -
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => adjustDeckCard(card, 1)}
+                              disabled={inDeck >= max}
+                              className="flex h-7 flex-[2] items-center justify-center rounded bg-blue-600/85 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-35"
+                            >
+                              + Add
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="max-h-[72vh] space-y-2.5 overflow-y-auto pr-1">
+                  {strategyRecommendations.length === 0 ? (
+                    <div className="py-12 text-center text-xs text-slate-400">
+                      No eligible cards match your active Strategy &amp; Constraints filters.
+                    </div>
+                  ) : (
+                    strategyRecommendations.map((rec) => {
+                      const inDeck = mainQtyByNo.get(rec.card.cardNo) ?? 0;
+                      const maxCopy = blueprint.constraints.maxCopiesPerCard;
+                      return (
+                        <div
+                          key={rec.card.printId}
+                          className="flex items-center gap-3 rounded-lg border border-white/[0.07] bg-[#0B0E14] p-2.5"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => onInspectCard(rec.card.cardNo, rec.card.printId)}
+                            className="h-20 w-14 shrink-0 overflow-hidden rounded border border-white/10"
+                          >
+                            <CardArtwork card={rec.card} className="h-full w-full" />
+                          </button>
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="truncate text-xs font-semibold text-white">
+                                {rec.card.name}
+                              </span>
+                              <span className="font-mono text-[11px] text-amber-300 tabular-nums shrink-0">
+                                {rec.fitScore}% fit · Coherence {rec.coherenceScore}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-400">
+                              <span>{rec.card.cardNo}</span>
+                              <span>·</span>
+                              <span>{rec.card.type}</span>
+                              <span>·</span>
+                              <span>
+                                Lv{rec.card.lv ?? '-'}/C{rec.card.cost ?? '-'}
+                              </span>
+                              <span>·</span>
+                              <span className="font-sans text-blue-300">
+                                Axis: {rec.primaryAxisLabel}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-300 leading-snug">
+                              {rec.reason}
+                            </div>
+                            {rec.matchedEffectStyles.length > 0 && (
+                              <div className="text-[10px] font-mono text-emerald-300">
+                                Effects: {rec.matchedEffectStyles.join(' · ')}
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => adjustDeckCard(rec.card, 1)}
+                            disabled={inDeck >= maxCopy}
+                            className="shrink-0 rounded-md bg-blue-600/85 px-2.5 py-2 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-35 whitespace-nowrap"
+                          >
+                            {inDeck > 0 ? `+1 (${inDeck})` : '+1'}
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Persistent Visual Decklist (Card Picture + Card No + Qty) */}
+            <div className="lg:col-span-5 space-y-4 rounded-xl border border-white/[0.08] bg-[#131822] p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-lg font-bold text-white">Visual Decklist</h3>
+                <span className="text-xs text-slate-400">
+                  {analysis.pacing} · {analysis.styles[0]}
+                </span>
+              </div>
+
+              {analysis.validation.errors.length > 0 && (
+                <div className="space-y-1 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                  {analysis.validation.errors.map((err, i) => (
+                    <div key={i}>• {err}</div>
+                  ))}
+                </div>
+              )}
+
+              <div className="max-h-[64vh] space-y-4 overflow-y-auto pr-1">
+                {(['UNIT', 'PILOT', 'COMMAND', 'BASE'] as const).map((cardType) => {
+                  const entries = activeDeck.mainDeck
+                    .map((e) => ({
+                      entry: e,
+                      card: byPrintId.get(e.printId) ?? byCardNo.get(e.cardNo),
+                    }))
+                    .filter((x): x is { entry: typeof x.entry; card: GundamCardPrint } =>
+                      Boolean(x.card && x.card.type === cardType)
+                    )
+                    .sort((a, b) => (a.card.cost ?? 0) - (b.card.cost ?? 0));
+
+                  const count = entries.reduce((s, x) => s + x.entry.qty, 0);
+                  return (
+                    <div key={cardType} className="space-y-1.5">
+                      <div className="flex items-center justify-between border-b border-white/[0.06] pb-1 text-xs font-semibold text-slate-300">
+                        <span>{cardType}</span>
+                        <span className="font-mono tabular-nums text-slate-400">{count}</span>
+                      </div>
+                      {entries.length === 0 ? (
+                        <div className="py-1 text-[11px] text-slate-500">None added yet</div>
+                      ) : (
+                        entries.map(({ entry, card }) => {
+                          const cMeta = CARD_COLOR_META[card.color] ?? CARD_COLOR_META.Colorless;
+                          return (
+                            <div
+                              key={card.cardNo}
+                              className="flex items-center justify-between gap-2.5 rounded-md border border-white/[0.06] bg-[#0B0E14] p-1.5 text-xs"
+                            >
+                              <button
+                                type="button"
+                                onClick={() => onInspectCard(card.cardNo, card.printId)}
+                                className="flex min-w-0 flex-1 items-center gap-2.5 text-left hover:text-blue-300"
+                              >
+                                <div className="h-12 w-9 shrink-0 overflow-hidden rounded border border-white/10">
+                                  <CardArtwork card={card} className="h-full w-full" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate font-medium text-slate-100">
+                                    {card.name}
+                                  </div>
+                                  <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-400 tabular-nums">
+                                    <span
+                                      className="h-2 w-2 shrink-0 rounded-xs"
+                                      style={{ backgroundColor: cMeta.hex }}
+                                    />
+                                    <span>{card.cardNo}</span>
+                                    <span>·</span>
+                                    <span>
+                                      Lv{card.lv ?? '-'} C{card.cost ?? '-'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </button>
+                              <div className="flex items-center gap-1 shrink-0 font-mono tabular-nums">
+                                <button
+                                  type="button"
+                                  onClick={() => adjustDeckCard(card, -1)}
+                                  className="flex h-6 w-6 items-center justify-center rounded border border-white/10 text-slate-300 hover:bg-white/10"
+                                  aria-label={`Remove 1 ${card.name}`}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </button>
+                                <span className="w-6 text-center font-semibold text-white">
+                                  ×{entry.qty}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => adjustDeckCard(card, 1)}
+                                  disabled={entry.qty >= 4}
+                                  className="flex h-6 w-6 items-center justify-center rounded border border-white/10 text-slate-300 hover:bg-white/10 disabled:opacity-30"
+                                  aria-label={`Add 1 ${card.name}`}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   );
                 })}
+
+                {/* Resource Deck */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between border-b border-white/[0.06] pb-1 text-xs font-semibold text-slate-300">
+                    <span>RESOURCE DECK</span>
+                    <span className="font-mono tabular-nums text-slate-400">
+                      {analysis.validation.resourceCount} / 10
+                    </span>
+                  </div>
+                  {activeDeck.resourceDeck.length === 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const res = allCards.find((c) => c.type === 'RESOURCE');
+                        if (res) adjustDeckCard(res, 10);
+                      }}
+                      className="w-full rounded-md border border-dashed border-white/15 py-2 text-xs text-blue-300 hover:bg-white/[0.04]"
+                    >
+                      + Fill 10 Standard Resource Cards
+                    </button>
+                  ) : (
+                    activeDeck.resourceDeck.map((entry) => {
+                      const card = byPrintId.get(entry.printId) ?? byCardNo.get(entry.cardNo);
+                      if (!card) return null;
+                      return (
+                        <div
+                          key={card.cardNo}
+                          className="flex items-center justify-between gap-2.5 rounded-md border border-white/[0.06] bg-[#0B0E14] p-1.5 text-xs"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => onInspectCard(card.cardNo, card.printId)}
+                            className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+                          >
+                            <div className="h-12 w-9 shrink-0 overflow-hidden rounded border border-white/10">
+                              <CardArtwork card={card} className="h-full w-full" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="truncate font-medium text-slate-200">{card.name}</div>
+                              <div className="font-mono text-[10px] text-slate-400">
+                                {card.cardNo}
+                              </div>
+                            </div>
+                          </button>
+                          <div className="flex items-center gap-1 font-mono tabular-nums">
+                            <button
+                              type="button"
+                              onClick={() => adjustDeckCard(card, -1)}
+                              className="flex h-6 w-6 items-center justify-center rounded border border-white/10 text-slate-300 hover:bg-white/10"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="w-7 text-center font-semibold text-white">
+                              ×{entry.qty}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => adjustDeckCard(card, 1)}
+                              disabled={entry.qty >= 10}
+                              className="flex h-6 w-6 items-center justify-center rounded border border-white/10 text-slate-300 hover:bg-white/10 disabled:opacity-30"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* TAB 3: HEXAGON, STYLE, PACING & MATCHUPS */}
+      {/* TAB 2: HEXAGON & MATCHUPS */}
       {subTab === 'analysis' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            {/* Hexagon + H2H Overlay Selector */}
             <div className="lg:col-span-5 rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-display text-xl font-bold text-white">
@@ -1153,7 +1609,8 @@ export function DeckWorkspace({
                           : 'text-red-400'
                       }`}
                     >
-                      {h2hComparison.assessment.verdict} (Diff {h2hComparison.assessment.difficultyScore}/5)
+                      {h2hComparison.assessment.verdict} (Diff{' '}
+                      {h2hComparison.assessment.difficultyScore}/5)
                     </span>
                   </div>
                   <p className="text-slate-300 leading-relaxed">
@@ -1163,12 +1620,11 @@ export function DeckWorkspace({
               )}
             </div>
 
-            {/* Style, Pacing, Strengths, Weaknesses & Axis Breakdowns */}
             <div className="lg:col-span-7 space-y-5">
               <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-4">
                   <div>
-                    <div className="text-xs text-slate-400">Deck Pacing & Tactical Style</div>
+                    <div className="text-xs text-slate-400">Deck Pacing &amp; Tactical Style</div>
                     <div className="mt-1 font-display text-2xl font-bold text-white">
                       {analysis.pacing}{' '}
                       <span className="text-blue-400 font-normal">
@@ -1216,7 +1672,6 @@ export function DeckWorkspace({
                 </div>
               </div>
 
-              {/* 6-Axis Score Cards */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {analysis.breakdowns.map((ax) => (
                   <div
@@ -1236,10 +1691,7 @@ export function DeckWorkspace({
                       </span>
                     </div>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.07]">
-                      <div
-                        className="h-full bg-blue-500"
-                        style={{ width: `${ax.score}%` }}
-                      />
+                      <div className="h-full bg-blue-500" style={{ width: `${ax.score}%` }} />
                     </div>
                     <p className="mt-2 text-xs text-slate-300">{ax.summary}</p>
                     <div className="mt-1.5 text-[11px] font-mono text-slate-400">
@@ -1278,7 +1730,9 @@ export function DeckWorkspace({
             </div>
 
             <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-3">
-              <h4 className="font-display text-base font-bold text-white">Level Curve & Type Split</h4>
+              <h4 className="font-display text-base font-bold text-white">
+                Level Curve &amp; Type Split
+              </h4>
               <div className="flex h-32 items-end gap-2 pt-4">
                 {analysis.lvCurve.map((b) => {
                   const maxVal = Math.max(1, ...analysis.lvCurve.map((x) => x.count));
@@ -1349,7 +1803,6 @@ export function DeckWorkspace({
                     </span>
                   </div>
 
-                  {/* Difficulty Meter 1-5 */}
                   <div className="mt-3 flex items-center gap-1.5">
                     <span className="text-[11px] text-slate-400 mr-1">Difficulty</span>
                     {[1, 2, 3, 4, 5].map((step) => (
@@ -1382,14 +1835,14 @@ export function DeckWorkspace({
         </div>
       )}
 
-      {/* TAB 4: PLAYBOOK, STARTING HAND, MULLIGAN, CRITICAL TURNS & COMBOS */}
+      {/* TAB 3: PLAYBOOK, TURN WIN CHANCES, BEST/WORST TURN ACTIONS & MULLIGAN */}
       {subTab === 'playbook' && (
         <div className="space-y-6">
-          {/* Primary Advantage Objective + Odds */}
+          {/* Primary Objective + Odds */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-8 rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-3">
               <h3 className="font-display text-xl font-bold text-white">
-                Primary Win Objective & Largest-Advantage Engine
+                Primary Win Objective &amp; Largest-Advantage Engine
               </h3>
               <p className="text-sm leading-relaxed text-slate-100">
                 {analysis.playbook.primaryObjective}
@@ -1426,7 +1879,168 @@ export function DeckWorkspace({
             </div>
           </div>
 
-          {/* Best vs Worst Starting Hand + Mulligan Criteria */}
+          {/* Turn-by-Turn Winning Chance % Estimator (Configurable Settings) */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-400" />
+                <div>
+                  <h4 className="font-display text-lg font-bold text-white">
+                    Turn-by-Turn Winning Chance % by Setting
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Adjust Turn Order, Opponent Archetype, and Opening Hand State to inspect win-rate trajectory from Turn 1 to Turn 6+.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <select
+                  value={winTurnOrder}
+                  onChange={(e) => setWinTurnOrder(e.target.value as TurnOrderSetting)}
+                  aria-label="Turn order setting"
+                  className="rounded-lg border border-white/10 bg-[#0B0E14] px-2.5 py-1.5 text-slate-200"
+                >
+                  <option value="first">Going 1st</option>
+                  <option value="second">Going 2nd (+1 EX Res)</option>
+                </select>
+
+                <select
+                  value={winOpponentIdx}
+                  onChange={(e) => setWinOpponentIdx(Number(e.target.value))}
+                  aria-label="Opponent matchup setting"
+                  className="rounded-lg border border-white/10 bg-[#0B0E14] px-2.5 py-1.5 text-slate-200"
+                >
+                  {META_ARCHETYPES.map((arch, idx) => (
+                    <option key={arch.name} value={idx}>
+                      vs {arch.name}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={winHandQuality}
+                  onChange={(e) => setWinHandQuality(e.target.value as OpeningHandQuality)}
+                  aria-label="Opening hand quality setting"
+                  className="rounded-lg border border-white/10 bg-[#0B0E14] px-2.5 py-1.5 text-slate-200"
+                >
+                  <option value="optimal">Optimal Opener</option>
+                  <option value="average">Average Opener</option>
+                  <option value="mulliganed">Post-Mulligan</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {turnWinChances.map((pt) => {
+                const colorClass =
+                  pt.winChancePct >= 56
+                    ? 'text-emerald-400 border-emerald-500/30'
+                    : pt.winChancePct <= 44
+                    ? 'text-red-400 border-red-500/30'
+                    : 'text-amber-300 border-amber-500/30';
+                const barBg =
+                  pt.winChancePct >= 56
+                    ? 'bg-emerald-500'
+                    : pt.winChancePct <= 44
+                    ? 'bg-red-500'
+                    : 'bg-amber-400';
+
+                return (
+                  <div
+                    key={pt.turnNumber}
+                    className={`rounded-lg border bg-[#0B0E14] p-3 space-y-2 ${colorClass}`}
+                  >
+                    <div className="flex items-center justify-between font-mono text-xs">
+                      <span className="text-slate-300 font-semibold">{pt.turnLabel}</span>
+                      <span className="text-sm font-bold tabular-nums">{pt.winChancePct}%</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
+                      <div className={`h-full ${barBg}`} style={{ width: `${pt.winChancePct}%` }} />
+                    </div>
+                    <div className="space-y-0.5 text-[10px] font-mono text-slate-400 tabular-nums">
+                      <div>Curve Hit: {pt.curveHitPct}%</div>
+                      <div>Link Ready: {pt.linkReadyPct}%</div>
+                      <div>
+                        Tempo: {pt.tempoDelta >= 0 ? `+${pt.tempoDelta}` : pt.tempoDelta}
+                      </div>
+                    </div>
+                    <p className="text-[11px] leading-snug text-slate-300 font-sans">{pt.note}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Turn 1-6+ Best Action & Worst Action Insights */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-4">
+            <div>
+              <h4 className="font-display text-lg font-bold text-white">
+                Turn 1–6+ Best Action &amp; Worst Action Guide
+              </h4>
+              <p className="text-xs text-slate-400">
+                Optimal tactical sequencing and common misplays to avoid on every resource turn.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {analysis.playbook.turnInsights.map((turn) => (
+                <div
+                  key={turn.turnNumber}
+                  className="flex flex-col justify-between rounded-lg border border-white/[0.07] bg-[#0B0E14] p-4 space-y-3"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                      <span className="font-display text-sm font-bold text-white">
+                        {turn.turnLabel}
+                      </span>
+                      <span className="text-[11px] font-mono text-blue-300">
+                        {turn.levelWindow}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Best Action</span>
+                      </div>
+                      <p className="text-xs leading-relaxed text-slate-200">{turn.bestAction}</p>
+                    </div>
+
+                    <div className="space-y-1 border-t border-white/[0.05] pt-2">
+                      <div className="flex items-center gap-1 text-[11px] font-semibold text-red-400">
+                        <ShieldAlert className="h-3.5 w-3.5" />
+                        <span>Worst Action (Avoid)</span>
+                      </div>
+                      <p className="text-xs leading-relaxed text-slate-400">{turn.worstAction}</p>
+                    </div>
+                  </div>
+
+                  {turn.bestCards.length > 0 && (
+                    <div className="space-y-1 border-t border-white/[0.06] pt-2.5">
+                      <div className="text-[10px] font-mono text-slate-400">Key Turn Plays</div>
+                      <div className="flex gap-2">
+                        {turn.bestCards.map((c, idx) => (
+                          <button
+                            key={`${c.printId}-${idx}`}
+                            type="button"
+                            onClick={() => onInspectCard(c.cardNo, c.printId)}
+                            className="w-12 shrink-0 text-left"
+                            title={c.name}
+                          >
+                            <div className="aspect-[5/7] overflow-hidden rounded border border-white/10">
+                              <CardArtwork card={c} className="h-full w-full" />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Best vs Worst Starting Hand */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="rounded-xl border border-emerald-500/25 bg-[#131822] p-5 space-y-3">
               <div className="flex items-center justify-between">
@@ -1513,7 +2127,7 @@ export function DeckWorkspace({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h4 className="font-display text-lg font-bold text-white">
-                    Test Hand & Mulligan Simulator
+                    Test Hand &amp; Mulligan Simulator
                   </h4>
                   <p className="text-xs text-slate-400">
                     Draws 5 cards from your deck and grades Keep vs. Mulligan in real time.
@@ -1540,7 +2154,10 @@ export function DeckWorkspace({
                   <button
                     type="button"
                     onClick={drawNextCard}
-                    disabled={simulatedHandCards.length === 0 || simulatedHandCards.length >= deckPool50.length}
+                    disabled={
+                      simulatedHandCards.length === 0 ||
+                      simulatedHandCards.length >= deckPool50.length
+                    }
                     className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-medium text-slate-200 hover:bg-white/10 disabled:opacity-40 whitespace-nowrap"
                   >
                     +1 Draw
@@ -1604,49 +2221,11 @@ export function DeckWorkspace({
             </div>
           </div>
 
-          {/* Critical Turns Timeline */}
+          {/* Detected Combos */}
           <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-4">
-            <h4 className="font-display text-lg font-bold text-white">Critical Turns Timeline</h4>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {analysis.playbook.criticalTurns.map((turn) => (
-                <div
-                  key={turn.turnLabel}
-                  className="flex flex-col justify-between rounded-lg border border-white/[0.07] bg-[#0B0E14] p-4 space-y-3"
-                >
-                  <div>
-                    <div className="text-xs font-mono text-blue-300">{turn.levelWindow}</div>
-                    <div className="mt-0.5 text-sm font-semibold text-white">{turn.turnLabel}</div>
-                    <p className="mt-2 text-xs leading-relaxed text-slate-300">{turn.objective}</p>
-                  </div>
-                  {turn.keyCards.length > 0 && (
-                    <div className="flex gap-2 pt-2 border-t border-white/[0.06]">
-                      {turn.keyCards.map((c, idx) => (
-                        <button
-                          key={`${c.printId}-${idx}`}
-                          type="button"
-                          onClick={() => onInspectCard(c.cardNo, c.printId)}
-                          className="w-14 shrink-0 text-left"
-                          title={c.name}
-                        >
-                          <div className="aspect-[5/7] overflow-hidden rounded border border-white/10">
-                            <CardArtwork card={c} className="h-full w-full" />
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Capable Combos Detector */}
-          <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-display text-lg font-bold text-white">
-                Detected Deck Combos & Synergies ({analysis.playbook.combos.length})
-              </h4>
-            </div>
+            <h4 className="font-display text-lg font-bold text-white">
+              Detected Deck Combos &amp; Synergies ({analysis.playbook.combos.length})
+            </h4>
             {analysis.playbook.combos.length === 0 ? (
               <p className="text-xs text-slate-400">
                 Add matching Pilot + Link Units or trait-synergistic cards to surface capable combos.
@@ -1685,7 +2264,7 @@ export function DeckWorkspace({
         </div>
       )}
 
-      {/* Import Text Modal */}
+      {/* Import Modal (Strict <qty> <cardNo> OR ExBurst URL) */}
       {importOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
@@ -1696,7 +2275,9 @@ export function DeckWorkspace({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-xl font-bold text-white">Import Text Decklist</h3>
+              <h3 className="font-display text-xl font-bold text-white">
+                Import Decklist
+              </h3>
               <button
                 type="button"
                 onClick={() => setImportOpen(false)}
@@ -1705,39 +2286,110 @@ export function DeckWorkspace({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <p className="text-xs text-slate-400">
-              Paste lines in <code className="font-mono text-slate-200">4 GD01-001 Gundam</code> or{' '}
-              <code className="font-mono text-slate-200">4x ST01-001</code> format.
-            </p>
-            <textarea
-              value={importText}
-              onChange={(e) => setImportText(e.target.value)}
-              rows={9}
-              placeholder={'4 GD01-001 Gundam\n4 GD01-088 Banagher Links\n10 R-001 Resource'}
-              className="w-full rounded-lg border border-white/10 bg-[#0B0E14] p-3 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
-            />
-            {importError && <div className="text-xs text-amber-300">{importError}</div>}
-            <div className="flex justify-end gap-2">
+
+            <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-[#0B0E14] p-1">
               <button
                 type="button"
-                onClick={() => setImportOpen(false)}
-                className="rounded-lg border border-white/10 px-4 py-2 text-xs text-slate-300 hover:bg-white/10"
+                onClick={() => {
+                  setImportMode('strict');
+                  setImportError(null);
+                }}
+                className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-colors ${
+                  importMode === 'strict'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-300 hover:text-white'
+                }`}
               >
-                Cancel
+                Strict &lt;qty&gt; &lt;cardNo&gt; Text
               </button>
               <button
                 type="button"
-                onClick={handleImportSubmit}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500"
+                onClick={() => {
+                  setImportMode('exburst');
+                  setImportError(null);
+                }}
+                className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-colors ${
+                  importMode === 'exburst'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-300 hover:text-white'
+                }`}
               >
-                Import Cards
+                ExBurst Deck URL
               </button>
             </div>
+
+            {importMode === 'strict' ? (
+              <>
+                <p className="text-xs text-slate-400">
+                  Strict format only: each line must be{' '}
+                  <code className="font-mono text-slate-200">&lt;number&gt; &lt;cardNo&gt;</code>{' '}
+                  (e.g. <code className="font-mono text-slate-200">4 GD01-001</code>). No card names,{' '}
+                  <code>4x</code>, or comments.
+                </p>
+                <textarea
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  rows={9}
+                  placeholder={'4 GD01-001\n4 GD01-088\n10 R-001'}
+                  className="w-full rounded-lg border border-white/10 bg-[#0B0E14] p-3 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
+                />
+                {importError && <div className="text-xs text-amber-300">{importError}</div>}
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setImportOpen(false)}
+                    className="rounded-lg border border-white/10 px-4 py-2 text-xs text-slate-300 hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStrictImportSubmit}
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500"
+                  >
+                    Import Strict List
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-slate-400">
+                  Paste a public{' '}
+                  <code className="font-mono text-slate-200">https://exburst.dev/gundam/deck/...</code>{' '}
+                  URL to fetch and convert its decklist directly into your active deck.
+                </p>
+                <input
+                  type="url"
+                  value={exburstUrl}
+                  onChange={(e) => setExburstUrl(e.target.value)}
+                  placeholder="https://exburst.dev/gundam/deck/12345"
+                  className="w-full rounded-lg border border-white/10 bg-[#0B0E14] px-3 py-2.5 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
+                />
+                {importError && <div className="text-xs text-amber-300">{importError}</div>}
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setImportOpen(false)}
+                    className="rounded-lg border border-white/10 px-4 py-2 text-xs text-slate-300 hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExBurstImportSubmit}
+                    disabled={exburstLoading || !exburstUrl.trim()}
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-50"
+                  >
+                    {exburstLoading ? 'Importing from ExBurst...' : 'Fetch ExBurst Deck'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
 
-      {/* Export & Visual Grid Modal */}
+      {/* Export Modal (Strict Format + ExBurst Integration) */}
       {exportOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
@@ -1749,7 +2401,7 @@ export function DeckWorkspace({
           >
             <div className="flex items-center justify-between">
               <h3 className="font-display text-xl font-bold text-white">
-                Export & Visual Deck Grid — {activeDeck.name}
+                Strict Export &amp; ExBurst — {activeDeck.name}
               </h3>
               <button
                 type="button"
@@ -1766,16 +2418,48 @@ export function DeckWorkspace({
                 onClick={handleCopyText}
                 className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-medium text-white hover:bg-blue-500"
               >
-                {copiedMode === 'text' ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                <span>{copiedMode === 'text' ? 'Copied Decklist' : 'Copy Text Decklist'}</span>
+                {copiedMode === 'text' ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+                <span>
+                  {copiedMode === 'text' ? 'Copied Strict List' : 'Copy Strict <qty> <cardNo>'}
+                </span>
               </button>
+
+              <a
+                href="https://exburst.dev/gundam/deckbuilder"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  void handleCopyForExBurst();
+                }}
+                className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-3.5 py-2 text-xs font-medium text-emerald-200 hover:bg-emerald-500/25"
+              >
+                {copiedMode === 'exburst' ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <ExternalLink className="h-3.5 w-3.5" />
+                )}
+                <span>
+                  {copiedMode === 'exburst'
+                    ? 'Copied! Opening ExBurst...'
+                    : 'Copy Strict List & Open ExBurst'}
+                </span>
+              </a>
+
               <button
                 type="button"
                 onClick={handleCopyShareUrl}
                 className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-slate-200 hover:bg-white/10"
               >
-                {copiedMode === 'url' ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                <span>{copiedMode === 'url' ? 'Share URL Copied' : 'Copy Shareable Deck URL'}</span>
+                {copiedMode === 'url' ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+                <span>{copiedMode === 'url' ? 'Share URL Copied' : 'Copy Shareable URL'}</span>
               </button>
             </div>
 
@@ -1804,6 +2488,11 @@ export function DeckWorkspace({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Official Rules Modal */}
+      {rulesOpen && rules && (
+        <RulesModal rules={rules} onClose={() => setRulesOpen(false)} />
       )}
     </div>
   );

@@ -1,11 +1,25 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { CardColor, CardFaq, CatalogPayload, GundamCardPrint, GundamPackage } from '@/types/gundam';
+import type {
+  CardColor,
+  CardFaq,
+  CatalogPayload,
+  GundamCardPrint,
+  GundamPackage,
+  RulesPayload,
+} from '@/types/gundam';
+import {
+  DEFAULT_RULES_PAYLOAD,
+  ensureHydratedCatalogFromDb,
+  getDb,
+  sortCards,
+  writeCatalogToSqlite,
+  writeSplitJsonShards,
+} from '@/lib/gundam-db';
 
 const BASE_URL = 'https://www.gundam-gcg.com/asia-en/cards/';
-const DATA_DIR = path.join(process.cwd(), 'data');
-const CARDS_FILE = path.join(DATA_DIR, 'cards.json');
-const PACKAGES_FILE = path.join(DATA_DIR, 'packages.json');
+const DATA_DIR = path.resolve(process.cwd(), 'data');
+const RULES_FILE = path.resolve(DATA_DIR, 'rules.json');
 
 let memoryCache: CatalogPayload | null = null;
 
@@ -77,13 +91,17 @@ async function fetchHtml(url: string, retries = 3): Promise<string> {
   throw lastErr;
 }
 
+function printIdBase(printId: string): string {
+  return printId.split('_')[0];
+}
+
 function parseDetailHtml(printId: string, dhtml: string): GundamCardPrint {
   const extractOne = (regex: RegExp) => {
     const m = dhtml.match(regex);
     return m ? cleanHtmlText(m[1]) : '';
   };
 
-  const cardNo = extractOne(/<div class="cardNo">\s*([\s\S]*?)\s*<\/div>/) || print_id_base(printId);
+  const cardNo = extractOne(/<div class="cardNo">\s*([\s\S]*?)\s*<\/div>/) || printIdBase(printId);
   const rarity = extractOne(/<div class="rarity">\s*([\s\S]*?)\s*<\/div>/).replace(/\s+/g, '') || 'C';
   const blockIcon = extractOne(/<div class="blockIcon">\s*([\s\S]*?)\s*<\/div>/) || '1';
   const name = extractOne(/<h1 class="cardName">\s*([\s\S]*?)\s*<\/h1>/) || cardNo;
@@ -99,7 +117,8 @@ function parseDetailHtml(printId: string, dhtml: string): GundamCardPrint {
   }
 
   const fields: Record<string, string> = {};
-  const fieldRegex = /<dt class="dataTit">\s*([\s\S]*?)\s*<\/dt>\s*<dd[^>]*class="dataTxt[^"]*"[^>]*>\s*([\s\S]*?)\s*<\/dd>/g;
+  const fieldRegex =
+    /<dt class="dataTit">\s*([\s\S]*?)\s*<\/dt>\s*<dd[^>]*class="dataTxt[^"]*"[^>]*>\s*([\s\S]*?)\s*<\/dd>/g;
   for (const m of dhtml.matchAll(fieldRegex)) {
     fields[cleanHtmlText(m[1])] = cleanHtmlText(m[2]);
   }
@@ -162,47 +181,30 @@ function parseDetailHtml(printId: string, dhtml: string): GundamCardPrint {
   };
 }
 
-function print_id_base(printId: string): string {
-  return printId.split('_')[0];
-}
-
-function sortCards(cards: GundamCardPrint[]): GundamCardPrint[] {
-  return [...cards].sort((a, b) => {
-    const [baseA, suffixA = ''] = a.printId.split('_');
-    const [baseB, suffixB = ''] = b.printId.split('_');
-    const mA = baseA.match(/^([A-Z]+)(\d*)-(\d+)$/);
-    const mB = baseB.match(/^([A-Z]+)(\d*)-(\d+)$/);
-    if (mA && mB) {
-      if (mA[1] !== mB[1]) return mA[1].localeCompare(mB[1]);
-      const setA = mA[2] ? parseInt(mA[2], 10) : 0;
-      const setB = mB[2] ? parseInt(mB[2], 10) : 0;
-      if (setA !== setB) return setA - setB;
-      const numA = parseInt(mA[3], 10);
-      const numB = parseInt(mB[3], 10);
-      if (numA !== numB) return numA - numB;
-    } else if (baseA !== baseB) {
-      return baseA.localeCompare(baseB);
-    }
-    if (!suffixA && suffixB) return -1;
-    if (suffixA && !suffixB) return 1;
-    return suffixA.localeCompare(suffixB);
-  });
+async function readRulesFromFile(): Promise<RulesPayload> {
+  try {
+    const raw = await fs.readFile(RULES_FILE, 'utf-8');
+    return JSON.parse(raw) as RulesPayload;
+  } catch {
+    return DEFAULT_RULES_PAYLOAD;
+  }
 }
 
 export async function getCatalog(): Promise<CatalogPayload> {
   if (memoryCache) return memoryCache;
   try {
-    const raw = await fs.readFile(CARDS_FILE, 'utf-8');
-    const parsed = JSON.parse(raw) as CatalogPayload;
-    memoryCache = parsed;
-    return parsed;
-  } catch {
+    const payload = await ensureHydratedCatalogFromDb();
+    memoryCache = payload;
+    return payload;
+  } catch (err) {
+    console.error('Failed to hydrate catalog from SQLite:', err);
     return {
       syncedAt: new Date().toISOString(),
       source: BASE_URL,
       totalPrints: 0,
       packages: [],
       cards: [],
+      rules: DEFAULT_RULES_PAYLOAD,
     };
   }
 }
@@ -213,9 +215,8 @@ export async function syncOfficialCatalog(forceRefreshAll = false): Promise<{
   catalog: CatalogPayload;
 }> {
   const existing = await getCatalog();
-  const existingMap = new Map<string, GundamCardPrint>(
-    existing.cards.map((c) => [c.printId, c])
-  );
+  const existingMap = new Map<string, GundamCardPrint>(existing.cards.map((c) => [c.printId, c]));
+  const rules = await readRulesFromFile();
 
   const mainHtml = await fetchHtml(BASE_URL);
   const pkgRegex = /data-val="([0-9]+)"[^>]*>\s*([^<]+?)\s*</g;
@@ -239,7 +240,6 @@ export async function syncOfficialCatalog(forceRefreshAll = false): Promise<{
 
   const printToPkgs = new Map<string, { id: string; name: string; code: string }[]>();
 
-  // Fetch all package lists in small concurrent chunks
   for (let i = 0; i < packages.length; i += 4) {
     const batch = packages.slice(i, i + 4);
     await Promise.all(
@@ -274,6 +274,9 @@ export async function syncOfficialCatalog(forceRefreshAll = false): Promise<{
         try {
           const dhtml = await fetchHtml(`${BASE_URL}detail.php?detailSearch=${pid}`);
           const parsed = parseDetailHtml(pid, dhtml);
+          if (parsed.faqs.length === 0 && rules.cardFaqs[parsed.cardNo]) {
+            parsed.faqs = rules.cardFaqs[parsed.cardNo];
+          }
           if (existingMap.has(pid)) {
             updatedCount += 1;
           } else {
@@ -287,29 +290,34 @@ export async function syncOfficialCatalog(forceRefreshAll = false): Promise<{
     );
   }
 
-  // Update package memberships on all cards
   for (const [pid, pkgs] of printToPkgs.entries()) {
     const card = existingMap.get(pid);
     if (card) {
       card.packageIds = pkgs.map((p) => p.id);
       card.packageNames = pkgs.map((p) => p.name);
       card.packageCodes = pkgs.map((p) => p.code);
+      if (card.faqs.length === 0 && rules.cardFaqs[card.cardNo]) {
+        card.faqs = rules.cardFaqs[card.cardNo];
+      }
     }
   }
 
   const sorted = sortCards([...existingMap.values()]);
+  const syncedAt = new Date().toISOString();
+
+  await writeSplitJsonShards(packages, sorted, syncedAt, BASE_URL);
+  const db = getDb();
+  writeCatalogToSqlite(db, packages, sorted, syncedAt, BASE_URL, rules);
+
   const payload: CatalogPayload = {
-    syncedAt: new Date().toISOString(),
+    syncedAt,
     source: BASE_URL,
     totalPrints: sorted.length,
     packages,
     cards: sorted,
+    rules,
   };
 
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(PACKAGES_FILE, JSON.stringify(packages, null, 2), 'utf-8');
-  await fs.writeFile(CARDS_FILE, JSON.stringify(payload), 'utf-8');
   memoryCache = payload;
-
   return { addedCount, updatedCount, catalog: payload };
 }

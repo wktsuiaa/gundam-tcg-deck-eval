@@ -58,17 +58,54 @@ export interface GundamPackage {
   cardCount: number;
 }
 
+export interface RuleDocument {
+  title: string;
+  url: string;
+}
+
+export interface RuleSection {
+  id: string;
+  title: string;
+  category: string;
+  summary: string;
+  sourceUrl: string;
+}
+
+export interface DeckConstructionRules {
+  mainDeckSize: number;
+  resourceDeckSize: number;
+  maxColors: number;
+  maxCopiesPerCardNo: number;
+  allowedMainTypes: string[];
+  allowedResourceTypes: string[];
+  startingHandSize: number;
+  startingShieldCount: number;
+  turnPhases: { phase: string; summary: string }[];
+}
+
+export interface RulesPayload {
+  syncedAt: string;
+  source: string;
+  faqSource: string;
+  deckConstruction: DeckConstructionRules;
+  documents: RuleDocument[];
+  sections: RuleSection[];
+  generalFaqs: CardFaq[];
+  cardFaqs: Record<string, CardFaq[]>;
+}
+
 export interface CatalogPayload {
   syncedAt: string;
   source: string;
   totalPrints: number;
   packages: GundamPackage[];
   cards: GundamCardPrint[];
+  rules?: RulesPayload;
 }
 
 export interface DeckEntry {
   cardNo: string;
-  printId: string; // Preferred artwork printId
+  printId: string;
   qty: number;
 }
 
@@ -84,13 +121,27 @@ export type TacticalStyleTag =
   | 'Resource Ramp'
   | 'Balanced Midrange';
 
+export type EffectStyleTag =
+  | 'AP Deduction'
+  | 'Destroy'
+  | 'Damage Proof'
+  | 'Repair'
+  | 'Bounce'
+  | 'Rest Lock'
+  | 'Direct Damage'
+  | 'Draw & Search'
+  | 'Trash Recursion'
+  | 'Resource Ramp'
+  | 'Combat Keywords'
+  | 'Token Deploy';
+
 export interface HexagonAxes {
-  aggro: number;      // Aggro / Pressure (0-100)
-  defense: number;    // Defense / Durability (0-100)
-  tempo: number;      // Tempo / Resource (0-100)
-  liquidity: number;  // Card Liquidity (0-100)
-  synergy: number;    // Synergy / Link (0-100)
-  control: number;    // Control / Disruption (0-100)
+  aggro: number;
+  defense: number;
+  tempo: number;
+  liquidity: number;
+  synergy: number;
+  control: number;
 }
 
 export interface AxisBreakdown {
@@ -101,6 +152,25 @@ export interface AxisBreakdown {
   drivers: string[];
 }
 
+export interface DeckGenerationConstraints {
+  allowedPackageCodes: string[]; // empty = All Sets
+  maxCopiesPerCard: 1 | 2 | 3 | 4;
+  maxCost: number | null;
+  maxLv: number | null;
+  rarityCap: 'ALL' | 'NO_LR' | 'C_U_R_ONLY';
+  strictTraitLinkLock: boolean;
+}
+
+export interface StrategyBlueprint {
+  colors: CardColor[]; // empty = Auto Best 2
+  pacing: PacingTier;
+  styles: TacticalStyleTag[];
+  effectStyles: EffectStyleTag[];
+  traitFocus: string;
+  targetHexagon: HexagonAxes;
+  constraints: DeckGenerationConstraints;
+}
+
 export interface SavedDeck {
   id: string;
   name: string;
@@ -109,14 +179,6 @@ export interface SavedDeck {
   resourceDeck: DeckEntry[];
   strategyBlueprint?: StrategyBlueprint;
   notes?: string;
-}
-
-export interface StrategyBlueprint {
-  colors: CardColor[];
-  pacing: PacingTier;
-  primaryStyle: TacticalStyleTag;
-  traitFocus: string;
-  targetHexagon: HexagonAxes;
 }
 
 export interface DeckValidationResult {
@@ -133,7 +195,7 @@ export interface MatchupAssessment {
   opponentColors: CardColor[];
   opponentPacing: PacingTier;
   opponentHexagon: HexagonAxes;
-  difficultyScore: number; // 1 (Very Favored) to 5 (Hard Counter)
+  difficultyScore: number;
   verdict: 'Favored' | 'Slightly Favored' | 'Even' | 'Challenging' | 'Hard Matchup';
   advantages: string[];
   risks: string[];
@@ -146,11 +208,27 @@ export interface StartingHandScenario {
   explanation: string;
 }
 
-export interface CriticalTurnPoint {
+export interface TurnActionInsight {
+  turnNumber: number;
   turnLabel: string;
   levelWindow: string;
-  objective: string;
-  keyCards: GundamCardPrint[];
+  bestAction: string;
+  worstAction: string;
+  bestCards: GundamCardPrint[];
+  worstCards: GundamCardPrint[];
+}
+
+export type TurnOrderSetting = 'first' | 'second';
+export type OpeningHandQuality = 'optimal' | 'average' | 'mulliganed';
+
+export interface TurnWinChancePoint {
+  turnNumber: number;
+  turnLabel: string;
+  winChancePct: number;
+  curveHitPct: number;
+  linkReadyPct: number;
+  tempoDelta: number;
+  note: string;
 }
 
 export interface DetectedCombo {
@@ -174,7 +252,7 @@ export interface DeckPlaybook {
     keepRules: string[];
     redrawRules: string[];
   };
-  criticalTurns: CriticalTurnPoint[];
+  turnInsights: TurnActionInsight[];
   combos: DetectedCombo[];
 }
 
@@ -182,6 +260,16 @@ export interface HandVerdict {
   status: 'Keep' | 'Borderline' | 'Mulligan';
   score: number;
   reasons: string[];
+}
+
+export interface DeckRecommendation {
+  card: GundamCardPrint;
+  fitScore: number;
+  coherenceScore: number;
+  primaryAxis: keyof HexagonAxes;
+  primaryAxisLabel: string;
+  matchedEffectStyles: EffectStyleTag[];
+  reason: string;
 }
 
 export interface DeckAnalysis {
@@ -203,4 +291,62 @@ export interface DeckAnalysis {
   playbook: DeckPlaybook;
 }
 
-export type CollectionMap = Record<string, number>; // printId -> owned count
+export type SandboxPhase = 'START' | 'MAIN' | 'END';
+export type SandboxSide = 'A' | 'B';
+
+export interface SandboxUnitInstance {
+  instanceId: string;
+  card: GundamCardPrint;
+  pairedPilot: GundamCardPrint | null;
+  isLinked: boolean;
+  rested: boolean;
+  damage: number;
+  apBuff: number;
+  summonedTurn: number;
+}
+
+export interface SandboxPlayerState {
+  side: SandboxSide;
+  deckName: string;
+  colors: CardColor[];
+  library: GundamCardPrint[];
+  hand: GundamCardPrint[];
+  shields: number;
+  resourcesTotal: number;
+  resourcesActive: number;
+  base: GundamCardPrint | null;
+  baseDamage: number;
+  battleArea: SandboxUnitInstance[];
+  trash: GundamCardPrint[];
+}
+
+export interface SandboxActionLogEntry {
+  id: string;
+  turn: number;
+  side: SandboxSide;
+  summary: string;
+}
+
+export interface SandboxMoveSuggestion {
+  id: string;
+  rank: 1 | 2 | 3;
+  actionType: 'DEPLOY_UNIT' | 'PAIR_PILOT' | 'PLAY_COMMAND' | 'DEPLOY_BASE' | 'ATTACK_SHIELD' | 'ATTACK_UNIT' | 'PASS_TURN';
+  title: string;
+  reason: string;
+  winDeltaPct: number;
+  priorityScore: number;
+  card?: GundamCardPrint;
+  unitInstanceId?: string;
+  targetInstanceId?: string;
+}
+
+export interface SandboxMatchState {
+  turn: number;
+  activeSide: SandboxSide;
+  firstSide: SandboxSide;
+  phase: SandboxPhase;
+  winner: SandboxSide | null;
+  lastOpponentAction: string;
+  players: Record<SandboxSide, SandboxPlayerState>;
+  log: SandboxActionLogEntry[];
+}

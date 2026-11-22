@@ -5,34 +5,31 @@ import Link from 'next/link';
 import { RefreshCw, CheckCircle2, X } from 'lucide-react';
 import type {
   CatalogPayload,
-  CollectionMap,
   GundamCardGroup,
   GundamCardPrint,
   SavedDeck,
 } from '@/types/gundam';
 import { groupPrintsByCardNo } from '@/lib/gundam-keywords';
 import {
-  buildStarterDeckFromCatalog,
+  createBlankCustomDeck,
   decodeDeckShareParam,
   resolveCardMap,
 } from '@/lib/deck-engine';
 import { CatalogWorkspace } from '@/components/CatalogWorkspace';
 import { DeckWorkspace } from '@/components/DeckWorkspace';
-import { CollectionWorkspace } from '@/components/CollectionWorkspace';
+import { MatchSandbox } from '@/components/MatchSandbox';
 import { CardDetailDrawer } from '@/components/CardDetailDrawer';
 
 interface GundamAtlasAppProps {
   initialCatalog: CatalogPayload;
 }
 
-const LS_COLLECTION_KEY = 'gundam_atlas_collection_v1';
 const LS_DECKS_KEY = 'gundam_atlas_decks_v1';
 const LS_ACTIVE_DECK_KEY = 'gundam_atlas_active_deck_v1';
 
 export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
   const [catalog, setCatalog] = useState<CatalogPayload>(initialCatalog);
-  const [activeTab, setActiveTab] = useState<'catalog' | 'deck' | 'collection'>('catalog');
-  const [collection, setCollection] = useState<CollectionMap>({});
+  const [activeTab, setActiveTab] = useState<'catalog' | 'deck' | 'sandbox'>('catalog');
   const [decks, setDecks] = useState<SavedDeck[]>([]);
   const [activeDeckId, setActiveDeckId] = useState<string>('');
   const [hydrated, setHydrated] = useState(false);
@@ -53,20 +50,17 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
     return map;
   }, [catalog.cards]);
 
-  // Hydrate localStorage + check ?deck= share parameter
+  // Hydrate localStorage (start from blank Custom Deck instead of ST01) + check ?deck= share parameter
   useEffect(() => {
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
       try {
-        const rawCol = localStorage.getItem(LS_COLLECTION_KEY);
-        if (rawCol) setCollection(JSON.parse(rawCol));
-
         const rawDecks = localStorage.getItem(LS_DECKS_KEY);
         let loadedDecks: SavedDeck[] = rawDecks ? JSON.parse(rawDecks) : [];
 
-        if (loadedDecks.length === 0 && catalog.cards.length > 0) {
-          loadedDecks = [buildStarterDeckFromCatalog('ST01', catalog.cards)];
+        if (loadedDecks.length === 0) {
+          loadedDecks = [createBlankCustomDeck(1)];
         }
 
         const params = new URLSearchParams(window.location.search);
@@ -95,16 +89,7 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
     };
   }, [catalog.cards, byCardNo]);
 
-  // Persist changes
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(LS_COLLECTION_KEY, JSON.stringify(collection));
-    } catch {
-      // ignore
-    }
-  }, [collection, hydrated]);
-
+  // Persist decks
   useEffect(() => {
     if (!hydrated) return;
     try {
@@ -114,19 +99,6 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
       // ignore
     }
   }, [decks, activeDeckId, hydrated]);
-
-  const handleUpdateCollection = (printId: string, delta: number) => {
-    setCollection((prev) => {
-      const nextVal = Math.max(0, (prev[printId] ?? 0) + delta);
-      const next = { ...prev };
-      if (nextVal === 0) {
-        delete next[printId];
-      } else {
-        next[printId] = nextVal;
-      }
-      return next;
-    });
-  };
 
   const activeDeck = decks.find((d) => d.id === activeDeckId) ?? decks[0];
 
@@ -175,14 +147,6 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
     });
   };
 
-  const handleImportBackup = (data: { collection?: CollectionMap; decks?: SavedDeck[] }) => {
-    if (data.collection) setCollection(data.collection);
-    if (data.decks && data.decks.length > 0) {
-      setDecks(data.decks);
-      setActiveDeckId(data.decks[0].id);
-    }
-  };
-
   const handleSyncOfficial = async () => {
     if (syncing) return;
     setSyncing(true);
@@ -202,7 +166,7 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
         `Sync complete: ${data.totalPrints} official prints indexed (${data.addedCount} new, ${data.updatedCount} updated).`
       );
     } catch {
-      setSyncNotice('Unable to reach gundam-gcg.com right now; using local catalog.');
+      setSyncNotice('Unable to reach gundam-gcg.com right now; using local SQLite & JSON shards.');
     } finally {
       setSyncing(false);
     }
@@ -223,12 +187,12 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
             Gundam Card Atlas
           </Link>
 
-          {/* Zone 2: Clean single-line text nav links */}
+          {/* Zone 2: 3 Top-Level Workspaces */}
           <nav className="flex items-center gap-7 text-sm font-medium">
             {[
               { id: 'catalog', label: 'Catalog' },
               { id: 'deck', label: 'Deck Builder' },
-              { id: 'collection', label: 'Collection' },
+              { id: 'sandbox', label: 'Match Sandbox' },
             ].map((item) => {
               const active = activeTab === item.id;
               return (
@@ -266,7 +230,6 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
 
       {/* Main Content */}
       <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6">
-        {/* Quiet context strip */}
         <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2 border-b border-white/[0.06] pb-4">
           <div>
             <h1 className="font-display text-2xl font-bold tracking-wide text-white sm:text-3xl">
@@ -274,7 +237,7 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
                 ? 'Official English Card Catalog'
                 : activeTab === 'deck'
                 ? 'Strategy Deck Builder & Tactical Analyzer'
-                : 'Personal Collection Tracker'}
+                : '2-Deck Match Sandbox & Best-Move Advisor'}
             </h1>
             <p className="mt-0.5 text-xs text-slate-400 font-mono tabular-nums">
               {catalog.totalPrints} official prints · {catalog.packages.length} Asia-English products · Updated{' '}
@@ -301,8 +264,6 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
           <CatalogWorkspace
             cards={catalog.cards}
             packages={catalog.packages}
-            collection={collection}
-            onUpdateCollection={handleUpdateCollection}
             onInspectCard={(cardNo, printId) => setInspected({ cardNo, printId })}
             onAddToDeck={activeDeck ? handleAddToActiveDeck : undefined}
             activeDeckName={activeDeck?.name}
@@ -312,6 +273,8 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
         {activeTab === 'deck' && (
           <DeckWorkspace
             allCards={catalog.cards}
+            packages={catalog.packages}
+            rules={catalog.rules}
             decks={decks}
             activeDeckId={activeDeck?.id ?? ''}
             onSelectDeck={setActiveDeckId}
@@ -322,14 +285,10 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
           />
         )}
 
-        {activeTab === 'collection' && (
-          <CollectionWorkspace
-            cards={catalog.cards}
-            packages={catalog.packages}
-            collection={collection}
-            decks={decks}
-            onUpdateCollection={handleUpdateCollection}
-            onImportBackup={handleImportBackup}
+        {activeTab === 'sandbox' && (
+          <MatchSandbox
+            allCards={catalog.cards}
+            savedDecks={decks}
             onInspectCard={(cardNo, printId) => setInspected({ cardNo, printId })}
           />
         )}
@@ -342,8 +301,6 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
           group={inspectedGroup}
           initialPrintId={inspected?.printId}
           allCards={catalog.cards}
-          collection={collection}
-          onUpdateCollection={handleUpdateCollection}
           onAddToDeck={activeDeck ? handleAddToActiveDeck : undefined}
           activeDeckName={activeDeck?.name}
           onSelectCardNo={(cardNo) => setInspected({ cardNo })}

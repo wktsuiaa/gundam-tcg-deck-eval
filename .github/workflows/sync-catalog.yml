@@ -1,0 +1,59 @@
+name: Sync Gundam Card Game Rules, Collections & Cards
+
+on:
+  schedule:
+    # Weekly automated sync every Monday at 03:00 UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-and-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: a. Update Play Rules & Card FAQs
+        run: python3 scripts/sync_rules.py
+
+      - name: b & c. Update Collections & Cards per Collection
+        run: python3 scripts/sync_catalog.py
+
+      - name: Re-attach synced FAQs to updated collection shards
+        run: python3 scripts/sync_rules.py
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Run lint & production build
+        run: npm run lint && npm run build
+
+      - name: Commit updated data files if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/packages.json data/rules.json data/collections/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(data): sync official rules, collections, and cards [skip ci]"
+            git push
+          else
+            echo "No catalog or rules changes detected."
+          fi

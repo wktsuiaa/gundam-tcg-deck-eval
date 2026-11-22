@@ -1,20 +1,27 @@
 import type {
   AxisBreakdown,
   CardColor,
-  CriticalTurnPoint,
   DeckAnalysis,
   DeckEntry,
+  DeckGenerationConstraints,
   DeckPlaybook,
+  DeckRecommendation,
   DeckValidationResult,
   DetectedCombo,
+  EffectStyleTag,
   GundamCardPrint,
   HandVerdict,
   HexagonAxes,
   MatchupAssessment,
+  OpeningHandQuality,
   PacingTier,
   SavedDeck,
+  StartingHandScenario,
   StrategyBlueprint,
   TacticalStyleTag,
+  TurnActionInsight,
+  TurnOrderSetting,
+  TurnWinChancePoint,
 } from '@/types/gundam';
 import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
 
@@ -23,6 +30,163 @@ const MAIN_DECK_TYPES = new Set(['UNIT', 'PILOT', 'COMMAND', 'BASE']);
 function clamp(v: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, Math.round(v)));
 }
+
+export interface StrategyStyleMeta {
+  tag: TacticalStyleTag;
+  description: string;
+  targetBias: Partial<HexagonAxes>;
+}
+
+export const TACTICAL_STYLE_META: StrategyStyleMeta[] = [
+  {
+    tag: 'Link-Strike',
+    description: 'Maximizes Pilot–Unit Link pairs for immediate 【When Linked】 triggers and combined AP/HP spikes.',
+    targetBias: { synergy: 88, aggro: 70, tempo: 68 },
+  },
+  {
+    tag: 'High-Liquidity Draw',
+    description: 'Stacks draw, top-deck look, and search effects so your hand stays full past Turn 5.',
+    targetBias: { liquidity: 88, tempo: 68, control: 60 },
+  },
+  {
+    tag: 'Repair Fortress',
+    description: 'Anchors the board with <Blocker>, <Repair>, and high-HP Bases to win long attrition wars.',
+    targetBias: { defense: 90, synergy: 62, control: 65 },
+  },
+  {
+    tag: 'Shield Breach',
+    description: 'Prioritizes low-cost attackers, <Breach>, and <First Strike> to burn Shields early.',
+    targetBias: { aggro: 90, tempo: 82 },
+  },
+  {
+    tag: 'Wide Swarm',
+    description: 'Floods Cost 1–2 Units and Token generators to overwhelm single-target removal.',
+    targetBias: { aggro: 82, tempo: 85, synergy: 65 },
+  },
+  {
+    tag: 'Command Control',
+    description: 'Focuses on Rest, Direct Damage, AP Deduction, Bounce, and Destroy Commands.',
+    targetBias: { control: 90, defense: 70, liquidity: 65 },
+  },
+  {
+    tag: 'Resource Ramp',
+    description: 'Accelerates Resources and EX Resources to deploy Lv.5–7 boss Units ahead of curve.',
+    targetBias: { tempo: 88, defense: 62, aggro: 66 },
+  },
+  {
+    tag: 'Balanced Midrange',
+    description: 'Blends curve efficiency, solid Unit bodies, Link threats, and flexible removal.',
+    targetBias: { aggro: 65, defense: 65, tempo: 70, liquidity: 60, synergy: 70, control: 60 },
+  },
+];
+
+export interface EffectStyleMeta {
+  tag: EffectStyleTag;
+  label: string;
+  description: string;
+  primaryAxis: keyof HexagonAxes;
+}
+
+export const EFFECT_STYLE_META: EffectStyleMeta[] = [
+  {
+    tag: 'AP Deduction',
+    label: 'AP Deduction',
+    description: 'Reduces opposing Unit AP (AP-X) to win combat trades and neutralize attackers.',
+    primaryAxis: 'control',
+  },
+  {
+    tag: 'Destroy',
+    label: 'Destroy / Hard Removal',
+    description: 'Directly destroys enemy Units or Shields to clear high-HP threats.',
+    primaryAxis: 'control',
+  },
+  {
+    tag: 'Damage Proof',
+    label: 'Damage Proof / Reduction',
+    description: 'Reduces incoming battle/effect damage or shields Units from destruction and targeting.',
+    primaryAxis: 'defense',
+  },
+  {
+    tag: 'Repair',
+    label: 'Repair / Recovery',
+    description: 'Heals Unit/Base HP at end of turn (<Repair X>) or recovers Shield durability.',
+    primaryAxis: 'defense',
+  },
+  {
+    tag: 'Bounce',
+    label: 'Back to Hand (Bounce)',
+    description: 'Returns opposing Units or Bases to hand to reset paired Pilots and stall tempo.',
+    primaryAxis: 'control',
+  },
+  {
+    tag: 'Rest Lock',
+    label: 'Rest / Freeze Lock',
+    description: 'Rests enemy Units or keeps them from setting active during Start Phase.',
+    primaryAxis: 'control',
+  },
+  {
+    tag: 'Direct Damage',
+    label: 'Direct Effect Damage',
+    description: 'Deals ping or burst damage directly to enemy Units or Shields outside combat.',
+    primaryAxis: 'aggro',
+  },
+  {
+    tag: 'Draw & Search',
+    label: 'Draw & Deck Filter',
+    description: 'Draws extra cards or reveals/searches top cards to stabilize curve and Link pieces.',
+    primaryAxis: 'liquidity',
+  },
+  {
+    tag: 'Trash Recursion',
+    label: 'Trash Recursion',
+    description: 'Recovers Units, Pilots, or Commands from the Trash back to hand or play.',
+    primaryAxis: 'liquidity',
+  },
+  {
+    tag: 'Resource Ramp',
+    label: 'Resource Ramp / Cost Cheat',
+    description: 'Adds active/EX Resources or reduces card play costs to accelerate Lv.5+ threats.',
+    primaryAxis: 'tempo',
+  },
+  {
+    tag: 'Combat Keywords',
+    label: 'Combat Keywords',
+    description: 'Packs <Blocker>, <Breach>, <First Strike>, <High-Maneuver>, <Support>, or <Suppression>.',
+    primaryAxis: 'aggro',
+  },
+  {
+    tag: 'Token Deploy',
+    label: 'Token & Extra Deploy',
+    description: 'Deploys Unit tokens or extra bodies onto the Battle Area for wider boards.',
+    primaryAxis: 'tempo',
+  },
+];
+
+export const DEFAULT_CONSTRAINTS: DeckGenerationConstraints = {
+  allowedPackageCodes: [],
+  maxCopiesPerCard: 4,
+  maxCost: null,
+  maxLv: null,
+  rarityCap: 'ALL',
+  strictTraitLinkLock: false,
+};
+
+export const DEFAULT_BLUEPRINT: StrategyBlueprint = {
+  colors: ['Blue', 'White'],
+  pacing: 'Midrange Tempo',
+  styles: ['Link-Strike'],
+  effectStyles: [],
+  traitFocus: '',
+  targetHexagon: {
+    aggro: 65,
+    defense: 60,
+    tempo: 70,
+    liquidity: 65,
+    synergy: 85,
+    control: 55,
+  },
+  constraints: DEFAULT_CONSTRAINTS,
+};
 
 /** Hypergeometric probability of drawing >= minSuccesses in drawCount draws */
 export function hypergeometricAtLeast(
@@ -38,7 +202,7 @@ export function hypergeometricAtLeast(
   const comb = (n: number, k: number): number => {
     if (k < 0 || k > n) return 0;
     if (k === 0 || k === n) return 1;
-    let kk = Math.min(k, n - k);
+    const kk = Math.min(k, n - k);
     let res = 1;
     for (let i = 1; i <= kk; i++) {
       res = (res * (n - kk + i)) / i;
@@ -164,6 +328,34 @@ export function validateDeck(
   };
 }
 
+export function detectEffectStyles(card: GundamCardPrint): EffectStyleTag[] {
+  const eff = card.effect || '';
+  const tags: EffectStyleTag[] = [];
+
+  if (/ap-|ap\s*-\d|gets\s*-\d+\s*ap|ap is reduced/i.test(eff)) tags.push('AP Deduction');
+  if (/\bdestroy\b/i.test(eff)) tags.push('Destroy');
+  if (
+    /reduce.*damage|cannot be damaged|take no damage|cannot be destroyed|cannot be chosen/i.test(eff)
+  ) {
+    tags.push('Damage Proof');
+  }
+  if (/<repair|recover\s+\d+\s+hp/i.test(eff)) tags.push('Repair');
+  if (/return.*to.*hand/i.test(eff)) tags.push('Bounce');
+  if (/\brest\b|won't be set as active/i.test(eff)) tags.push('Rest Lock');
+  if (/\bdeal \d+ damage/i.test(eff)) tags.push('Direct Damage');
+  if (/\bdraw\s+\d+|look at the top|reveal|search|add this card to your hand/i.test(eff)) {
+    tags.push('Draw & Search');
+  }
+  if (/from your trash/i.test(eff)) tags.push('Trash Recursion');
+  if (/resource area|ex resource|reduce the cost|cost -/i.test(eff)) tags.push('Resource Ramp');
+  if (/<blocker|<breach|<first strike|<high-maneuver|<support|<suppression/i.test(eff)) {
+    tags.push('Combat Keywords');
+  }
+  if (/\btoken\b|deploy 1/i.test(eff)) tags.push('Token Deploy');
+
+  return tags;
+}
+
 export interface CardSignalScores {
   aggro: number;
   defense: number;
@@ -182,6 +374,7 @@ export interface CardSignalScores {
   hasFirstStrike: boolean;
   hasSupport: boolean;
   hasPairTrigger: boolean;
+  effectStyles: EffectStyleTag[];
 }
 
 export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores {
@@ -190,6 +383,7 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   const lv = card.lv ?? 2;
   const ap = card.ap ?? 0;
   const hp = card.hp ?? 0;
+  const effectStyles = detectEffectStyles(card);
 
   const hasDraw =
     /\bdraw\s+\d+/i.test(eff) ||
@@ -205,11 +399,11 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
     eff.includes('ex resource') ||
     eff.includes('reduce the cost') ||
     eff.includes('cost -');
-  const hasRest = eff.includes('rest it') || eff.includes('rest them') || eff.includes('rest 1');
+  const hasRest = eff.includes('rest it') || eff.includes('rest them') || eff.includes('rest 1') || eff.includes('rest ');
   const hasRemoval =
     eff.includes('deal ') ||
     eff.includes('destroy') ||
-    eff.includes('return it to') ||
+    eff.includes('return') ||
     eff.includes('ap-') ||
     eff.includes('hp-');
   const hasRepair = eff.includes('<repair');
@@ -259,13 +453,14 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (card.type === 'PILOT' && hp >= 2) defense += 22;
   if (hasBlocker) defense += 34;
   if (hasRepair) defense += 32;
-  if (eff.includes('shield') || eff.includes('recover')) defense += 16;
+  if (effectStyles.includes('Damage Proof')) defense += 28;
+  if (eff.includes('shield') || eff.includes('recover')) defense += 14;
 
   // Tempo / Resource
   if (lv <= 3 && cost <= 2) tempo += 34;
   else if (lv <= 4 && cost <= 3) tempo += 20;
   if (hasRamp) tempo += 42;
-  if (eff.includes('deploy 1') || eff.includes('play 1')) tempo += 25;
+  if (eff.includes('deploy 1') || eff.includes('play 1') || eff.includes('token')) tempo += 25;
   if (eff.includes('set 1 of your') && eff.includes('active')) tempo += 24;
 
   // Card Liquidity
@@ -279,14 +474,17 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (card.type === 'PILOT') synergy += 32;
   if (hasPairTrigger) synergy += 28;
   if (hasSupport) synergy += 24;
-  if (card.traits.length > 0 && /\([a-z0-9 ]+\)\s*unit/i.test(card.effect)) synergy += 22;
+  if (card.traits.length > 0 && /\([a-z0-9 '&-]+\)\s*unit/i.test(card.effect)) synergy += 22;
 
   // Control / Disruption
-  if (card.type === 'COMMAND') control += 30;
-  if (hasRest) control += 30;
-  if (hasRemoval) control += 34;
-  if (eff.includes('【burst】') && (hasRest || hasRemoval)) control += 16;
-  if (eff.includes('cannot attack') || eff.includes('choose 1 enemy')) control += 18;
+  if (card.type === 'COMMAND') control += 26;
+  if (hasRest) control += 26;
+  if (hasRemoval) control += 32;
+  if (effectStyles.includes('AP Deduction')) control += 18;
+  if (effectStyles.includes('Destroy')) control += 20;
+  if (effectStyles.includes('Bounce')) control += 20;
+  if (eff.includes('【burst】') && (hasRest || hasRemoval)) control += 14;
+  if (eff.includes('cannot attack') || eff.includes('choose 1 enemy')) control += 16;
 
   return {
     aggro: clamp(aggro),
@@ -306,6 +504,7 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
     hasFirstStrike,
     hasSupport,
     hasPairTrigger,
+    effectStyles,
   };
 }
 
@@ -398,7 +597,6 @@ export function computeHexagonAndBreakdowns(
     }
   }
 
-  // Link coverage: % of Link-capable Units that have at least one matching Pilot in the deck
   let linkUnitsQty = 0;
   let linkedUnitsQty = 0;
   for (const { card: u, qty } of units) {
@@ -414,7 +612,6 @@ export function computeHexagonAndBreakdowns(
   const avgCost = costWeight > 0 ? Number((costSum / costWeight).toFixed(2)) : 0;
   const avgLv = costWeight > 0 ? Number((lvSum / costWeight).toFixed(2)) : 0;
 
-  // Normalize each axis to 0-100 calibrated around 50-card tournament decks
   const norm = totalQty;
   const aggro = clamp(
     (aggroSum / norm) * 1.45 + (earlyDropCount / norm) * 35 + ((breachCount + firstStrikeCount) / norm) * 40
@@ -432,14 +629,12 @@ export function computeHexagonAndBreakdowns(
     (liquidityCount / norm) * 160 + (searchCount / norm) * 120 + (supportCount / norm) * 20
   );
   const synergy = clamp(
-    (linkCoveragePct * 0.45) +
+    linkCoveragePct * 0.45 +
       (pilots.reduce((s, p) => s + p.qty, 0) / norm) * 90 +
       (topTraitCount / norm) * 48 +
       (supportCount / norm) * 40
   );
-  const control = clamp(
-    (disruptionCount / norm) * 155 + (commandCount / norm) * 70
-  );
+  const control = clamp((disruptionCount / norm) * 155 + (commandCount / norm) * 70);
 
   const hexagon: HexagonAxes = { aggro, defense, tempo, liquidity, synergy, control };
 
@@ -510,7 +705,7 @@ export function computeHexagonAndBreakdowns(
       score: synergy,
       summary:
         synergy >= 70
-          ? 'Tightly woven Pilot–Unit Link network and faction cohesion.'
+          ? 'Tightly woven Pilot–Unit Link network and Trait cohesion.'
           : synergy >= 45
           ? 'Solid core pairings with room for tighter trait alignment.'
           : 'Low Link alignment; cards operate mostly individually.',
@@ -644,27 +839,21 @@ export function evaluateMatchupBetween(
   oppPacing: PacingTier,
   oppHex: HexagonAxes
 ): MatchupAssessment {
-  // Rock-paper-scissors & axis edge model
   let edge = 0;
 
-  // Offense vs Defense checks
   edge += (myHex.aggro - oppHex.defense) * 0.22;
   edge += (myHex.defense - oppHex.aggro) * 0.22;
-  // Resource & Liquidity battle
   edge += (myHex.liquidity - oppHex.liquidity) * 0.25;
   edge += (myHex.tempo - oppHex.tempo) * 0.16;
-  // Synergy vs Disruption battle
   edge += (myHex.synergy - oppHex.control) * 0.18;
   edge += (myHex.control - oppHex.synergy) * 0.18;
 
-  // Pacing interaction adjustments
   if (myPacing === 'Early Rush' && oppPacing === 'Ramp / Combo') edge += 10;
   if (myPacing === 'Late-Game Control' && oppPacing === 'Early Rush') {
     edge += myHex.defense >= 65 ? 8 : -10;
   }
   if (myPacing === 'Ramp / Combo' && oppPacing === 'Late-Game Control') edge += 6;
 
-  // Convert edge (-40..+40) into difficulty 1..5 (5 = hardest matchup for player)
   let difficultyScore = 3;
   let verdict: MatchupAssessment['verdict'] = 'Even';
   if (edge >= 14) {
@@ -734,6 +923,212 @@ export function evaluateMatchupBetween(
   };
 }
 
+export function generateTurnActionInsights(
+  mainExpanded: { card: GundamCardPrint; qty: number }[],
+  pacing: PacingTier,
+  linkCombos: DetectedCombo[]
+): TurnActionInsight[] {
+  const all = mainExpanded.map((x) => x.card);
+  const units = mainExpanded.filter((x) => x.card.type === 'UNIT').map((x) => x.card);
+  const pilots = mainExpanded.filter((x) => x.card.type === 'PILOT').map((x) => x.card);
+  const commands = mainExpanded.filter((x) => x.card.type === 'COMMAND').map((x) => x.card);
+  const bases = mainExpanded.filter((x) => x.card.type === 'BASE').map((x) => x.card);
+
+  const byTurnWindow = (maxLv: number, minLv = 1) =>
+    all.filter((c) => (c.lv ?? 1) >= minLv && (c.lv ?? 1) <= maxLv && (c.cost ?? 1) <= maxLv);
+
+  const t1Drops = byTurnWindow(1, 1);
+  const t2Drops = byTurnWindow(2, 1);
+  const t3Drops = byTurnWindow(3, 2);
+  const t4Drops = byTurnWindow(4, 3);
+  const t5Drops = byTurnWindow(5, 4);
+  const t6Drops = all.filter((c) => (c.lv ?? 0) >= 6 || (c.cost ?? 0) >= 5);
+
+  const heavyBricks = [...t6Drops, ...t5Drops].slice(0, 3);
+  const linkUnit = linkCombos[0]?.cards[0];
+  const linkPilot = linkCombos[0]?.cards[1];
+  const rampCard = all.find((c) => scoreSingleCardSignals(c).hasRamp);
+  const blockerCard = units.find((c) => scoreSingleCardSignals(c).hasBlocker);
+  const drawCard = all.find((c) => scoreSingleCardSignals(c).hasDraw || scoreSingleCardSignals(c).hasSearch);
+  const controlCmd = commands.find((c) => {
+    const s = scoreSingleCardSignals(c);
+    return s.hasRemoval || s.hasRest;
+  });
+
+  return [
+    {
+      turnNumber: 1,
+      turnLabel: 'Turn 1',
+      levelWindow: 'Lv. 1 · 1 Resource (2 on 2nd)',
+      bestAction:
+        t1Drops.length > 0
+          ? `Deploy ${t1Drops[0].name} (or hold 1 Resource if Going 2nd for a Turn 2 Lv.2+ play) to apply immediate board presence.`
+          : 'Place your Resource cleanly and pass without wasting reactive Commands; set up Turn 2 development.',
+      worstAction:
+        'Keeping an opener packed with Lv.5–6 finishers or multiple unpaired Pilots and missing Turn 1–2 plays completely.',
+      bestCards: t1Drops.slice(0, 3),
+      worstCards: heavyBricks.length > 0 ? heavyBricks : pilots.slice(0, 2),
+    },
+    {
+      turnNumber: 2,
+      turnLabel: 'Turn 2',
+      levelWindow: 'Lv. 2 · 2 Resources',
+      bestAction:
+        rampCard && (rampCard.cost ?? 9) <= 3
+          ? `Sequence early board presence (${t2Drops[0]?.name ?? 'Cost ≤2 Unit'}) or prepare ${rampCard.name} to accelerate past opponent curve.`
+          : drawCard && (drawCard.cost ?? 9) <= 2
+          ? `Stick ${t2Drops.find((c) => c.type === 'UNIT')?.name ?? 'an early Unit'} or cycle with ${drawCard.name} to hit Turn 3 Link pieces.`
+          : `Develop a Cost ≤2 Unit (${t2Drops[0]?.name ?? 'early attacker'}) and chip an undefended Shield if safe.`,
+      worstAction:
+        'Over-trading a value <Blocker> or <Support> Unit into a low-impact trade, or leaving Resources unspent with playable Units in hand.',
+      bestCards: t2Drops.slice(0, 3),
+      worstCards: (commands.length > 0 ? commands : heavyBricks).slice(0, 3),
+    },
+    {
+      turnNumber: 3,
+      turnLabel: 'Turn 3',
+      levelWindow: 'Lv. 3 · 3 Resources',
+      bestAction:
+        bases[0] && (bases[0].cost ?? 9) <= 3
+          ? `Deploy ${bases[0].name} to absorb incoming Shield pressure, or land a Lv.3 tempo Unit (${t3Drops[0]?.name ?? 'mid-curve Unit'}).`
+          : `Transition into mid-curve Units (${t3Drops[0]?.name ?? 'Lv.3 Unit'}) while keeping 1 Resource open if holding an Action Command.`,
+      worstAction:
+        'Dropping a Pilot onto a fragile Unit that gets destroyed before attacking, wasting a 2-for-1 Link opportunity.',
+      bestCards: t3Drops.slice(0, 3),
+      worstCards: pilots.slice(0, 2),
+    },
+    {
+      turnNumber: 4,
+      turnLabel: 'Turn 4',
+      levelWindow: 'Lv. 4 · 4 Resources',
+      bestAction:
+        linkUnit && linkPilot
+          ? `Pivot turn: pair ${linkPilot.name} onto ${linkUnit.name} (or similar Link Unit) for an immediate 【When Linked】 combat swing.`
+          : controlCmd
+          ? `Use ${controlCmd.name} to clear or rest an opposing blocker before committing your Lv.4 threat.`
+          : `Stabilize with ${t4Drops[0]?.name ?? blockerCard?.name ?? 'a Lv.4 Unit'} and establish favorable AP/HP trades.`,
+      worstAction:
+        'Tapping out blindly into opponent Shields when they have active Resources for Action removal or <Blocker> ambush.',
+      bestCards: [linkUnit, linkPilot, ...t4Drops].filter((c): c is GundamCardPrint => Boolean(c)).slice(0, 3),
+      worstCards: t1Drops.slice(0, 2),
+    },
+    {
+      turnNumber: 5,
+      turnLabel: 'Turn 5',
+      levelWindow: 'Lv. 5 · 5 Resources',
+      bestAction:
+        t5Drops[0]
+          ? `Deploy ${t5Drops[0].name} backed by ${drawCard?.name ?? controlCmd?.name ?? 'secondary interaction'} to seize board control.`
+          : `Double-spell two efficient mid-cost cards to out-tempo single-threat turns.`,
+      worstAction:
+        pacing === 'Early Rush'
+          ? 'Trading into high-HP defenders instead of pushing remaining Shield lethal with <Breach> / <High-Maneuver>.'
+          : 'Ignoring an opposing Link threat on board to greedily deploy an unprotected Base.',
+      bestCards: t5Drops.slice(0, 3),
+      worstCards: t1Drops.slice(0, 2),
+    },
+    {
+      turnNumber: 6,
+      turnLabel: 'Turn 6+',
+      levelWindow: 'Lv. 6+ · 6–10 Resources',
+      bestAction:
+        t6Drops[0]
+          ? `Resolve top-end closer ${t6Drops[0].name} paired with a Link Pilot or ${controlCmd?.name ?? 'removal Command'} to break remaining Shields.`
+          : `Chain multiple Threats + ${controlCmd?.name ?? 'Commands'} in one turn so opponent <Blocker> cannot cover lethal.`,
+      worstAction:
+        'Holding removal or lethal attackers passively while Control/Ramp opponents heal with <Repair> and rebuild Shields.',
+      bestCards: (t6Drops.length > 0 ? t6Drops : all.slice(-3)).slice(0, 3),
+      worstCards: t1Drops.slice(0, 2),
+    },
+  ];
+}
+
+export function computeTurnWinChances(
+  analysis: DeckAnalysis,
+  deckCards: GundamCardPrint[],
+  turnOrder: TurnOrderSetting,
+  opponent: { name: string; pacing: PacingTier; hexagon: HexagonAxes },
+  handQuality: OpeningHandQuality
+): TurnWinChancePoint[] {
+  const totalPop = Math.max(50, deckCards.length);
+  const earlyUnitCount = deckCards.filter((c) => c.type === 'UNIT' && (c.cost ?? 9) <= 2).length;
+  const linkUnitCount = deckCards.filter((c) => c.type === 'UNIT' && Boolean(c.link)).length;
+  const pilotCount = deckCards.filter((c) => c.type === 'PILOT').length;
+
+  const baseMatchup = evaluateMatchupBetween(
+    'Your Deck',
+    analysis.hexagon,
+    analysis.pacing,
+    opponent.name,
+    [],
+    opponent.pacing,
+    opponent.hexagon
+  );
+  // Base edge (-40..40) converted to baseline win% around 50%
+  const matchupOffset = (3 - baseMatchup.difficultyScore) * 6;
+  const handOffset = handQuality === 'optimal' ? 11 : handQuality === 'mulliganed' ? -9 : 0;
+  const secondTurnBoost = turnOrder === 'second' ? 3 : 0;
+
+  const points: TurnWinChancePoint[] = [];
+
+  for (let t = 1; t <= 6; t++) {
+    const effectiveLv = turnOrder === 'second' && t <= 4 ? t + 1 : t;
+    const cardsSeen = 5 + (turnOrder === 'second' ? 1 : 0) + (t - 1);
+    const playableByT = deckCards.filter((c) => (c.cost ?? 1) <= effectiveLv).length;
+
+    let curveHitPct = Math.round(hypergeometricAtLeast(totalPop, playableByT, cardsSeen, 1) * 100);
+    if (handQuality === 'optimal') curveHitPct = Math.min(99, Math.max(curveHitPct, 78 + t * 3));
+    if (handQuality === 'mulliganed' && t <= 2) curveHitPct = Math.max(20, curveHitPct - 18);
+
+    const linkReadyPct = Math.round(
+      hypergeometricAtLeast(totalPop, linkUnitCount, cardsSeen, 1) *
+        hypergeometricAtLeast(totalPop, pilotCount, cardsSeen, 1) *
+        100
+    );
+
+    // Pacing power curve across turns 1..6
+    const pacingCurve = (p: PacingTier, hex: HexagonAxes, turn: number) => {
+      if (p === 'Early Rush') return hex.aggro * (turn <= 3 ? 1.15 : 0.85) + hex.tempo * 0.4;
+      if (p === 'Ramp / Combo') return hex.tempo * 0.65 + (turn >= 4 ? hex.aggro * 1.1 + hex.defense * 0.6 : hex.defense * 0.4);
+      if (p === 'Late-Game Control') return hex.control * 0.6 + hex.defense * 0.6 + (turn >= 4 ? hex.liquidity * 0.9 : 20);
+      return (hex.aggro + hex.tempo + hex.synergy) * 0.48 + (turn >= 3 ? hex.liquidity * 0.3 : 10);
+    };
+
+    const myPower = pacingCurve(analysis.pacing, analysis.hexagon, t) + (earlyUnitCount >= 10 && t <= 2 ? 12 : 0);
+    const oppPower = pacingCurve(opponent.pacing, opponent.hexagon, t);
+    const tempoDelta = Math.round((myPower - oppPower) * 0.22);
+
+    const rawWin =
+      50 +
+      matchupOffset * 0.65 +
+      handOffset * (t <= 3 ? 1 : 0.55) +
+      secondTurnBoost * (t <= 3 ? 1 : 0.4) +
+      (curveHitPct - 70) * 0.22 +
+      (t >= 3 ? (linkReadyPct - 45) * 0.12 : 0) +
+      tempoDelta;
+
+    const winChancePct = clamp(rawWin, 14, 90);
+    const note =
+      tempoDelta >= 6
+        ? `Favorable tempo window (+${tempoDelta}) against ${opponent.name}'s ${opponent.pacing} curve.`
+        : tempoDelta <= -6
+        ? `Caution: opponent's ${opponent.pacing} curve spikes here (${tempoDelta} tempo delta).`
+        : `Even board trade window; prioritize curve consistency (${curveHitPct}% hit rate).`;
+
+    points.push({
+      turnNumber: t,
+      turnLabel: t === 6 ? 'T6+' : `T${t}`,
+      winChancePct,
+      curveHitPct,
+      linkReadyPct,
+      tempoDelta,
+      note,
+    });
+  }
+
+  return points;
+}
+
 function generateDeckPlaybook(
   mainExpanded: { card: GundamCardPrint; qty: number }[],
   hexagon: HexagonAxes,
@@ -744,9 +1139,6 @@ function generateDeckPlaybook(
   const allCards = mainExpanded.map((x) => x.card);
 
   const earlyUnits = mainExpanded.filter((x) => x.card.type === 'UNIT' && (x.card.cost ?? 9) <= 2);
-  const midUnits = mainExpanded.filter(
-    (x) => x.card.type === 'UNIT' && (x.card.cost ?? 0) >= 3 && (x.card.cost ?? 0) <= 4
-  );
   const heavyCards = mainExpanded.filter((x) => (x.card.lv ?? 0) >= 5 || (x.card.cost ?? 0) >= 4);
   const pilots = mainExpanded.filter((x) => x.card.type === 'PILOT');
   const units = mainExpanded.filter((x) => x.card.type === 'UNIT');
@@ -757,7 +1149,6 @@ function generateDeckPlaybook(
     return sig.hasDraw || sig.hasSearch;
   });
 
-  // Detect Link pairs
   const linkCombos: DetectedCombo[] = [];
   const seenPairs = new Set<string>();
   for (const { card: u } of units) {
@@ -780,7 +1171,6 @@ function generateDeckPlaybook(
     }
   }
 
-  // Detect Trait synergies
   const traitCombos: DetectedCombo[] = [];
   for (const { card } of mainExpanded) {
     const m = card.effect.match(/\(([A-Za-z0-9 '&-]+)\)\s*Unit/i);
@@ -804,7 +1194,6 @@ function generateDeckPlaybook(
     }
   }
 
-  // Detect Mechanic chains (Rest + Punish, Support + Attackers, Base + Unit)
   const mechanicCombos: DetectedCombo[] = [];
   const restCards = mainExpanded.filter((x) => scoreSingleCardSignals(x.card).hasRest).map((x) => x.card);
   const breachCards = mainExpanded.filter((x) => scoreSingleCardSignals(x.card).hasBreach).map((x) => x.card);
@@ -835,10 +1224,11 @@ function generateDeckPlaybook(
 
   const combos = [...linkCombos.slice(0, 6), ...traitCombos.slice(0, 3), ...mechanicCombos.slice(0, 3)];
 
-  // Hypergeometric odds for a 5-card opening hand
   const earlyCount = earlyUnits.reduce((s, x) => s + x.qty, 0);
   const drawCount = liquidityCards.reduce((s, x) => s + x.qty, 0);
-  const linkUnitCount = units.filter((u) => u.card.link && pilots.some((p) => doesPilotLinkUnit(p.card, u.card))).reduce((s, x) => s + x.qty, 0);
+  const linkUnitCount = units
+    .filter((u) => u.card.link && pilots.some((p) => doesPilotLinkUnit(p.card, u.card)))
+    .reduce((s, x) => s + x.qty, 0);
   const pilotCount = pilots.reduce((s, x) => s + x.qty, 0);
 
   const pop = Math.max(50, totalMain);
@@ -848,7 +1238,6 @@ function generateDeckPlaybook(
     hypergeometricAtLeast(pop, linkUnitCount, 5, 1) * hypergeometricAtLeast(pop, pilotCount, 5, 1) * 100
   );
 
-  // Best starting hand (5 cards)
   const bestCards: GundamCardPrint[] = [];
   if (earlyUnits[0]) bestCards.push(earlyUnits[0].card);
   if (earlyUnits[1] && bestCards.length < 5) bestCards.push(earlyUnits[1].card);
@@ -864,7 +1253,6 @@ function generateDeckPlaybook(
     if (!bestCards.some((b) => b.cardNo === c.cardNo)) bestCards.push(c);
   }
 
-  // Worst starting hand (5 cards: high-Lv bricks, duplicate pilots/commands without units)
   const brickPool = [...heavyCards, ...commands, ...pilots, ...bases]
     .sort((a, b) => (b.card.lv ?? 0) - (a.card.lv ?? 0))
     .map((x) => x.card);
@@ -878,7 +1266,6 @@ function generateDeckPlaybook(
     worstCards.push(c);
   }
 
-  // Mulligan Criteria tailored to Pacing
   const keepRules: string[] = [
     earlyCount > 0
       ? 'Keep if you open at least 1–2 playable Units with Cost ≤ 2 (or Lv. ≤ 3) to establish early board presence.'
@@ -900,14 +1287,13 @@ function generateDeckPlaybook(
     'Mulligan hands with 3+ cards costing 4 or higher unless backed by Resource acceleration.',
   ];
 
-  // Objective & Advantage
   let primaryObjective = 'Control board tempo through efficient trades and Linked Unit spikes, then close out Shields.';
   let advantageMechanism = 'Balanced card-for-card value and timely Pilot pairings.';
   if (styles.includes('Shield Breach') || pacing === 'Early Rush') {
     primaryObjective = 'Apply relentless Turn 1–4 Shield pressure using low-cost attackers and <Breach> / <First Strike>.';
     advantageMechanism = 'Forces opponents into unfavorable blocks before their high-Lv Units come online.';
   } else if (styles.includes('High-Liquidity Draw')) {
-    primaryObjective = 'Out-resource the opponent via superior Card Liquidity, never missing land/resource curve drops.';
+    primaryObjective = 'Out-resource the opponent via superior Card Liquidity, never missing curve drops.';
     advantageMechanism = 'Continuous draw & deck filtering generates +2 to +4 card advantage by midgame.';
   } else if (styles.includes('Repair Fortress')) {
     primaryObjective = 'Stabilize the board with <Blocker> and <Repair> Units, turning combat damage into free attrition.';
@@ -920,43 +1306,7 @@ function generateDeckPlaybook(
     advantageMechanism = 'Denies opponent Link payoffs and clears defenders for safe lethal pushes.';
   }
 
-  // Critical Turns Timeline
-  const t1Cards = earlyUnits.slice(0, 3).map((x) => x.card);
-  const pivotCards = [
-    ...(linkCombos[0]?.cards ?? []),
-    ...midUnits.slice(0, 2).map((x) => x.card),
-  ].slice(0, 4);
-  const finisherCards = heavyCards.slice(0, 4).map((x) => x.card);
-
-  const criticalTurns: CriticalTurnPoint[] = [
-    {
-      turnLabel: 'Turns 1–2 (Deployment)',
-      levelWindow: 'Lv. 1–2 · 1–2 Resources',
-      objective:
-        pacing === 'Early Rush'
-          ? 'Stick 1–2 low-cost attackers immediately and chip early Shields.'
-          : 'Establish a cheap Unit or Base and dig with early Card Liquidity tools.',
-      keyCards: t1Cards,
-    },
-    {
-      turnLabel: 'Turn 3–4 (Pivot / First Link)',
-      levelWindow: 'Lv. 3–4 · 3–4 Resources',
-      objective:
-        linkCombos.length > 0
-          ? 'First major Link inflection turn: pair a Pilot onto a Lv.3–4 Unit for a board swing.'
-          : 'Transition into mid-tier Units and hold Command interaction for enemy threats.',
-      keyCards: pivotCards,
-    },
-    {
-      turnLabel: 'Turn 5+ (Finisher / Lockout)',
-      levelWindow: 'Lv. 5+ · 5+ Resources',
-      objective:
-        hexagon.control >= 60
-          ? 'Lock down opposing Units with heavy Commands/bosses and close remaining Shields.'
-          : 'Deploy top-end boss Units and push lethal through <Breach> or wide attacks.',
-      keyCards: finisherCards,
-    },
-  ];
+  const turnInsights = generateTurnActionInsights(mainExpanded, pacing, linkCombos);
 
   return {
     primaryObjective,
@@ -982,7 +1332,7 @@ function generateDeckPlaybook(
       keepRules,
       redrawRules,
     },
-    criticalTurns,
+    turnInsights,
     combos,
   };
 }
@@ -1052,7 +1402,6 @@ export function gradeSimulatedHand(
     reasons.push(`Too top-heavy (${heavy.length} cards at Lv.5+ / Cost 4+).`);
   }
 
-  // Also check if deck actually has early units so we don't penalize unfairly
   const deckEarlyCount = deckCards.filter((c) => c.type === 'UNIT' && (c.cost ?? 9) <= 2).length;
   if (deckEarlyCount === 0 && earlyUnits.length === 0) {
     score += 10;
@@ -1078,7 +1427,6 @@ export function analyzeDeck(
     computeHexagonAndBreakdowns(mainExpanded);
   const { pacing, styles } = classifyPacingAndStyle(hexagon, avgCost, avgLv, mainExpanded);
 
-  // Strengths & Weaknesses
   const sortedAxes = [...breakdowns].sort((a, b) => b.score - a.score);
   const strengths: string[] = [];
   const weaknesses: string[] = [];
@@ -1103,7 +1451,6 @@ export function analyzeDeck(
     weaknesses.push('No critical structural weak axis detected; fine-tune curve ratios for target matchups.');
   }
 
-  // Curves & splits
   const costBuckets: Record<string, number> = { '0': 0, '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6+': 0 };
   const lvBuckets: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7+': 0 };
   const typeCounts: Record<string, number> = { UNIT: 0, PILOT: 0, COMMAND: 0, BASE: 0 };
@@ -1161,12 +1508,30 @@ export function analyzeDeck(
   };
 }
 
-export function getRecommendedCardsForStrategy(
+export function blendTargetHexagon(blueprint: StrategyBlueprint): HexagonAxes {
+  const base = { ...blueprint.targetHexagon };
+  const activeStyles = blueprint.styles.length > 0 ? blueprint.styles : ['Balanced Midrange'];
+  const styleBiases = activeStyles
+    .map((s) => TACTICAL_STYLE_META.find((m) => m.tag === s)?.targetBias)
+    .filter(Boolean) as Partial<HexagonAxes>[];
+
+  if (styleBiases.length === 0) return base;
+
+  const keys: (keyof HexagonAxes)[] = ['aggro', 'defense', 'tempo', 'liquidity', 'synergy', 'control'];
+  for (const key of keys) {
+    const vals = styleBiases.map((b) => b[key]).filter((v): v is number => typeof v === 'number');
+    if (vals.length > 0) {
+      const avgBias = vals.reduce((s, v) => s + v, 0) / vals.length;
+      base[key] = clamp(base[key] * 0.65 + avgBias * 0.35, 10, 98);
+    }
+  }
+  return base;
+}
+
+export function filterPoolByConstraints(
   allCards: GundamCardPrint[],
-  blueprint: StrategyBlueprint,
-  currentEntries: DeckEntry[],
-  limit = 24
-): { card: GundamCardPrint; fitScore: number; reason: string }[] {
+  blueprint: StrategyBlueprint
+): GundamCardPrint[] {
   const uniqueBase = new Map<string, GundamCardPrint>();
   for (const c of allCards) {
     if (!MAIN_DECK_TYPES.has(c.type)) continue;
@@ -1176,130 +1541,393 @@ export function getRecommendedCardsForStrategy(
     }
   }
 
-  const allowedColors = new Set(blueprint.colors);
+  const c = blueprint.constraints ?? DEFAULT_CONSTRAINTS;
+  const allowedSets = new Set(c.allowedPackageCodes);
+
+  let pool = [...uniqueBase.values()].filter((card) => {
+    if (allowedSets.size > 0 && !card.packageCodes.some((code) => allowedSets.has(code))) {
+      return false;
+    }
+    if (c.maxCost !== null && (card.cost ?? 0) > c.maxCost) {
+      return false;
+    }
+    if (c.maxLv !== null && (card.lv ?? 0) > c.maxLv) {
+      return false;
+    }
+    const baseRarity = card.rarity.replace(/\+/g, '');
+    if (c.rarityCap === 'NO_LR' && (baseRarity === 'LR' || baseRarity === 'SP' || baseRarity === 'LKR')) {
+      return false;
+    }
+    if (c.rarityCap === 'C_U_R_ONLY' && !['C', 'U', 'R', 'P', 'LKC', 'LKU'].includes(baseRarity)) {
+      return false;
+    }
+    return true;
+  });
+
+  if (blueprint.colors.length > 0) {
+    const allowedColors = new Set(blueprint.colors);
+    pool = pool.filter((card) => card.color === 'Colorless' || allowedColors.has(card.color));
+  }
+
+  // Strict Trait / Link Lock (NO Series!)
+  if (c.strictTraitLinkLock) {
+    if (blueprint.traitFocus) {
+      const focusLower = blueprint.traitFocus.toLowerCase();
+      const traitMatches = pool.filter((card) =>
+        card.traits.some((t) => t.toLowerCase() === focusLower || t.toLowerCase().includes(focusLower))
+      );
+      pool = pool.filter((card) => {
+        if (card.traits.some((t) => t.toLowerCase().includes(focusLower))) return true;
+        if (card.type === 'PILOT' && traitMatches.some((u) => u.type === 'UNIT' && doesPilotLinkUnit(card, u))) {
+          return true;
+        }
+        if (card.type === 'UNIT' && traitMatches.some((p) => p.type === 'PILOT' && doesPilotLinkUnit(p, card))) {
+          return true;
+        }
+        return false;
+      });
+    } else {
+      // Lock to cards participating in at least one Pilot-Unit Link pair within the constrained pool
+      const units = pool.filter((card) => card.type === 'UNIT' && Boolean(card.link));
+      const pilots = pool.filter((card) => card.type === 'PILOT');
+      pool = pool.filter((card) => {
+        if (card.type === 'UNIT') return pilots.some((p) => doesPilotLinkUnit(p, card));
+        if (card.type === 'PILOT') return units.some((u) => doesPilotLinkUnit(card, u));
+        return true;
+      });
+    }
+  }
+
+  return pool;
+}
+
+export interface ConstraintFeasibility {
+  feasible: boolean;
+  uniqueCards: number;
+  maxCards: number;
+  reason: string;
+}
+
+export function evaluateConstraintFeasibility(
+  allCards: GundamCardPrint[],
+  blueprint: StrategyBlueprint
+): ConstraintFeasibility {
+  const pool = filterPoolByConstraints(allCards, blueprint);
+  const maxCopies = blueprint.constraints?.maxCopiesPerCard ?? 4;
+
+  if (blueprint.colors.length > 0) {
+    const uniqueCards = pool.length;
+    const maxCards = uniqueCards * maxCopies;
+    if (maxCards < 50) {
+      return {
+        feasible: false,
+        uniqueCards,
+        maxCards,
+        reason: `Only ${uniqueCards} eligible cards (${maxCards} max copies at ×${maxCopies}) match your constraints; need at least 50 Main Deck cards. Relax a Set, Cost/Lv, Rarity, or Strict Lock filter.`,
+      };
+    }
+    return {
+      feasible: true,
+      uniqueCards,
+      maxCards,
+      reason: `${uniqueCards} eligible cards (${maxCards} max slots) available under current constraints.`,
+    };
+  }
+
+  // Any (Auto Best 2 Colors): check if at least one 2-color pair has >= 50 max slots
+  const colorList: CardColor[] = ['Blue', 'Green', 'Red', 'Purple', 'White'];
+  let bestPairCount = 0;
+  for (let i = 0; i < colorList.length; i++) {
+    for (let j = i; j < colorList.length; j++) {
+      const pair = new Set([colorList[i], colorList[j]]);
+      const sub = pool.filter((c) => c.color === 'Colorless' || pair.has(c.color));
+      if (sub.length > bestPairCount) bestPairCount = sub.length;
+    }
+  }
+  const maxCards = bestPairCount * maxCopies;
+  return {
+    feasible: maxCards >= 50,
+    uniqueCards: pool.length,
+    maxCards,
+    reason:
+      maxCards >= 50
+        ? `${pool.length} total eligible cards across colors (up to ${maxCards} slots in best 2-color pair).`
+        : `Even the largest 2-color pair only reaches ${maxCards}/50 slots. Relax a Set, Cost/Lv, Rarity, or Strict Lock filter.`,
+  };
+}
+
+const AXIS_LABELS: Record<keyof HexagonAxes, string> = {
+  aggro: 'Aggro / Pressure',
+  defense: 'Defense / Durability',
+  tempo: 'Tempo / Resource',
+  liquidity: 'Card Liquidity',
+  synergy: 'Synergy / Link',
+  control: 'Control / Disruption',
+};
+
+export function getRecommendedCardsForStrategy(
+  allCards: GundamCardPrint[],
+  blueprint: StrategyBlueprint,
+  currentEntries: DeckEntry[],
+  limit = 24
+): DeckRecommendation[] {
+  const pool = filterPoolByConstraints(allCards, blueprint);
+  const uniqueByNo = new Map(pool.map((c) => [c.cardNo, c]));
+
+  const maxCopies = blueprint.constraints?.maxCopiesPerCard ?? 4;
   const currentCounts = new Map<string, number>();
   const currentCards: GundamCardPrint[] = [];
+  const deckTraitFreq = new Map<string, number>();
+
   for (const e of currentEntries) {
     currentCounts.set(e.cardNo, (currentCounts.get(e.cardNo) ?? 0) + e.qty);
-    const c = uniqueBase.get(e.cardNo);
-    if (c) currentCards.push(c);
+    const c = uniqueByNo.get(e.cardNo);
+    if (c) {
+      currentCards.push(c);
+      for (const tr of c.traits) {
+        deckTraitFreq.set(tr.toLowerCase(), (deckTraitFreq.get(tr.toLowerCase()) ?? 0) + e.qty);
+      }
+    }
+  }
+
+  // Also count Trait density across the eligible pool so blank decks still prioritize coherent Trait networks
+  const poolTraitFreq = new Map<string, number>();
+  for (const c of pool) {
+    for (const tr of c.traits) {
+      poolTraitFreq.set(tr.toLowerCase(), (poolTraitFreq.get(tr.toLowerCase()) ?? 0) + 1);
+    }
   }
 
   const currentUnits = currentCards.filter((c) => c.type === 'UNIT');
   const currentPilots = currentCards.filter((c) => c.type === 'PILOT');
+  const poolUnits = pool.filter((c) => c.type === 'UNIT');
+  const poolPilots = pool.filter((c) => c.type === 'PILOT');
 
-  const scored: { card: GundamCardPrint; fitScore: number; reason: string }[] = [];
+  const blendedTarget = blendTargetHexagon(blueprint);
+  const totalWeight = Math.max(
+    1,
+    blendedTarget.aggro +
+      blendedTarget.defense +
+      blendedTarget.tempo +
+      blendedTarget.liquidity +
+      blendedTarget.synergy +
+      blendedTarget.control
+  );
 
-  for (const card of uniqueBase.values()) {
-    if (allowedColors.size > 0 && card.color !== 'Colorless' && !allowedColors.has(card.color)) {
-      continue;
-    }
-    if ((currentCounts.get(card.cardNo) ?? 0) >= 4) continue;
+  const selectedStyles = new Set(blueprint.styles);
+  const selectedEffects = new Set(blueprint.effectStyles ?? []);
+
+  const scored: DeckRecommendation[] = [];
+
+  for (const card of pool) {
+    if ((currentCounts.get(card.cardNo) ?? 0) >= maxCopies) continue;
 
     const sig = scoreSingleCardSignals(card);
-    const t = blueprint.targetHexagon;
-    const totalWeight = Math.max(
-      1,
-      t.aggro + t.defense + t.tempo + t.liquidity + t.synergy + t.control
-    );
+    const axisContribs: { axis: keyof HexagonAxes; val: number }[] = [
+      { axis: 'aggro', val: sig.aggro * blendedTarget.aggro },
+      { axis: 'defense', val: sig.defense * blendedTarget.defense },
+      { axis: 'tempo', val: sig.tempo * blendedTarget.tempo },
+      { axis: 'liquidity', val: sig.liquidity * blendedTarget.liquidity },
+      { axis: 'synergy', val: sig.synergy * blendedTarget.synergy },
+      { axis: 'control', val: sig.control * blendedTarget.control },
+    ];
+    axisContribs.sort((a, b) => b.val - a.val);
+    const primaryAxis = axisContribs[0].axis;
 
-    let fit =
-      (sig.aggro * t.aggro +
-        sig.defense * t.defense +
-        sig.tempo * t.tempo +
-        sig.liquidity * t.liquidity +
-        sig.synergy * t.synergy +
-        sig.control * t.control) /
-      totalWeight;
-
+    let fit = axisContribs.reduce((s, x) => s + x.val, 0) / totalWeight;
+    let coherenceScore = 0;
     const reasons: string[] = [];
 
-    // Pacing curve alignment
+    // 1. Multi-Strategy tactical bonuses
     const cost = card.cost ?? 2;
+    if (selectedStyles.has('Link-Strike') && (card.link || card.type === 'PILOT' || sig.hasPairTrigger)) {
+      fit += 14;
+      reasons.push('Triggers Link-Strike synergy');
+    }
+    if (selectedStyles.has('High-Liquidity Draw') && (sig.hasDraw || sig.hasSearch)) {
+      fit += 18;
+      reasons.push('Feeds High-Liquidity Draw engine');
+    }
+    if (selectedStyles.has('Repair Fortress') && (sig.hasRepair || sig.hasBlocker || card.type === 'BASE')) {
+      fit += 18;
+      reasons.push('Fortifies Repair/Blocker shell');
+    }
+    if (selectedStyles.has('Shield Breach') && (sig.hasBreach || sig.hasFirstStrike || (card.type === 'UNIT' && cost <= 2))) {
+      fit += 16;
+      reasons.push('Applies Shield Breach pressure');
+    }
+    if (selectedStyles.has('Wide Swarm') && ((card.type === 'UNIT' && cost <= 2) || sig.effectStyles.includes('Token Deploy'))) {
+      fit += 16;
+    }
+    if (selectedStyles.has('Command Control') && (card.type === 'COMMAND' || sig.hasRemoval || sig.hasRest)) {
+      fit += 16;
+    }
+    if (selectedStyles.has('Resource Ramp') && (sig.hasRamp || cost >= 5)) {
+      fit += 16;
+    }
+
+    // 2. Effect Style factor bonuses
+    const matchedEffectStyles = sig.effectStyles.filter((es) => selectedEffects.has(es));
+    if (matchedEffectStyles.length > 0) {
+      fit += matchedEffectStyles.length * 18;
+      reasons.push(`Matches Effect Style: ${matchedEffectStyles.join(', ')}`);
+    }
+
+    // 3. Pacing alignment
     if (blueprint.pacing === 'Early Rush') {
       if (cost <= 2) {
-        fit += 18;
-        reasons.push('Ideal Cost ≤ 2 Rush curve');
+        fit += 15;
+        reasons.push('Ideal Cost ≤2 Rush curve');
       } else if (cost >= 5) {
         fit -= 15;
       }
     } else if (blueprint.pacing === 'Late-Game Control') {
       if (cost >= 3 && (sig.hasRest || sig.hasRemoval || sig.hasRepair || sig.hasBlocker)) {
-        fit += 16;
-        reasons.push('Late-game defensive/control anchor');
+        fit += 14;
+        reasons.push('Control/defense stabilizer');
       }
     } else if (blueprint.pacing === 'Ramp / Combo') {
       if (sig.hasRamp || cost >= 5) {
-        fit += 16;
-        reasons.push('Supports Ramp payoff');
+        fit += 15;
+        reasons.push('Supports Ramp payoff curve');
       }
     }
 
-    // Trait focus
+    // 4. Trait + Linkage Coherence Counting (Series intentionally excluded per Q9)
     if (
       blueprint.traitFocus &&
       card.traits.some((tr) => tr.toLowerCase().includes(blueprint.traitFocus.toLowerCase()))
     ) {
-      fit += 22;
-      reasons.push(`Matches (${blueprint.traitFocus}) focus`);
+      coherenceScore += 32;
+      reasons.push(`Trait coherence: (${blueprint.traitFocus})`);
     }
 
-    // Link synergy with cards already in deck
-    if (card.type === 'PILOT' && currentUnits.some((u) => doesPilotLinkUnit(card, u))) {
-      fit += 28;
-      reasons.push('Links with Units already in your deck');
-    } else if (card.type === 'UNIT' && currentPilots.some((p) => doesPilotLinkUnit(p, card))) {
-      fit += 24;
-      reasons.push('Links with Pilots already in your deck');
+    // Shared Trait overlap with cards already in deck (or dense Trait clusters in pool)
+    let sharedTraitHits = 0;
+    let bestSharedTrait = '';
+    for (const tr of card.traits) {
+      const freq = deckTraitFreq.get(tr.toLowerCase()) ?? 0;
+      if (freq > sharedTraitHits) {
+        sharedTraitHits = freq;
+        bestSharedTrait = tr;
+      }
+    }
+    if (sharedTraitHits > 0) {
+      coherenceScore += Math.min(28, sharedTraitHits * 4);
+      reasons.push(`Shares (${bestSharedTrait}) trait with ${sharedTraitHits} card(s) in deck`);
+    } else if (card.traits.length > 0) {
+      const maxPoolTrait = Math.max(...card.traits.map((t) => poolTraitFreq.get(t.toLowerCase()) ?? 0));
+      if (maxPoolTrait >= 6) {
+        coherenceScore += 10;
+      }
     }
 
-    if (sig.hasDraw || sig.hasSearch) {
-      if (t.liquidity >= 60) fit += 14;
-      reasons.push('Adds Card Liquidity');
+    // Trait-tutoring bonus: e.g. "(Zeon) Unit" in effect text matching deck traits
+    const traitRef = card.effect.match(/\(([A-Za-z0-9 '&-]+)\)\s*Unit/i);
+    if (traitRef && (deckTraitFreq.get(traitRef[1].trim().toLowerCase()) ?? 0) >= 2) {
+      coherenceScore += 20;
+      reasons.push(`Buffs/searches (${traitRef[1].trim()}) formation`);
     }
+
+    // Pilot–Unit Linkage coherence (explicitly counts live Link pairs in deck or eligible pool)
+    if (card.type === 'PILOT') {
+      const deckLinks = currentUnits.filter((u) => doesPilotLinkUnit(card, u)).length;
+      const poolLinks = poolUnits.filter((u) => doesPilotLinkUnit(card, u)).length;
+      if (deckLinks > 0) {
+        coherenceScore += 36 + Math.min(18, deckLinks * 6);
+        reasons.push(`Links with ${deckLinks} Unit(s) in deck`);
+      } else if (poolLinks > 0) {
+        coherenceScore += 14;
+        reasons.push(`Links with ${poolLinks} Unit(s) in set pool`);
+      }
+    } else if (card.type === 'UNIT' && card.link) {
+      const deckLinks = currentPilots.filter((p) => doesPilotLinkUnit(p, card)).length;
+      const poolLinks = poolPilots.filter((p) => doesPilotLinkUnit(p, card)).length;
+      if (deckLinks > 0) {
+        coherenceScore += 34;
+        reasons.push(`Links with Pilot in deck (${card.link})`);
+      } else if (poolLinks > 0) {
+        coherenceScore += 14;
+      }
+    }
+
+    const combinedFit = clamp(fit + coherenceScore * 0.65);
 
     scored.push({
       card,
-      fitScore: clamp(fit),
-      reason: reasons[0] ?? `${card.color} ${card.type} aligned with ${blueprint.primaryStyle}`,
+      fitScore: combinedFit,
+      coherenceScore: clamp(coherenceScore),
+      primaryAxis,
+      primaryAxisLabel: AXIS_LABELS[primaryAxis],
+      matchedEffectStyles,
+      reason:
+        reasons[0] ??
+        `${AXIS_LABELS[primaryAxis]} specialist (${card.color} ${card.type}, Lv.${card.lv ?? '-'})`,
     });
   }
 
-  scored.sort((a, b) => b.fitScore - a.fitScore);
+  scored.sort((a, b) => b.fitScore - a.fitScore || b.coherenceScore - a.coherenceScore);
   return scored.slice(0, limit);
 }
 
 export function generateStrategyDeck(
   allCards: GundamCardPrint[],
   blueprint: StrategyBlueprint
-): { mainDeck: DeckEntry[]; resourceDeck: DeckEntry[] } {
-  const uniqueBase = new Map<string, GundamCardPrint>();
-  const resourceCards: GundamCardPrint[] = [];
+): {
+  mainDeck: DeckEntry[];
+  resourceDeck: DeckEntry[];
+  resolvedColors: CardColor[];
+  feasibility: ConstraintFeasibility;
+} {
+  const feasibility = evaluateConstraintFeasibility(allCards, blueprint);
+  const resourceCards = allCards.filter((c) => c.type === 'RESOURCE');
 
-  for (const c of allCards) {
-    if (c.type === 'RESOURCE') {
-      resourceCards.push(c);
-      continue;
-    }
-    if (!MAIN_DECK_TYPES.has(c.type)) continue;
-    const existing = uniqueBase.get(c.cardNo);
-    if (!existing || (existing.isParallel && !c.isParallel)) {
-      uniqueBase.set(c.cardNo, c);
-    }
+  if (!feasibility.feasible) {
+    return {
+      mainDeck: [],
+      resourceDeck: [],
+      resolvedColors: blueprint.colors,
+      feasibility,
+    };
   }
 
-  const allowedColors = new Set(blueprint.colors.length > 0 ? blueprint.colors : ['Blue', 'White']);
-  const pool = [...uniqueBase.values()].filter(
-    (c) => c.color === 'Colorless' || allowedColors.has(c.color)
-  );
+  const maxCopies = blueprint.constraints?.maxCopiesPerCard ?? 4;
+  let effectiveBlueprint = blueprint;
 
-  // Rank candidates
-  const ranked = getRecommendedCardsForStrategy(pool, blueprint, [], 300);
+  // Resolve "Any (Auto Best 2)" colors if colors array is empty
+  if (blueprint.colors.length === 0) {
+    const colorPool: CardColor[] = ['Blue', 'Green', 'Red', 'Purple', 'White'];
+    let bestPair: CardColor[] = ['Blue', 'White'];
+    let bestScore = -Infinity;
 
-  // Target type ratios by pacing
-  const targetUnits = blueprint.pacing === 'Early Rush' ? 30 : blueprint.pacing === 'Late-Game Control' ? 24 : 26;
-  const targetPilots = blueprint.primaryStyle === 'Link-Strike' ? 10 : 8;
-  const targetBases = blueprint.primaryStyle === 'Repair Fortress' ? 6 : 4;
+    for (let i = 0; i < colorPool.length; i++) {
+      for (let j = i + 1; j < colorPool.length; j++) {
+        const candidateColors: CardColor[] = [colorPool[i], colorPool[j]];
+        const candBlueprint = { ...blueprint, colors: candidateColors };
+        const candPool = filterPoolByConstraints(allCards, candBlueprint);
+        if (candPool.length * maxCopies < 50) continue;
+        const rankedTop = getRecommendedCardsForStrategy(allCards, candBlueprint, [], 25);
+        const sumScore = rankedTop.reduce((s, r) => s + r.fitScore + r.coherenceScore * 0.4, 0);
+        if (sumScore > bestScore) {
+          bestScore = sumScore;
+          bestPair = candidateColors;
+        }
+      }
+    }
+    effectiveBlueprint = { ...blueprint, colors: bestPair };
+  }
+
+  const ranked = getRecommendedCardsForStrategy(allCards, effectiveBlueprint, [], 400);
+  const activeStyles = new Set(effectiveBlueprint.styles);
+
+  const targetUnits =
+    effectiveBlueprint.pacing === 'Early Rush'
+      ? 30
+      : effectiveBlueprint.pacing === 'Late-Game Control'
+      ? 24
+      : 26;
+  const targetPilots = activeStyles.has('Link-Strike') ? 10 : 8;
+  const targetBases = activeStyles.has('Repair Fortress') ? 6 : 4;
   const targetCommands = 50 - targetUnits - targetPilots - targetBases;
 
   const chosen = new Map<string, { card: GundamCardPrint; qty: number }>();
@@ -1308,85 +1936,79 @@ export function generateStrategyDeck(
   const addCopies = (card: GundamCardPrint, desiredQty: number) => {
     if (total >= 50) return;
     const existing = chosen.get(card.cardNo)?.qty ?? 0;
-    const room = Math.min(4 - existing, 50 - total, desiredQty);
+    const room = Math.min(maxCopies - existing, 50 - total, desiredQty);
     if (room <= 0) return;
     chosen.set(card.cardNo, { card, qty: existing + room });
     total += room;
   };
 
-  // 1. Pick top Units respecting curve balance
   let unitTotal = 0;
   let earlyUnitTotal = 0;
-  const minEarlyUnits = blueprint.pacing === 'Early Rush' ? 16 : 10;
+  const minEarlyUnits = effectiveBlueprint.pacing === 'Early Rush' ? 16 : 10;
 
-  // First ensure early drops
   for (const { card } of ranked) {
     if (earlyUnitTotal >= minEarlyUnits || unitTotal >= targetUnits) break;
     if (card.type === 'UNIT' && (card.cost ?? 9) <= 2) {
-      const q = Math.min(4, minEarlyUnits - earlyUnitTotal, targetUnits - unitTotal);
+      const q = Math.min(maxCopies, minEarlyUnits - earlyUnitTotal, targetUnits - unitTotal);
       addCopies(card, q);
       earlyUnitTotal += q;
       unitTotal += q;
     }
   }
-  // Fill remaining units
   for (const { card } of ranked) {
     if (unitTotal >= targetUnits) break;
     if (card.type === 'UNIT') {
       const prev = chosen.get(card.cardNo)?.qty ?? 0;
-      if (prev >= 4) continue;
-      const q = Math.min(3, targetUnits - unitTotal, 4 - prev);
+      if (prev >= maxCopies) continue;
+      const q = Math.min(Math.min(3, maxCopies), targetUnits - unitTotal, maxCopies - prev);
       addCopies(card, q);
       unitTotal += q;
     }
   }
 
-  // 2. Pick Pilots prioritizing actual Link matches with chosen Units
+  // Pick Pilots prioritizing Link matches with chosen Units + Trait coherence
   const chosenUnits = [...chosen.values()].filter((x) => x.card.type === 'UNIT').map((x) => x.card);
   const pilotRanked = ranked
     .filter((r) => r.card.type === 'PILOT')
     .map((r) => {
       const linkMatches = chosenUnits.filter((u) => doesPilotLinkUnit(r.card, u)).length;
-      return { ...r, score: r.fitScore + linkMatches * 30 };
+      return { ...r, score: r.fitScore + linkMatches * 35 };
     })
     .sort((a, b) => b.score - a.score);
 
   let pilotTotal = 0;
   for (const { card } of pilotRanked) {
     if (pilotTotal >= targetPilots) break;
-    const q = Math.min(3, targetPilots - pilotTotal);
+    const q = Math.min(Math.min(3, maxCopies), targetPilots - pilotTotal);
     addCopies(card, q);
     pilotTotal += q;
   }
 
-  // 3. Pick Bases
   let baseTotal = 0;
   for (const { card } of ranked) {
     if (baseTotal >= targetBases) break;
     if (card.type === 'BASE') {
-      const q = Math.min(2, targetBases - baseTotal);
+      const q = Math.min(Math.min(2, maxCopies), targetBases - baseTotal);
       addCopies(card, q);
       baseTotal += q;
     }
   }
 
-  // 4. Pick Commands
   let cmdTotal = 0;
   for (const { card } of ranked) {
     if (cmdTotal >= targetCommands || total >= 50) break;
     if (card.type === 'COMMAND') {
-      const q = Math.min(3, targetCommands - cmdTotal, 50 - total);
+      const q = Math.min(Math.min(3, maxCopies), targetCommands - cmdTotal, 50 - total);
       addCopies(card, q);
       cmdTotal += q;
     }
   }
 
-  // 5. Top off to exactly 50 if short
   for (const { card } of ranked) {
     if (total >= 50) break;
     const prev = chosen.get(card.cardNo)?.qty ?? 0;
-    if (prev < 4) {
-      addCopies(card, Math.min(4 - prev, 50 - total));
+    if (prev < maxCopies) {
+      addCopies(card, Math.min(maxCopies - prev, 50 - total));
     }
   }
 
@@ -1401,31 +2023,31 @@ export function generateStrategyDeck(
     ? [{ cardNo: defaultRes.cardNo, printId: defaultRes.printId, qty: 10 }]
     : [];
 
-  return { mainDeck, resourceDeck };
+  return {
+    mainDeck,
+    resourceDeck,
+    resolvedColors: effectiveBlueprint.colors,
+    feasibility,
+  };
 }
 
+/** Strict `<number> <card number>` export only (Q4) */
 export function exportDeckToText(
   deck: SavedDeck,
-  byPrintId: Map<string, GundamCardPrint>,
-  byCardNo: Map<string, GundamCardPrint>
+  _byPrintId?: Map<string, GundamCardPrint>,
+  _byCardNo?: Map<string, GundamCardPrint>
 ): string {
-  const lines: string[] = [`// ${deck.name}`];
-  lines.push('// Main Deck (50)');
+  const lines: string[] = [];
   for (const entry of deck.mainDeck) {
-    const card = byPrintId.get(entry.printId) ?? byCardNo.get(entry.cardNo);
-    lines.push(`${entry.qty} ${entry.cardNo} ${card?.name ?? ''}`.trim());
+    if (entry.qty > 0) lines.push(`${entry.qty} ${entry.cardNo}`);
   }
-  if (deck.resourceDeck.length > 0) {
-    lines.push('');
-    lines.push('// Resource Deck (10)');
-    for (const entry of deck.resourceDeck) {
-      const card = byPrintId.get(entry.printId) ?? byCardNo.get(entry.cardNo);
-      lines.push(`${entry.qty} ${entry.cardNo} ${card?.name ?? 'Resource'}`.trim());
-    }
+  for (const entry of deck.resourceDeck) {
+    if (entry.qty > 0) lines.push(`${entry.qty} ${entry.cardNo}`);
   }
   return lines.join('\n');
 }
 
+/** Strict `<number> <card number>` import parser only (Q4) */
 export function parseDeckFromText(
   rawText: string,
   byPrintId: Map<string, GundamCardPrint>,
@@ -1437,22 +2059,20 @@ export function parseDeckFromText(
 
   for (const rawLine of rawText.split(/\r?\n/)) {
     const line = rawLine.trim();
-    if (!line || line.startsWith('//') || line.startsWith('#')) continue;
+    if (!line) continue;
 
-    // Supports "4 GD01-001 Gundam", "4x GD01-001", "GD01-001 x4", etc.
-    const m1 = line.match(/^(\d+)\s*[xX×]?\s+([A-Za-z0-9_-]+)/);
-    const m2 = line.match(/^([A-Za-z0-9_-]+)\s*[xX×]?\s*(\d+)$/);
+    // Accept strictly `<integer> <cardNo>` with no comments, `4x`, or card names
+    const match = line.match(/^(\d+)\s+([A-Za-z0-9_-]+)$/);
+    if (!match) {
+      unmatched.push(line);
+      continue;
+    }
 
-    let qty = 1;
-    let idToken = '';
-    if (m1) {
-      qty = parseInt(m1[1], 10);
-      idToken = m1[2];
-    } else if (m2) {
-      idToken = m2[1];
-      qty = parseInt(m2[2], 10);
-    } else {
-      idToken = line.split(/\s+/)[0];
+    const qty = parseInt(match[1], 10);
+    const idToken = match[2];
+    if (!Number.isInteger(qty) || qty <= 0) {
+      unmatched.push(line);
+      continue;
     }
 
     const card = byPrintId.get(idToken) ?? byCardNo.get(idToken.toUpperCase());
@@ -1466,7 +2086,7 @@ export function parseDeckFromText(
     targetMap.set(card.cardNo, {
       cardNo: card.cardNo,
       printId: prev?.printId ?? card.printId,
-      qty: (prev?.qty ?? 0) + Math.max(1, qty),
+      qty: (prev?.qty ?? 0) + qty,
     });
   }
 
@@ -1529,6 +2149,17 @@ export function decodeDeckShareParam(
   }
 }
 
+export function createBlankCustomDeck(index = 1): SavedDeck {
+  return {
+    id: `custom-${Date.now()}-${index}`,
+    name: index === 1 ? 'Custom Deck' : `Custom Deck ${index}`,
+    updatedAt: new Date().toISOString(),
+    mainDeck: [],
+    resourceDeck: [],
+    strategyBlueprint: DEFAULT_BLUEPRINT,
+  };
+}
+
 export interface StarterPresetMeta {
   code: string;
   name: string;
@@ -1541,6 +2172,8 @@ export const STARTER_PRESETS: StarterPresetMeta[] = [
   { code: 'ST02', name: 'ST02 Wings of Advance', colors: ['Green', 'Blue'], subtitle: 'Operation Meteor Ramp & Tempo' },
   { code: 'ST03', name: "ST03 Zeon's Rush", colors: ['Red', 'Green'], subtitle: 'Zeon Aggro & Early Breach' },
   { code: 'ST04', name: 'ST04 SEED Strike', colors: ['White', 'Red'], subtitle: 'ZAFT / Archangel Link Midrange' },
+  { code: 'ST05', name: 'ST05 Iron Bloom', colors: ['Purple', 'White'], subtitle: 'Tekkadan Disruption & Recursion' },
+  { code: 'ST06', name: 'ST06 Clan Unity', colors: ['Red', 'Blue'], subtitle: 'Clan Link Tempo' },
 ];
 
 export function buildStarterDeckFromCatalog(
@@ -1557,7 +2190,6 @@ export function buildStarterDeckFromCatalog(
   const mainDeck: DeckEntry[] = [];
   let total = 0;
 
-  // Build authentic 50-card starter structure (2x of LR bosses, 4x of commons/uncommons)
   for (const c of stCards) {
     if (total >= 50) break;
     const qty = c.rarity === 'LR' ? 2 : c.rarity === 'R' ? 3 : 4;
@@ -1567,7 +2199,6 @@ export function buildStarterDeckFromCatalog(
       total += add;
     }
   }
-  // Top up to 50 if ST pool had fewer cards
   let idx = 0;
   while (total < 50 && mainDeck.length > 0 && idx < mainDeck.length * 4) {
     const entry = mainDeck[idx % mainDeck.length];

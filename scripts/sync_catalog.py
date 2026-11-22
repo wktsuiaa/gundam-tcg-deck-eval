@@ -3,14 +3,13 @@
 Scrape the official Gundam Card Game Asia-English catalog from:
 https://www.gundam-gcg.com/asia-en/cards/
 Uses curl HTTP/2 keepalive batching for fast, reliable fetching.
-Produces data/packages.json and data/cards.json.
+Produces data/packages.json and per-collection shards in data/collections/<code>.json.
 """
 
 import html as html_lib
 import json
 import re
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -20,7 +19,10 @@ DELIM = "__GCA_CARD_DELIM__"
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
+COLLECTIONS_DIR = DATA_DIR / "collections"
+RULES_FILE = DATA_DIR / "rules.json"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+COLLECTIONS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def curl_batch(urls: list[str]) -> dict[str, str]:
@@ -107,7 +109,7 @@ def parse_detail_html(print_id: str, dhtml: str) -> dict | None:
     img_m = re.search(r'<div class="cardImage">\s*<img[^>]*src\s*=\s*"([^"]+)"', dhtml, re.S)
     image_path = ""
     if img_m:
-        raw_src = img_m.group(1).split("?")[0].strip()
+        raw_src = img_m.group(1).split("?")[0].trim() if hasattr(str, "trim") else img_m.group(1).split("?")[0].strip()
         image_path = re.sub(r"^(\.\.\/)+", "", raw_src).lstrip("/")
     if not image_path:
         image_path = f"jp/images/cards/card/{print_id}.webp"
@@ -184,6 +186,30 @@ def parse_detail_html(print_id: str, dhtml: str) -> dict | None:
     }
 
 
+def sort_key(c: dict):
+    pid = c["printId"]
+    base, _, suffix = pid.partition("_")
+    m = re.match(r"^([A-Z]+)(\d*)-(\d+)$", base)
+    if m:
+        prefix, setnum, num = m.groups()
+        return (prefix, int(setnum) if setnum else 0, int(num), 0 if not suffix else 1, suffix)
+    return (base, 0, 0, 0 if not suffix else 1, suffix)
+
+
+def sanitize_code(code: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_-]", "_", code)
+
+
+def load_cached_card_faqs() -> dict[str, list[dict]]:
+    if not RULES_FILE.exists():
+        return {}
+    try:
+        rules = json.loads(RULES_FILE.read_text(encoding="utf-8"))
+        return rules.get("cardFaqs", {})
+    except Exception:
+        return {}
+
+
 def main():
     t0 = time.time()
     print("Fetching package index...", flush=True)
@@ -210,19 +236,23 @@ def main():
         pkg_htmls.update(curl_batch(pkg_urls[i:i + 10]))
 
     print_to_pkgs: dict[str, list[dict]] = {}
+    pkg_to_pids: dict[str, list[str]] = {}
     packages_out = []
     for pkg in packages:
         url = f"{BASE_URL}index.php?package={pkg['id']}"
         phtml = pkg_htmls.get(url, "")
         seen_pid = set()
+        ordered_pids = []
         for pid in re.findall(r'detail\.php\?detailSearch=([A-Za-z0-9_-]+)', phtml):
             if pid not in seen_pid:
                 seen_pid.add(pid)
+                ordered_pids.append(pid)
                 print_to_pkgs.setdefault(pid, []).append({
                     "id": pkg["id"],
                     "name": pkg["name"],
                     "code": pkg["code"],
                 })
+        pkg_to_pids[pkg["code"]] = ordered_pids
         pkg_out = dict(pkg)
         pkg_out["cardCount"] = len(seen_pid)
         packages_out.append(pkg_out)
@@ -232,6 +262,7 @@ def main():
 
     import concurrent.futures
 
+    cached_faqs = load_cached_card_faqs()
     cards_map: dict[str, dict] = {}
     batches = [all_print_ids[i:i + 15] for i in range(0, len(all_print_ids), 15)]
 
@@ -247,6 +278,8 @@ def main():
                 card["packageIds"] = [p["id"] for p in pkgs_for_card]
                 card["packageNames"] = [p["name"] for p in pkgs_for_card]
                 card["packageCodes"] = [p["code"] for p in pkgs_for_card]
+                if not card["faqs"] and card["cardNo"] in cached_faqs:
+                    card["faqs"] = cached_faqs[card["cardNo"]]
                 res.append(card)
         return res
 
@@ -262,7 +295,6 @@ def main():
                     flush=True,
                 )
 
-    # Retry any missed cards once
     missed = [pid for pid in all_print_ids if pid not in cards_map]
     if missed:
         print(f"Retrying {len(missed)} missed cards...", flush=True)
@@ -270,34 +302,30 @@ def main():
             for c in run_detail_batch(missed[i:i + 10]):
                 cards_map[c["printId"]] = c
 
-    cards = list(cards_map.values())
-
-    def sort_key(c: dict):
-        pid = c["printId"]
-        base, _, suffix = pid.partition("_")
-        m = re.match(r"^([A-Z]+)(\d*)-(\d+)$", base)
-        if m:
-            prefix, setnum, num = m.groups()
-            return (prefix, int(setnum) if setnum else 0, int(num), 0 if not suffix else 1, suffix)
-        return (base, 0, 0, 0 if not suffix else 1, suffix)
-
-    cards.sort(key=sort_key)
-
-    payload = {
-        "syncedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "source": BASE_URL,
-        "totalPrints": len(cards),
-        "packages": packages_out,
-        "cards": cards,
-    }
+    synced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
     with open(DATA_DIR / "packages.json", "w", encoding="utf-8") as f:
         json.dump(packages_out, f, ensure_ascii=False, indent=2)
 
-    with open(DATA_DIR / "cards.json", "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False)
+    # Write per-collection JSON shards
+    for pkg in packages_out:
+        code = sanitize_code(pkg["code"])
+        pids = pkg_to_pids.get(pkg["code"], [])
+        pkg_cards = [cards_map[pid] for pid in pids if pid in cards_map]
+        pkg_cards.sort(key=sort_key)
+        shard = {
+            "syncedAt": synced_at,
+            "source": BASE_URL,
+            "package": pkg,
+            "cards": pkg_cards,
+        }
+        with open(COLLECTIONS_DIR / f"{code}.json", "w", encoding="utf-8") as f:
+            json.dump(shard, f, ensure_ascii=False)
 
-    print(f"Done! Wrote {len(cards)} cards in {time.time() - t0:.1f}s.", flush=True)
+    print(
+        f"Done! Wrote {len(packages_out)} collection shards covering {len(cards_map)} unique cards in {time.time() - t0:.1f}s.",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":
