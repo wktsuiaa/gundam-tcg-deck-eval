@@ -1,0 +1,184 @@
+[
+  {
+    "id": "619101",
+    "name": "Newtype Rising [GD01]",
+    "code": "GD01",
+    "category": "Booster Pack",
+    "cardCount": 179
+  },
+  {
+    "id": "619102",
+    "name": "Dual Impact [GD02]",
+    "code": "GD02",
+    "category": "Booster Pack",
+    "cardCount": 187
+  },
+  {
+    "id": "619103",
+    "name": "Steel Requiem [GD03]",
+    "code": "GD03",
+    "category": "Booster Pack",
+    "cardCount": 202
+  },
+  {
+    "id": "619104",
+    "name": "Phantom Aria [GD04]",
+    "code": "GD04",
+    "category": "Booster Pack",
+    "cardCount": 194
+  },
+  {
+    "id": "619105",
+    "name": "Freedom Ascension [GD05]",
+    "code": "GD05",
+    "category": "Booster Pack",
+    "cardCount": 197
+  },
+  {
+    "id": "619106",
+    "name": "Stardust Trails [GD06]",
+    "code": "GD06",
+    "category": "Booster Pack",
+    "cardCount": 189
+  },
+  {
+    "id": "619001",
+    "name": "Heroic Beginnings [ST01]",
+    "code": "ST01",
+    "category": "Starter Deck",
+    "cardCount": 35
+  },
+  {
+    "id": "619002",
+    "name": "Wings of Advance [ST02]",
+    "code": "ST02",
+    "category": "Starter Deck",
+    "cardCount": 34
+  },
+  {
+    "id": "619003",
+    "name": "Zeon's Rush [ST03]",
+    "code": "ST03",
+    "category": "Starter Deck",
+    "cardCount": 34
+  },
+  {
+    "id": "619004",
+    "name": "SEED Strike [ST04]",
+    "code": "ST04",
+    "category": "Starter Deck",
+    "cardCount": 35
+  },
+  {
+    "id": "619005",
+    "name": "Iron Bloom [ST05]",
+    "code": "ST05",
+    "category": "Starter Deck",
+    "cardCount": 32
+  },
+  {
+    "id": "619006",
+    "name": "Clan Unity [ST06]",
+    "code": "ST06",
+    "category": "Starter Deck",
+    "cardCount": 32
+  },
+  {
+    "id": "619007",
+    "name": "Celestial Drive [ST07]",
+    "code": "ST07",
+    "category": "Starter Deck",
+    "cardCount": 32
+  },
+  {
+    "id": "619008",
+    "name": "Flash of Radiance [ST08]",
+    "code": "ST08",
+    "category": "Starter Deck",
+    "cardCount": 32
+  },
+  {
+    "id": "619009",
+    "name": "Destiny Ignition [ST09]",
+    "code": "ST09",
+    "category": "Starter Deck",
+    "cardCount": 39
+  },
+  {
+    "id": "619010",
+    "name": "Generation Pulse [ST10]",
+    "code": "ST10",
+    "category": "Starter Deck",
+    "cardCount": 35
+  },
+  {
+    "id": "619011",
+    "name": "Aquatic Assault [ST11]",
+    "code": "ST11",
+    "category": "Starter Deck",
+    "cardCount": 33
+  },
+  {
+    "id": "619012",
+    "name": "Raging Onslaught [ST12]",
+    "code": "ST12",
+    "category": "Starter Deck",
+    "cardCount": 32
+  },
+  {
+    "id": "619013",
+    "name": "Silent Barrage [ST13]",
+    "code": "ST13",
+    "category": "Starter Deck",
+    "cardCount": 33
+  },
+  {
+    "id": "619014",
+    "name": "Heavy Dominion [ST14]",
+    "code": "ST14",
+    "category": "Starter Deck",
+    "cardCount": 32
+  },
+  {
+    "id": "619201",
+    "name": "Eternal Nexus [EB01]",
+    "code": "EB01",
+    "category": "Special / Extra Set",
+    "cardCount": 108
+  },
+  {
+    "id": "619301",
+    "name": "Deck Build Box Freedom Ascension [SC01]",
+    "code": "SC01",
+    "category": "Special / Extra Set",
+    "cardCount": 51
+  },
+  {
+    "id": "619701",
+    "name": "Other Product Card",
+    "code": "619701",
+    "category": "Other Product",
+    "cardCount": 64
+  },
+  {
+    "id": "619000",
+    "name": "LIMITED BOX Ver.β",
+    "code": "619000",
+    "category": "Special / Extra Set",
+    "cardCount": 83
+  },
+  {
+    "id": "619801",
+    "name": "Basic Cards",
+    "code": "619801",
+    "category": "Basic Cards",
+    "cardCount": 3
+  },
+  {
+    "id": "619901",
+    "name": "Promotion card",
+    "code": "619901",
+    "category": "Promotion",
+    "cardCount": 279
+  }
+]

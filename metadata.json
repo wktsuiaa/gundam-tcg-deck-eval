@@ -1,0 +1,6 @@
+{
+  "name": "Gundam Card Atlas",
+  "description": "Official Asia-English Gundam Card Game catalog, collection tracker, strategy-driven deck builder, 6-axis hexagon analyzer, and matchup playbook.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
