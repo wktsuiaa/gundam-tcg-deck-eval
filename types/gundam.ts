@@ -166,7 +166,7 @@ export interface StrategyBlueprint {
   pacing: PacingTier;
   styles: TacticalStyleTag[];
   effectStyles: EffectStyleTag[];
-  traitFocus: string;
+  traitFocus: string[];
   targetHexagon: HexagonAxes;
   constraints: DeckGenerationConstraints;
 }

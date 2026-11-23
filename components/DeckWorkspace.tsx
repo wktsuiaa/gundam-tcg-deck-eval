@@ -5,7 +5,6 @@ import {
   Plus,
   Minus,
   Trash2,
-  Wand2,
   Copy,
   Check,
   Shuffle,
@@ -17,25 +16,19 @@ import {
   BookOpen,
   Layers,
   X,
-  ChevronDown,
-  ChevronUp,
   ExternalLink,
   Search,
   Sparkles,
   ShieldAlert,
   TrendingUp,
-  Lock,
 } from 'lucide-react';
 import type {
-  CardColor,
   DeckAnalysis,
   DeckGenerationConstraints,
-  EffectStyleTag,
   GundamCardPrint,
   GundamPackage,
   HexagonAxes,
   OpeningHandQuality,
-  PacingTier,
   RulesPayload,
   SavedDeck,
   StrategyBlueprint,
@@ -58,6 +51,7 @@ import {
   getRecommendedCardsForStrategy,
   gradeSimulatedHand,
   META_ARCHETYPES,
+  normalizeTraitFocus,
   parseDeckFromText,
   resolveCardMap,
   STARTER_PRESETS,
@@ -65,8 +59,9 @@ import {
 } from '@/lib/deck-engine';
 import { CARD_COLOR_META } from '@/lib/gundam-keywords';
 import { CardArtwork } from '@/components/CardArtwork';
-import { HEXAGON_AXIS_META, HexagonRadar } from '@/components/HexagonRadar';
+import { HexagonRadar } from '@/components/HexagonRadar';
 import { RulesModal } from '@/components/RulesModal';
+import { StrategyGeneratorPanel } from '@/components/StrategyGeneratorPanel';
 
 interface DeckWorkspaceProps {
   allCards: GundamCardPrint[];
@@ -81,28 +76,31 @@ interface DeckWorkspaceProps {
   onInspectCard: (cardNo: string, printId?: string) => void;
 }
 
-const COLORS: CardColor[] = ['Blue', 'Green', 'Red', 'Purple', 'White'];
-const PACING_OPTIONS: PacingTier[] = [
-  'Early Rush',
-  'Midrange Tempo',
-  'Late-Game Control',
-  'Ramp / Combo',
-];
-
 function normalizeBlueprint(raw?: StrategyBlueprint): StrategyBlueprint {
   if (!raw) return DEFAULT_BLUEPRINT;
   const legacyPrimary = (raw as unknown as { primaryStyle?: TacticalStyleTag }).primaryStyle;
+  const rawStyles = Array.isArray(raw.styles) ? raw.styles : [];
+  const chosenStyle =
+    rawStyles.find((s) => TACTICAL_STYLE_META.some((m) => m.tag === s)) ??
+    (legacyPrimary && TACTICAL_STYLE_META.some((m) => m.tag === legacyPrimary)
+      ? legacyPrimary
+      : undefined) ??
+    DEFAULT_BLUEPRINT.styles[0];
+
+  const validEffects = Array.isArray(raw.effectStyles)
+    ? raw.effectStyles
+        .filter((e) => EFFECT_STYLE_META.some((m) => m.tag === e))
+        .slice(0, 2)
+    : [];
+
   return {
     colors: Array.isArray(raw.colors) ? raw.colors : DEFAULT_BLUEPRINT.colors,
     pacing: raw.pacing ?? DEFAULT_BLUEPRINT.pacing,
-    styles:
-      Array.isArray(raw.styles) && raw.styles.length > 0
-        ? raw.styles
-        : legacyPrimary
-        ? [legacyPrimary]
-        : DEFAULT_BLUEPRINT.styles,
-    effectStyles: Array.isArray(raw.effectStyles) ? raw.effectStyles : [],
-    traitFocus: raw.traitFocus ?? '',
+    styles: [chosenStyle],
+    effectStyles: validEffects,
+    traitFocus: normalizeTraitFocus(
+      (raw as unknown as { traitFocus?: string | string[] }).traitFocus
+    ),
     targetHexagon: raw.targetHexagon ?? DEFAULT_BLUEPRINT.targetHexagon,
     constraints: {
       ...DEFAULT_CONSTRAINTS,
@@ -300,6 +298,7 @@ export function DeckWorkspace({
       },
     });
     setLeftPoolTab('suggested');
+    setStrategyOpen(false);
   };
 
   const handleCreateNewBlank = () => {
@@ -557,26 +556,6 @@ export function DeckWorkspace({
   const mainQtyByNo = new Map(activeDeck.mainDeck.map((e) => [e.cardNo, e.qty]));
   const resQtyByNo = new Map(activeDeck.resourceDeck.map((e) => [e.cardNo, e.qty]));
 
-  const toggleStyle = (tag: TacticalStyleTag) => {
-    const next = blueprint.styles.includes(tag)
-      ? blueprint.styles.filter((s) => s !== tag)
-      : [...blueprint.styles, tag];
-    updateBlueprint({ styles: next.length > 0 ? next : [tag] });
-  };
-
-  const toggleEffectStyle = (tag: EffectStyleTag) => {
-    const next = blueprint.effectStyles.includes(tag)
-      ? blueprint.effectStyles.filter((s) => s !== tag)
-      : [...blueprint.effectStyles, tag];
-    updateBlueprint({ effectStyles: next });
-  };
-
-  const toggleAllowedSet = (code: string) => {
-    const prev = blueprint.constraints.allowedPackageCodes;
-    const next = prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code];
-    updateConstraints({ allowedPackageCodes: next });
-  };
-
   return (
     <div className="space-y-5">
       {/* Top Deck Management Strip */}
@@ -748,423 +727,17 @@ export function DeckWorkspace({
       {/* TAB 1: CONSOLIDATED BUILD & CARDS (STRATEGY GENERATOR + SEARCH/SUGGESTIONS + VISUAL DECKLIST) */}
       {subTab === 'build' && (
         <div className="space-y-5">
-          {/* Collapsible Strategy & Constraints Deck Generator */}
-          <section className="rounded-xl border border-white/[0.08] bg-[#131822]">
-            <button
-              type="button"
-              onClick={() => setStrategyOpen((v) => !v)}
-              className="flex w-full items-center justify-between px-5 py-3.5 text-left"
-            >
-              <div className="flex items-center gap-2.5">
-                <Wand2 className="h-4 w-4 text-blue-400 shrink-0" />
-                <div>
-                  <h2 className="font-display text-base font-bold text-white">
-                    Strategy &amp; Constraints Deck Generator
-                  </h2>
-                  <p className="text-[11px] text-slate-400">
-                    Multi-select Build Strategies &amp; Effect Styles · Trait + Link Coherence (no Series) · Hard Generation Caps
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-slate-300 shrink-0">
-                <span className="hidden sm:inline font-mono text-[11px] text-slate-400">
-                  {blueprint.colors.length > 0 ? blueprint.colors.join('/') : 'Auto Best 2'} ·{' '}
-                  {blueprint.styles.length} style(s) · {blueprint.effectStyles.length} effect(s)
-                </span>
-                {strategyOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </div>
-            </button>
-
-            {strategyOpen && (
-              <div className="border-t border-white/[0.08] p-5 space-y-6">
-                {/* Row 1: Colors, Pacing, Trait Focus */}
-                <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-                  <div className="lg:col-span-5 space-y-2">
-                    <label className="block text-xs font-medium text-slate-300">
-                      Target Colors (1–2 colors or Auto Best 2)
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => updateBlueprint({ colors: [] })}
-                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                          blueprint.colors.length === 0
-                            ? 'border-amber-400/60 bg-amber-500/15 text-amber-200'
-                            : 'border-white/10 bg-[#0B0E14] text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        Any (Auto Best 2)
-                      </button>
-                      {COLORS.map((col) => {
-                        const selected = blueprint.colors.includes(col);
-                        const meta = CARD_COLOR_META[col];
-                        return (
-                          <button
-                            key={col}
-                            type="button"
-                            onClick={() => {
-                              const next = selected
-                                ? blueprint.colors.filter((c) => c !== col)
-                                : blueprint.colors.length < 2
-                                ? [...blueprint.colors, col]
-                                : [blueprint.colors[1], col];
-                              updateBlueprint({ colors: next });
-                            }}
-                            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                              selected
-                                ? `${meta.softBg} ${meta.border} text-white`
-                                : 'border-white/10 bg-[#0B0E14] text-slate-400 hover:text-white'
-                            }`}
-                          >
-                            <span
-                              className="h-2.5 w-2.5 rounded-xs"
-                              style={{ backgroundColor: meta.hex }}
-                            />
-                            <span>{col}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-4 space-y-2">
-                    <label className="block text-xs font-medium text-slate-300">
-                      Target Pacing
-                    </label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {PACING_OPTIONS.map((p) => (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => updateBlueprint({ pacing: p })}
-                          className={`rounded-lg border px-2.5 py-1.5 text-left text-xs font-medium transition-colors ${
-                            blueprint.pacing === p
-                              ? 'border-blue-500/60 bg-blue-500/15 text-white'
-                              : 'border-white/10 bg-[#0B0E14] text-slate-300 hover:bg-white/[0.04]'
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-3 space-y-2">
-                    <label className="block text-xs font-medium text-slate-300">
-                      Trait Focus (Coherence Anchor)
-                    </label>
-                    <select
-                      value={blueprint.traitFocus}
-                      onChange={(e) => updateBlueprint({ traitFocus: e.target.value })}
-                      className="w-full rounded-lg border border-white/10 bg-[#0B0E14] px-3 py-2 text-xs text-white"
-                    >
-                      <option value="">Any Trait / Faction</option>
-                      {topTraits.map((tr) => (
-                        <option key={tr} value={tr}>
-                          {tr}
-                        </option>
-                      ))}
-                    </select>
-                    <p className="text-[11px] text-slate-400">
-                      Coherence scores Traits + Pilot–Unit Linkage (Series excluded).
-                    </p>
-                  </div>
-                </div>
-
-                {/* Row 2: Multi-Select Build Deck Strategies (with descriptions) */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-300">
-                      Build Deck Strategies (select multiple)
-                    </label>
-                    <span className="text-[11px] text-slate-400">
-                      {blueprint.styles.length} selected
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                    {TACTICAL_STYLE_META.map((item) => {
-                      const active = blueprint.styles.includes(item.tag);
-                      return (
-                        <button
-                          key={item.tag}
-                          type="button"
-                          onClick={() => toggleStyle(item.tag)}
-                          className={`rounded-lg border p-2.5 text-left transition-colors ${
-                            active
-                              ? 'border-blue-500/60 bg-blue-500/15 text-white'
-                              : 'border-white/[0.07] bg-[#0B0E14] text-slate-300 hover:border-white/20'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-semibold">{item.tag}</span>
-                            {active && <Check className="h-3.5 w-3.5 text-blue-400 shrink-0" />}
-                          </div>
-                          <p className="mt-1 text-[11px] leading-snug text-slate-400">
-                            {item.description}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Row 3: Multi-Select Effect Styles (with descriptions) */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-300">
-                      Effect Styles (card mechanics weighted during suggestion &amp; generation)
-                    </label>
-                    <span className="text-[11px] text-slate-400">
-                      {blueprint.effectStyles.length} selected
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {EFFECT_STYLE_META.map((ef) => {
-                      const active = blueprint.effectStyles.includes(ef.tag);
-                      return (
-                        <button
-                          key={ef.tag}
-                          type="button"
-                          onClick={() => toggleEffectStyle(ef.tag)}
-                          className={`rounded-lg border p-2.5 text-left transition-colors ${
-                            active
-                              ? 'border-emerald-500/60 bg-emerald-500/12 text-white'
-                              : 'border-white/[0.07] bg-[#0B0E14] text-slate-300 hover:border-white/20'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-semibold">{ef.label}</span>
-                            {active && (
-                              <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                            )}
-                          </div>
-                          <p className="mt-1 text-[11px] leading-snug text-slate-400">
-                            {ef.description}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Row 4: Constraints & Target Hexagon Sliders */}
-                <div className="grid grid-cols-1 gap-5 border-t border-white/[0.08] pt-4 lg:grid-cols-12">
-                  {/* Constraints Panel */}
-                  <div className="lg:col-span-7 space-y-3 rounded-lg border border-white/[0.07] bg-[#0B0E14] p-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-                        Deck Generation Limitations &amp; Constraints
-                      </h3>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        Official 50+10 · ≤2 Colors · ≤4 Copies
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Max Copies</label>
-                        <select
-                          value={blueprint.constraints.maxCopiesPerCard}
-                          onChange={(e) =>
-                            updateConstraints({
-                              maxCopiesPerCard: Number(e.target.value) as 1 | 2 | 3 | 4,
-                            })
-                          }
-                          className="w-full rounded-md border border-white/10 bg-[#131822] px-2 py-1.5 text-xs text-white font-mono"
-                        >
-                          <option value={4}>4 (Official)</option>
-                          <option value={3}>3 copies</option>
-                          <option value={2}>2 copies</option>
-                          <option value={1}>1 (Highlander)</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Max Cost</label>
-                        <select
-                          value={blueprint.constraints.maxCost ?? ''}
-                          onChange={(e) =>
-                            updateConstraints({
-                              maxCost: e.target.value ? Number(e.target.value) : null,
-                            })
-                          }
-                          className="w-full rounded-md border border-white/10 bg-[#131822] px-2 py-1.5 text-xs text-white font-mono"
-                        >
-                          <option value="">No Cap</option>
-                          {[2, 3, 4, 5, 6].map((n) => (
-                            <option key={n} value={n}>
-                              Cost ≤ {n}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Max Lv.</label>
-                        <select
-                          value={blueprint.constraints.maxLv ?? ''}
-                          onChange={(e) =>
-                            updateConstraints({
-                              maxLv: e.target.value ? Number(e.target.value) : null,
-                            })
-                          }
-                          className="w-full rounded-md border border-white/10 bg-[#131822] px-2 py-1.5 text-xs text-white font-mono"
-                        >
-                          <option value="">No Cap</option>
-                          {[3, 4, 5, 6, 7].map((n) => (
-                            <option key={n} value={n}>
-                              Lv. ≤ {n}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Rarity Cap</label>
-                        <select
-                          value={blueprint.constraints.rarityCap}
-                          onChange={(e) =>
-                            updateConstraints({
-                              rarityCap: e.target.value as DeckGenerationConstraints['rarityCap'],
-                            })
-                          }
-                          className="w-full rounded-md border border-white/10 bg-[#131822] px-2 py-1.5 text-xs text-white"
-                        >
-                          <option value="ALL">All Rarities</option>
-                          <option value="NO_LR">Budget (No LR)</option>
-                          <option value="C_U_R_ONLY">C / U / R Only</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Allowed Sets Multi-Select */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-[11px] text-slate-400">
-                        <span>
-                          Allowed Set Pool (
-                          {blueprint.constraints.allowedPackageCodes.length === 0
-                            ? 'All Sets'
-                            : `${blueprint.constraints.allowedPackageCodes.length} selected`}
-                          )
-                        </span>
-                        {blueprint.constraints.allowedPackageCodes.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => updateConstraints({ allowedPackageCodes: [] })}
-                            className="text-blue-400 hover:text-blue-300"
-                          >
-                            Reset to All Sets
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex max-h-20 flex-wrap gap-1 overflow-y-auto pr-1">
-                        {packages.map((pkg) => {
-                          const active = blueprint.constraints.allowedPackageCodes.includes(pkg.code);
-                          return (
-                            <button
-                              key={pkg.id}
-                              type="button"
-                              onClick={() => toggleAllowedSet(pkg.code)}
-                              className={`rounded border px-2 py-0.5 font-mono text-[11px] transition-colors ${
-                                active
-                                  ? 'border-blue-500/60 bg-blue-500/20 text-blue-200'
-                                  : 'border-white/[0.08] bg-[#131822] text-slate-400 hover:text-white'
-                              }`}
-                            >
-                              {pkg.code}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Strict Trait / Link Lock */}
-                    <label className="flex items-start gap-2.5 rounded-md border border-white/[0.06] bg-[#131822] p-2.5 text-xs cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={blueprint.constraints.strictTraitLinkLock}
-                        onChange={(e) =>
-                          updateConstraints({ strictTraitLinkLock: e.target.checked })
-                        }
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-blue-500"
-                      />
-                      <div>
-                        <div className="flex items-center gap-1.5 font-medium text-white">
-                          <Lock className="h-3.5 w-3.5 text-amber-300" />
-                          <span>Strict Trait / Link Lock</span>
-                        </div>
-                        <p className="mt-0.5 text-[11px] text-slate-400">
-                          When enabled, excludes all cards outside your selected Trait Focus &amp; its Link partners (or requires Units/Pilots to form a valid Link pair if no Trait is picked). Never filters by Series.
-                        </p>
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* Target Hexagon Sliders + Feasibility & Generate */}
-                  <div className="lg:col-span-5 flex flex-col justify-between space-y-3 rounded-lg border border-white/[0.07] bg-[#0B0E14] p-4">
-                    <div className="space-y-2">
-                      <div className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-                        Target 6-Axis Hexagon Weights
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                        {HEXAGON_AXIS_META.map((ax) => (
-                          <div key={ax.key} className="space-y-0.5">
-                            <div className="flex items-center justify-between text-[11px]">
-                              <span className="text-slate-300">{ax.shortLabel}</span>
-                              <span className="font-mono tabular-nums text-amber-300">
-                                {blueprint.targetHexagon[ax.key]}
-                              </span>
-                            </div>
-                            <input
-                              type="range"
-                              min={15}
-                              max={95}
-                              step={5}
-                              value={blueprint.targetHexagon[ax.key]}
-                              onChange={(e) =>
-                                updateBlueprint({
-                                  targetHexagon: {
-                                    ...blueprint.targetHexagon,
-                                    [ax.key]: Number(e.target.value),
-                                  },
-                                })
-                              }
-                              className="w-full accent-amber-400"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2.5 border-t border-white/[0.06] pt-3">
-                      <div
-                        className={`rounded-md border px-3 py-2 text-[11px] leading-snug ${
-                          feasibility.feasible
-                            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'
-                            : 'border-red-500/40 bg-red-500/10 text-red-200'
-                        }`}
-                      >
-                        {feasibility.reason}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleGenerateFromStrategy}
-                        disabled={!feasibility.feasible}
-                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-40 transition-colors"
-                      >
-                        <Wand2 className="h-4 w-4" />
-                        <span>Generate Legal 50+10 Deck</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
+          <StrategyGeneratorPanel
+            open={strategyOpen}
+            onToggleOpen={() => setStrategyOpen((v) => !v)}
+            blueprint={blueprint}
+            packages={packages}
+            topTraits={topTraits}
+            feasibility={feasibility}
+            onUpdateBlueprint={updateBlueprint}
+            onUpdateConstraints={updateConstraints}
+            onGenerate={handleGenerateFromStrategy}
+          />
 
           {/* Two-Column Build Area: Left (Search / Suggested Cards) | Right (Visual Decklist) */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

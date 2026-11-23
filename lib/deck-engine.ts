@@ -171,12 +171,32 @@ export const DEFAULT_CONSTRAINTS: DeckGenerationConstraints = {
   strictTraitLinkLock: false,
 };
 
+export function normalizeTraitFocus(raw?: string | string[] | null): string[] {
+  if (Array.isArray(raw)) {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const item of raw) {
+      const trimmed = typeof item === 'string' ? item.trim() : '';
+      if (trimmed && !seen.has(trimmed.toLowerCase())) {
+        seen.add(trimmed.toLowerCase());
+        out.push(trimmed);
+      }
+    }
+    return out;
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    return trimmed ? [trimmed] : [];
+  }
+  return [];
+}
+
 export const DEFAULT_BLUEPRINT: StrategyBlueprint = {
   colors: ['Blue', 'White'],
   pacing: 'Midrange Tempo',
   styles: ['Link-Strike'],
   effectStyles: [],
-  traitFocus: '',
+  traitFocus: [],
   targetHexagon: {
     aggro: 65,
     defense: 60,
@@ -1571,13 +1591,17 @@ export function filterPoolByConstraints(
 
   // Strict Trait / Link Lock (NO Series!)
   if (c.strictTraitLinkLock) {
-    if (blueprint.traitFocus) {
-      const focusLower = blueprint.traitFocus.toLowerCase();
-      const traitMatches = pool.filter((card) =>
-        card.traits.some((t) => t.toLowerCase() === focusLower || t.toLowerCase().includes(focusLower))
-      );
+    const focuses = normalizeTraitFocus(blueprint.traitFocus as unknown as string | string[]);
+    if (focuses.length > 0) {
+      const focusLowers = focuses.map((f) => f.toLowerCase());
+      const matchesAnyTrait = (card: GundamCardPrint) =>
+        card.traits.some((t) => {
+          const tl = t.toLowerCase();
+          return focusLowers.some((fl) => tl === fl || tl.includes(fl));
+        });
+      const traitMatches = pool.filter(matchesAnyTrait);
       pool = pool.filter((card) => {
-        if (card.traits.some((t) => t.toLowerCase().includes(focusLower))) return true;
+        if (matchesAnyTrait(card)) return true;
         if (card.type === 'PILOT' && traitMatches.some((u) => u.type === 'UNIT' && doesPilotLinkUnit(card, u))) {
           return true;
         }
@@ -1794,12 +1818,15 @@ export function getRecommendedCardsForStrategy(
     }
 
     // 4. Trait + Linkage Coherence Counting (Series intentionally excluded per Q9)
-    if (
-      blueprint.traitFocus &&
-      card.traits.some((tr) => tr.toLowerCase().includes(blueprint.traitFocus.toLowerCase()))
-    ) {
-      coherenceScore += 32;
-      reasons.push(`Trait coherence: (${blueprint.traitFocus})`);
+    const focuses = normalizeTraitFocus(blueprint.traitFocus as unknown as string | string[]);
+    if (focuses.length > 0) {
+      const matchedFocuses = focuses.filter((focus) =>
+        card.traits.some((tr) => tr.toLowerCase().includes(focus.toLowerCase()))
+      );
+      if (matchedFocuses.length > 0) {
+        coherenceScore += 32;
+        reasons.push(`Trait coherence: (${matchedFocuses.join(', ')})`);
+      }
     }
 
     // Shared Trait overlap with cards already in deck (or dense Trait clusters in pool)

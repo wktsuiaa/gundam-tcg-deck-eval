@@ -13,18 +13,18 @@ Every deck is evaluated across six normalized `0–100` axes derived from indivi
 
 ## 2. Effect Style Detection (`detectEffectStyles`)
 
-Card effect text is classified into 12 tactical Effect Styles using deterministic pattern rules (`AP Deduction`, `Destroy`, `Damage Proof`, `Repair`, `Bounce`, `Rest Lock`, `Direct Damage`, `Draw & Search`, `Trash Recursion`, `Resource Ramp`, `Combat Keywords`, `Token Deploy`). Selecting Effect Styles in `StrategyBlueprint` awards `+18` fit points per matched effect style on candidate cards.
+Card effect text is classified into 12 tactical Effect Styles using deterministic pattern rules (`AP Deduction`, `Destroy`, `Damage Proof`, `Repair`, `Bounce`, `Rest Lock`, `Direct Damage`, `Draw & Search`, `Trash Recursion`, `Resource Ramp`, `Combat Keywords`, `Token Deploy`). Selecting up to 2 Effect Styles in `StrategyBlueprint` awards `+18` fit points per matched effect style on candidate cards.
 
 ## 3. Trait + Linkage Coherence Scoring (Series & FAQs Excluded)
 
 In `getRecommendedCardsForStrategy`:
 - **Strict Scope**: Card **Series (`sourceTitle`)** and **Official Card FAQs (`faqs`)** are intentionally **excluded** from all recommendation, coherence, and constraint calculations. FAQs are stored purely for display in `CardDetailDrawer` and `RulesModal`.
-- **Trait Coherence**: Awards up to `+32` when matching `traitFocus`, up to `+28` proportional to shared Trait frequency with cards already in the deck (`sharedTraitHits × 4`), and `+20` when a card's effect tutors/buffs a Trait cluster present in the deck.
+- **Trait Coherence**: Awards `+32` when matching any selected `traitFocus` (OR logic), up to `+28` proportional to shared Trait frequency with cards already in the deck (`sharedTraitHits × 4`), and `+20` when a card's effect tutors/buffs a Trait cluster present in the deck.
 - **Pilot–Unit Linkage Coherence**: Awards `+36` (+6 per additional matching partner up to `+18`) when a Pilot links with Units already in the deck (or `+34` for a Link Unit matching Pilots in the deck).
 
 ## 4. Constraint Filtering & Auto Best-2 Generation (`generateStrategyDeck`)
 
-1. `filterPoolByConstraints` filters unique base prints by `allowedPackageCodes`, `maxCost`, `maxLv`, `rarityCap`, target `colors`, and `strictTraitLinkLock` (which restricts to selected `traitFocus` + its Link partners, or Link-capable Unit/Pilot pairs if no trait is chosen).
+1. `filterPoolByConstraints` filters unique base prints by `allowedPackageCodes`, `maxCost`, `maxLv`, `rarityCap`, target `colors`, and `strictTraitLinkLock` (which restricts to any selected `traitFocus` via OR logic + their Link partners, or Link-capable Unit/Pilot pairs if no trait is chosen).
 2. `evaluateConstraintFeasibility` verifies that at least 50 Main Deck card slots are reachable under `maxCopiesPerCard`.
 3. If `colors` is empty (**Any — Auto Best 2**), all 10 two-color combinations (`Blue`, `Green`, `Red`, `Purple`, `White`) are scored on their top 25 recommended cards, and the highest-scoring legal pair is selected.
 4. Slots are filled deterministically according to pacing ratios (early Cost ≤ 2 Units, curve Units, Link-matched Pilots, Bases, Commands) followed by top-fit fill up to 50 Main + 10 Resource cards.

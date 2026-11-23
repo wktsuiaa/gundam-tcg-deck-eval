@@ -9,9 +9,11 @@ import {
   detectEffectStyles,
   evaluateConstraintFeasibility,
   exportDeckToText,
+  filterPoolByConstraints,
   generateStrategyDeck,
   getRecommendedCardsForStrategy,
   META_ARCHETYPES,
+  normalizeTraitFocus,
   parseDeckFromText,
   resolveCardMap,
   validateDeck,
@@ -234,7 +236,7 @@ describe('Effect Styles, Coherence (No Series) & Generation Constraints', () => 
     const bp: StrategyBlueprint = {
       ...DEFAULT_BLUEPRINT,
       colors: ['Blue'],
-      traitFocus: 'Zeon',
+      traitFocus: ['Zeon'],
     };
 
     const recs = getRecommendedCardsForStrategy([cardA, cardB], bp, [], 10);
@@ -243,12 +245,50 @@ describe('Effect Styles, Coherence (No Series) & Generation Constraints', () => 
     expect(recs[0].coherenceScore).toBe(recs[1].coherenceScore);
   });
 
+  it('matches multi-select Trait Focus using OR logic and normalizes legacy strings', () => {
+    expect(normalizeTraitFocus('Zeon')).toEqual(['Zeon']);
+    expect(normalizeTraitFocus('')).toEqual([]);
+    expect(normalizeTraitFocus(['Zeon', 'zeon', ' Neo Zeon '])).toEqual(['Zeon', 'Neo Zeon']);
+
+    const zeonCard = makeCard({
+      printId: 'GD02-010',
+      cardNo: 'GD02-010',
+      name: 'Zeon Scout',
+      traits: ['Zeon'],
+    });
+    const fedCard = makeCard({
+      printId: 'GD02-011',
+      cardNo: 'GD02-011',
+      name: 'Fed Guard',
+      traits: ['Earth Federation'],
+    });
+    const otherCard = makeCard({
+      printId: 'GD02-012',
+      cardNo: 'GD02-012',
+      name: 'Civ Shuttle',
+      traits: ['Civilian'],
+    });
+
+    const bp: StrategyBlueprint = {
+      ...DEFAULT_BLUEPRINT,
+      colors: ['Blue'],
+      traitFocus: ['Zeon', 'Earth Federation'],
+      constraints: {
+        ...DEFAULT_CONSTRAINTS,
+        strictTraitLinkLock: true,
+      },
+    };
+
+    const pool = filterPoolByConstraints([zeonCard, fedCard, otherCard], bp);
+    expect(pool.map((c) => c.cardNo)).toEqual(['GD02-010', 'GD02-011']);
+  });
+
   it('generates a legal 50+10 deck obeying maxCopiesPerCard, maxCost, and rarityCap constraints', () => {
     const bp: StrategyBlueprint = {
       ...DEFAULT_BLUEPRINT,
       colors: [], // Test Any (Auto Best 2)
-      styles: ['Link-Strike', 'Command Control'],
-      effectStyles: ['AP Deduction', 'Destroy', 'Repair'],
+      styles: ['Link-Strike'],
+      effectStyles: ['AP Deduction', 'Destroy'],
       constraints: {
         ...DEFAULT_CONSTRAINTS,
         maxCopiesPerCard: 3,
