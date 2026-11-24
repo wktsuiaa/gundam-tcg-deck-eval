@@ -10,9 +10,15 @@ import type {
   GundamPackage,
   RulesPayload,
 } from '@/types/gundam';
+import {
+  getEffectSetPrefix,
+  type CompiledCardEffect,
+  type EffectShardFile,
+} from '@/lib/effect-parser';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const COLLECTIONS_DIR = path.resolve(DATA_DIR, 'collections');
+const EFFECTS_DIR = path.resolve(DATA_DIR, 'effects');
 const PACKAGES_FILE = path.resolve(DATA_DIR, 'packages.json');
 const RULES_FILE = path.resolve(DATA_DIR, 'rules.json');
 const DB_FILE = path.resolve(DATA_DIR, 'gundam.db');
@@ -131,6 +137,12 @@ export function getDb(dbPath = DB_FILE): Database.Database {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS card_effects (
+      card_no TEXT PRIMARY KEY,
+      set_prefix TEXT NOT NULL,
+      payload_json TEXT NOT NULL
+    );
   `);
 
   if (dbPath === DB_FILE) {
@@ -145,12 +157,14 @@ export function writeCatalogToSqlite(
   cards: GundamCardPrint[],
   syncedAt: string,
   source: string,
-  rules?: RulesPayload
+  rules?: RulesPayload,
+  effectsByCardNo?: Map<string, CompiledCardEffect>
 ): void {
   const tx = db.transaction(() => {
     db.prepare('DELETE FROM card_packages').run();
     db.prepare('DELETE FROM cards').run();
     db.prepare('DELETE FROM packages').run();
+    db.prepare('DELETE FROM card_effects').run();
 
     const insertPkg = db.prepare(`
       INSERT INTO packages (id, code, name, category, card_count)
@@ -201,6 +215,15 @@ export function writeCatalogToSqlite(
         if (pkgIdSet.has(pid)) {
           insertJoin.run(c.printId, pid);
         }
+      }
+    }
+
+    if (effectsByCardNo) {
+      const insertEffect = db.prepare(`
+        INSERT INTO card_effects (card_no, set_prefix, payload_json) VALUES (?, ?, ?)
+      `);
+      for (const [cardNo, eff] of effectsByCardNo.entries()) {
+        insertEffect.run(cardNo, getEffectSetPrefix(cardNo), JSON.stringify(eff));
       }
     }
 
@@ -269,8 +292,17 @@ export function readCatalogFromSqlite(db: Database.Database): CatalogPayload | n
     faqs_json: string;
   }[];
 
+  const effectRows = db
+    .prepare('SELECT card_no, payload_json FROM card_effects')
+    .all() as { card_no: string; payload_json: string }[];
+  const effectsByCardNo = new Map<string, CompiledCardEffect>();
+  for (const row of effectRows) {
+    effectsByCardNo.set(row.card_no, JSON.parse(row.payload_json) as CompiledCardEffect);
+  }
+
   const cards: GundamCardPrint[] = cardRows.map((r) => {
     const memberPkgs = pkgsByPrint.get(r.print_id) ?? [];
+    const compiledEffect = effectsByCardNo.get(r.card_no);
     return {
       printId: r.print_id,
       cardNo: r.card_no,
@@ -297,6 +329,7 @@ export function readCatalogFromSqlite(db: Database.Database): CatalogPayload | n
       packageIds: memberPkgs.map((p) => p.id),
       packageNames: memberPkgs.map((p) => p.name),
       packageCodes: memberPkgs.map((p) => p.code),
+      ...(compiledEffect ? { compiledEffect } : {}),
     };
   });
 
@@ -417,6 +450,33 @@ export function sortCards(cards: GundamCardPrint[]): GundamCardPrint[] {
   });
 }
 
+export async function readCompiledEffectsFromShards(
+  dataDir = DATA_DIR
+): Promise<Map<string, CompiledCardEffect>> {
+  const effectsDir = path.resolve(dataDir, 'effects');
+  const map = new Map<string, CompiledCardEffect>();
+  let files: string[] = [];
+  try {
+    files = (await fs.readdir(effectsDir)).filter((f) => f.endsWith('.json')).sort();
+  } catch {
+    return map;
+  }
+
+  for (const file of files) {
+    const shardPath = path.resolve(effectsDir, file);
+    if (!shardPath.startsWith(effectsDir + path.sep)) continue;
+    try {
+      const parsed = JSON.parse(await fs.readFile(shardPath, 'utf-8')) as EffectShardFile;
+      for (const [cardNo, eff] of Object.entries(parsed.effects ?? {})) {
+        map.set(cardNo, eff);
+      }
+    } catch {
+      // ignore malformed or missing shard
+    }
+  }
+  return map;
+}
+
 async function getLatestShardMtimeMs(): Promise<number> {
   let latest = 0;
   for (const target of [PACKAGES_FILE, RULES_FILE]) {
@@ -427,27 +487,36 @@ async function getLatestShardMtimeMs(): Promise<number> {
       // ignore
     }
   }
-  try {
-    const files = await fs.readdir(COLLECTIONS_DIR);
-    for (const f of files) {
-      if (!f.endsWith('.json')) continue;
-      const st = await fs.stat(path.join(COLLECTIONS_DIR, f));
-      if (st.mtimeMs > latest) latest = st.mtimeMs;
+  for (const dir of [COLLECTIONS_DIR, EFFECTS_DIR]) {
+    try {
+      const files = await fs.readdir(dir);
+      for (const f of files) {
+        if (!f.endsWith('.json')) continue;
+        const st = await fs.stat(path.join(dir, f));
+        if (st.mtimeMs > latest) latest = st.mtimeMs;
+      }
+    } catch {
+      // ignore
     }
-  } catch {
-    // ignore
   }
   return latest;
 }
 
 export async function buildCatalogPayloadFromShards(dataDir = DATA_DIR): Promise<CatalogPayload> {
-  const split = await readSplitJsonCatalog(dataDir);
+  const [split, effectsByCardNo] = await Promise.all([
+    readSplitJsonCatalog(dataDir),
+    readCompiledEffectsFromShards(dataDir),
+  ]);
+  const cards = split.cards.map((c) => {
+    const compiledEffect = effectsByCardNo.get(c.cardNo);
+    return compiledEffect ? { ...c, compiledEffect } : c;
+  });
   return {
     syncedAt: split.syncedAt,
     source: split.source,
-    totalPrints: split.cards.length,
+    totalPrints: cards.length,
     packages: split.packages,
-    cards: split.cards,
+    cards,
     rules: split.rules,
   };
 }
@@ -469,15 +538,32 @@ export async function ensureHydratedCatalogFromDb(dbPath = DB_FILE): Promise<Cat
     }
 
     const shardMtime = await getLatestShardMtimeMs();
+    const effectsCountRow = db.prepare('SELECT COUNT(*) as cnt FROM card_effects').get() as { cnt: number };
     const existing = readCatalogFromSqlite(db);
 
-    if (existing && existing.cards.length > 0 && dbMtime >= shardMtime) {
+    if (
+      existing &&
+      existing.cards.length > 0 &&
+      effectsCountRow.cnt > 0 &&
+      dbMtime >= shardMtime
+    ) {
       return existing;
     }
 
-    const split = await readSplitJsonCatalog(DATA_DIR);
+    const [split, effectsByCardNo] = await Promise.all([
+      readSplitJsonCatalog(DATA_DIR),
+      readCompiledEffectsFromShards(DATA_DIR),
+    ]);
     if (split.cards.length > 0) {
-      writeCatalogToSqlite(db, split.packages, split.cards, split.syncedAt, split.source, split.rules);
+      writeCatalogToSqlite(
+        db,
+        split.packages,
+        split.cards,
+        split.syncedAt,
+        split.source,
+        split.rules,
+        effectsByCardNo
+      );
     }
 
     return (
@@ -486,7 +572,10 @@ export async function ensureHydratedCatalogFromDb(dbPath = DB_FILE): Promise<Cat
         source: split.source,
         totalPrints: split.cards.length,
         packages: split.packages,
-        cards: split.cards,
+        cards: split.cards.map((c) => {
+          const compiledEffect = effectsByCardNo.get(c.cardNo);
+          return compiledEffect ? { ...c, compiledEffect } : c;
+        }),
         rules: split.rules,
       }
     );

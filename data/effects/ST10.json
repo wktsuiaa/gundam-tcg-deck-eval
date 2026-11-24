@@ -1,0 +1,643 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST10",
+  "cardCount": 16,
+  "effects": {
+    "ST10-001": {
+      "cardNo": "ST10-001",
+      "sourcePrintId": "ST10-001",
+      "name": "Zeta Gundam (EX)",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "When this Unit destroys an enemy shield area card with battle damage, set it as active. It can't choose the same enemy player or enemy team as its attack target during this turn.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "It can't choose the same enemy player or enemy team as its attack target during this turn"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-002": {
+      "cardNo": "ST10-002",
+      "sourcePrintId": "ST10-002",
+      "name": "Zeta Gundam",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect:",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "EXILE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "count": 1,
+                "trait": "G Generation"
+              }
+            }
+          ],
+          "unparsedResidual": "If you do, activate the following effect:"
+        },
+        {
+          "raw": "Choose 1 enemy Unit with 4 or less HP. Rest it.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 4
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 4,
+          "reason": "Requires (G Generation) target",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST10-003": {
+      "cardNo": "ST10-003",
+      "sourcePrintId": "ST10-003",
+      "name": "Gundam Mk-II (AEUG)",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-004": {
+      "cardNo": "ST10-004",
+      "sourcePrintId": "ST10-004",
+      "name": "Super Gundam",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [
+        {
+          "name": "Repair",
+          "value": 2
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-005": {
+      "cardNo": "ST10-005",
+      "sourcePrintId": "ST10-005",
+      "name": "Nemo",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-006": {
+      "cardNo": "ST10-006",
+      "sourcePrintId": "ST10-006",
+      "name": "Phoenix Gundam (Power Unleashed) (EX)",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】During your turn, when this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand.",
+          "timings": [
+            "DURING_PAIR"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-007": {
+      "cardNo": "ST10-007",
+      "sourcePrintId": "ST10-007",
+      "name": "Gundam Barbatos 4th Form",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Linked・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect:",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "EXILE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "count": 1,
+                "trait": "G Generation"
+              }
+            }
+          ],
+          "unparsedResidual": "If you do, activate the following effect:"
+        },
+        {
+          "raw": "Choose 1 Command card that is Lv.4 or lower from your trash. Add it to your hand.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_FROM_TRASH_TO_HAND",
+              "target": {
+                "owner": "SELF",
+                "cardType": "COMMAND",
+                "count": 1,
+                "lvMax": 4,
+                "zone": "TRASH"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 4,
+          "reason": "Requires (G Generation) target",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST10-008": {
+      "cardNo": "ST10-008",
+      "sourcePrintId": "ST10-008",
+      "name": "Gundam Barbatos 1st Form",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect:",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "EXILE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "count": 1,
+                "trait": "G Generation"
+              }
+            }
+          ],
+          "unparsedResidual": "If you do, activate the following effect:"
+        },
+        {
+          "raw": "Draw a number of cards equal to the number of enemy players. Then, discard the same number of cards you drew with this effect.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "Draw a number of cards equal to the number of enemy players Then, discard the same number of cards you drew with this effect"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 4,
+          "reason": "Requires (G Generation) target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST10-009": {
+      "cardNo": "ST10-009",
+      "sourcePrintId": "ST10-009",
+      "name": "Graze Duel Type",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-010": {
+      "cardNo": "ST10-010",
+      "sourcePrintId": "ST10-010",
+      "name": "Mobile Worker (Tekkadan)",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-011": {
+      "cardNo": "ST10-011",
+      "sourcePrintId": "ST10-011",
+      "name": "Kamille Bidan",
+      "type": "PILOT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Linked】If 2 or more rested Units are in play, choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Rest it.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If 2 or more rested Units are in play"
+          },
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST10-012": {
+      "cardNo": "ST10-012",
+      "sourcePrintId": "ST10-012",
+      "name": "Mark Guilder",
+      "type": "PILOT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-2 during this turn.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST10-013": {
+      "cardNo": "ST10-013",
+      "sourcePrintId": "ST10-013",
+      "name": "Tactical Training",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】/【Action】Choose 1 (G Generation) Unit that is Lv.5 or higher. It recovers 2 HP and gets AP+2 during this turn.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ANY",
+                "count": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-014": {
+      "cardNo": "ST10-014",
+      "sourcePrintId": "ST10-014",
+      "name": "Unlocking the Development Diagram",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "When playing this card from your hand, you may discard 1 (G Generation) Unit card. If you do, play this card as if it has 2 Lv. and cost.",
+          "timings": [
+            "WHEN_PLAYING"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "you may discard 1 (G Generation) Unit card If you do, play this card as if it has 2 Lv. and cost"
+        },
+        {
+          "raw": "【Main】Draw 2.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 2,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST10-015": {
+      "cardNo": "ST10-015",
+      "sourcePrintId": "ST10-015",
+      "name": "Diffuse Beam Cannon",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Action】If a friendly (G Generation) Unit is in play, choose 1 enemy Unit. It gets AP-3 during this battle.",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If a friendly (G Generation) Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -3,
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Claire Heathrow]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Claire Heathrow]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (G Generation)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST10-016": {
+      "cardNo": "ST10-016",
+      "sourcePrintId": "ST10-016",
+      "name": "Luna Mana & Carry Base",
+      "type": "BASE",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, all friendly (G Generation) Units recover 1 HP.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "RECOVER_HP",
+              "amount": 1,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "trait": "G Generation"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (G Generation) UNIT target",
+          "primaryClause": false
+        }
+      ]
+    }
+  }
+}

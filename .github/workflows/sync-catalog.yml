@@ -1,0 +1,69 @@
+name: Sync Catalog & Compile Effects
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  push:
+    branches:
+      - main
+    paths:
+      - 'data/collections/**'
+      - 'lib/effect-parser.ts'
+      - 'scripts/compile_effects.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-catalog-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sync-and-compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Python
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Sync official rules and card catalog
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          python3 scripts/sync_rules.py
+          python3 scripts/sync_catalog.py
+
+      - name: Compile card effects into Effect Shards
+        run: npm run compile:effects
+
+      - name: Verify tests, lint, and production build
+        run: |
+          npm test
+          npm run lint
+          npm run build
+
+      - name: Commit and push updated data shards
+        run: |
+          if [ -n "$(git status --porcelain data/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/
+            git commit -m "chore(data): sync catalog and compile effect shards [skip ci]"
+            git push
+          else
+            echo "No changes in data/ to commit."
+          fi

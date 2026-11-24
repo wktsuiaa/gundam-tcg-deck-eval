@@ -44,3 +44,10 @@ _Avoid_: Effect Style, mechanic tag
 A condition or friendly card requirement inside an **Effect Clause**—such as a required friendly `(Trait)` Unit, Pilot, color, card type, or minimum card density in play or in the Trash—that must be supported by the deck or board state for the clause to resolve.
 _Avoid_: Generation Constraint, Trait Focus
 
+**Compiled Card Effect**:
+The pre-compiled, deterministic record for a unique card number containing its **Keyword Abilities**, **Effect Clauses**, **Effect Prerequisites**, and synergy profile derived offline from raw catalog prose.
+_Avoid_: Effect cache, parsed effect JSON, runtime IR
+
+**Effect Shard**:
+A set-prefix JSON file grouping **Compiled Card Effects** by card number prefix so reprints across multiple packages are stored once.
+_Avoid_: Effect dump, effect collection, parsed shard

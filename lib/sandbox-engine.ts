@@ -10,15 +10,20 @@ import type {
 } from '@/types/gundam';
 import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
 import { expandEntries, scoreSingleCardSignals } from '@/lib/deck-engine';
-import {
-  parseCardEffects,
-  type ActivationCost,
-  type EffectClause,
-  type EffectCondition,
-  type EffectTiming,
-  type KeywordName,
-  type TargetSelector,
+import type {
+  ActivationCost,
+  EffectClause,
+  EffectCondition,
+  EffectTiming,
+  KeywordName,
+  ParsedCardEffects,
+  TargetSelector,
 } from '@/lib/effect-parser';
+
+const EMPTY_PARSED_EFFECTS: Pick<ParsedCardEffects, 'keywords' | 'clauses'> = {
+  keywords: [],
+  clauses: [],
+};
 
 function shuffleCards(cards: GundamCardPrint[]): GundamCardPrint[] {
   const arr = [...cards];
@@ -101,7 +106,7 @@ function unitKeywordValue(
 ): number | null {
   const cards = u.pairedPilot ? [u.card, u.pairedPilot] : [u.card];
   for (const c of cards) {
-    const parsed = parseCardEffects(c);
+    const parsed = c.compiledEffect ?? EMPTY_PARSED_EFFECTS;
     const innate = parsed.keywords.find((k) => k.name === name);
     if (innate) return innate.value ?? 1;
 
@@ -192,7 +197,7 @@ export function getLegalTargetOptions(
   timing: EffectTiming,
   selfUnit?: SandboxUnitInstance
 ): SandboxUnitInstance[] {
-  const parsed = parseCardEffects(card);
+  const parsed = card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
   for (const clause of parsed.clauses) {
     if (!clause.timings.includes(timing)) continue;
     if (!checkCondition(clause.condition, state, side, selfUnit)) continue;
@@ -586,7 +591,7 @@ function resolveClausesForTiming(
   targetInstanceId?: string,
   destroyedByBattle = false
 ): string[] {
-  const parsed = parseCardEffects(card);
+  const parsed = card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
   const notes: string[] = [];
   for (const clause of parsed.clauses) {
     if (!clause.timings.includes(timing)) continue;
@@ -630,7 +635,7 @@ export function canUnitAttack(unit: SandboxUnitInstance, currentTurn: number): b
 
 export function canActivateUnitMain(state: SandboxMatchState, side: SandboxSide, unit: SandboxUnitInstance): boolean {
   const player = state.players[side];
-  const parsed = parseCardEffects(unit.card);
+  const parsed = unit.card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
   const clause = parsed.clauses.find((c) => c.timings.includes('ACTIVATE_MAIN'));
   if (!clause || clause.unparsedResidual) return false;
   if (clause.oncePerTurn && unit.activatedMainTurn === state.turn) return false;
@@ -735,7 +740,7 @@ export function applySandboxMove(
   } else if (move.actionType === 'ACTIVATE_MAIN' && move.unitInstanceId) {
     const unit = player.battleArea.find((u) => u.instanceId === move.unitInstanceId);
     if (unit && canActivateUnitMain(next, side, unit)) {
-      const parsed = parseCardEffects(unit.card);
+      const parsed = unit.card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
       const clause = parsed.clauses.find((c) => c.timings.includes('ACTIVATE_MAIN'));
       if (clause) {
         unit.activatedMainTurn = next.turn;

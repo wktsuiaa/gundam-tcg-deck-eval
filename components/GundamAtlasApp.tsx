@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { RefreshCw, CheckCircle2, X } from 'lucide-react';
+import { CheckCircle2, X } from 'lucide-react';
 import type {
   CatalogPayload,
   GundamCardGroup,
@@ -28,7 +28,7 @@ const LS_DECKS_KEY = 'gundam_atlas_decks_v1';
 const LS_ACTIVE_DECK_KEY = 'gundam_atlas_active_deck_v1';
 
 export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
-  const [catalog, setCatalog] = useState<CatalogPayload>(initialCatalog);
+  const catalog = initialCatalog;
   const [activeTab, setActiveTab] = useState<'catalog' | 'deck' | 'sandbox'>('catalog');
   const [decks, setDecks] = useState<SavedDeck[]>([]);
   const [activeDeckId, setActiveDeckId] = useState<string>('');
@@ -37,8 +37,7 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
   // Card Inspector state
   const [inspected, setInspected] = useState<{ cardNo: string; printId?: string } | null>(null);
 
-  // Sync status
-  const [syncing, setSyncing] = useState(false);
+  // Inline action notice
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
   const { byCardNo } = useMemo(() => resolveCardMap(catalog.cards), [catalog.cards]);
@@ -147,33 +146,6 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
     });
   };
 
-  const handleSyncOfficial = async () => {
-    if (syncing) return;
-    setSyncing(true);
-    setSyncNotice('Syncing official Asia-English catalog from gundam-gcg.com...');
-    try {
-      const res = await fetch('/api/cards/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ force: false }),
-      });
-      if (!res.ok) throw new Error('Sync error');
-      const data = await res.json();
-      if (data.catalog) {
-        setCatalog(data.catalog);
-      }
-      setSyncNotice(
-        data.persistedToDisk === false
-          ? `Sync complete (session-only on read-only host): ${data.totalPrints} official prints indexed (${data.addedCount} new, ${data.updatedCount} updated). Permanent updates come from GitHub Actions.`
-          : `Sync complete: ${data.totalPrints} official prints indexed (${data.addedCount} new, ${data.updatedCount} updated).`
-      );
-    } catch {
-      setSyncNotice('Unable to reach gundam-gcg.com right now; using bundled catalog data.');
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   const inspectedGroup = inspected ? cardGroupsByNo.get(inspected.cardNo) : undefined;
 
   return (
@@ -214,19 +186,6 @@ export function GundamAtlasApp({ initialCatalog }: GundamAtlasAppProps) {
               );
             })}
           </nav>
-
-          {/* Zone 3: 1 primary action */}
-          <div className="shrink-0">
-            <button
-              type="button"
-              onClick={handleSyncOfficial}
-              disabled={syncing}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-60 transition-colors whitespace-nowrap shrink-0"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
-              <span>{syncing ? 'Syncing...' : 'Sync Cards'}</span>
-            </button>
-          </div>
         </div>
       </header>
 

@@ -1,0 +1,738 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST12",
+  "cardCount": 16,
+  "effects": {
+    "ST12-001": {
+      "cardNo": "ST12-001",
+      "sourcePrintId": "ST12-001",
+      "name": "Gundam Epyon",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair･Lv.5 or Higher Pilot】During your turn, when this Unit destroys an enemy Unit with damage, deal 2 damage to all enemy Units with 5 or less AP.",
+          "timings": [
+            "DURING_PAIR"
+          ],
+          "oncePerTurn": false,
+          "pairFilter": {
+            "lvMin": 5
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "apMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Choose 1 enemy Base. Deal 5 damage to it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 5,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "BASE",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST12-002": {
+      "cardNo": "ST12-002",
+      "sourcePrintId": "ST12-002",
+      "name": "Shining Gundam",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 friendly Unit with 5 or more AP. It gains <Breach 3> during this turn.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 3
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "apMin": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST12-003": {
+      "cardNo": "ST12-003",
+      "sourcePrintId": "ST12-003",
+      "name": "Tallgeese Ⅲ",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Once per Turn】During your turn, when this Unit destroys an enemy Unit with damage, deal 1 damage to all enemy Units with 3 or less AP.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "apMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST12-004": {
+      "cardNo": "ST12-004",
+      "sourcePrintId": "ST12-004",
+      "name": "Gundam Exia",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 3
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST12-005": {
+      "cardNo": "ST12-005",
+      "sourcePrintId": "ST12-005",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】You may discard 1. If you do, draw 1.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DISCARD",
+              "count": 1
+            },
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST12-006": {
+      "cardNo": "ST12-006",
+      "sourcePrintId": "ST12-006",
+      "name": "Unicorn Gundam 02 Banshee (Destroy Mode)",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】【Activate･Main】Exile 4 cards in your trash from the game：This Unit gains <First Strike> during this turn.",
+          "timings": [
+            "DURING_PAIR",
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Exile 4 cards in your trash from the game",
+            "exileFromTrashCount": 4
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Action】Exile 4 cards in your trash from the game：This Unit gains <Suppression> during this battle.",
+          "timings": [
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Exile 4 cards in your trash from the game",
+            "exileFromTrashCount": 4
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Suppression",
+                "value": null
+              },
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST12-007": {
+      "cardNo": "ST12-007",
+      "sourcePrintId": "ST12-007",
+      "name": "Gyan",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Linked】This Unit gains <First Strike> during this turn.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST12-008": {
+      "cardNo": "ST12-008",
+      "sourcePrintId": "ST12-008",
+      "name": "Efreet Schneid",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST12-009": {
+      "cardNo": "ST12-009",
+      "sourcePrintId": "ST12-009",
+      "name": "Unicorn Gundam 02 Banshee (Unicorn Mode)",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Destroyed】If there is a player with 3 or less Shields, choose 1 Unit card that is Lv.6 or higher from your trash. Add it to your hand. If you do, discard 1.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If there is a player with 3 or less Shields"
+          },
+          "steps": [
+            {
+              "action": "ADD_FROM_TRASH_TO_HAND",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 6,
+                "zone": "TRASH"
+              }
+            },
+            {
+              "action": "DISCARD",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST12-010": {
+      "cardNo": "ST12-010",
+      "sourcePrintId": "ST12-010",
+      "name": "Slash Zaku Phantom",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST12-011": {
+      "cardNo": "ST12-011",
+      "sourcePrintId": "ST12-011",
+      "name": "Milliardo Peacecraft",
+      "type": "PILOT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "This card's name is also treated as [Zechs Merquise].",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "This card's name is also treated as [Zechs Merquise]"
+        },
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Action】【Once per Turn】Choose 1 damaged enemy Unit battling this Unit. Deal 2 damage to it.",
+          "timings": [
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "DAMAGED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST12-012": {
+      "cardNo": "ST12-012",
+      "sourcePrintId": "ST12-012",
+      "name": "Ple-Twelve",
+      "type": "PILOT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "This card's name is also treated as [Marida Cruz].",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "This card's name is also treated as [Marida Cruz]"
+        },
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Linked】Look at the top 2 cards of your deck and return 1 to the top. Place the remaining card into your trash. If there is a player with 3 or less Shields, add the card to your hand instead of returning it to your deck.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 2,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "MILL",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": "If there is a player with 3 or less Shields, add the card to your hand instead of returning it to your deck"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL",
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST12-013": {
+      "cardNo": "ST12-013",
+      "sourcePrintId": "ST12-013",
+      "name": "The Final Victor",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Choose 1 enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】Choose 1 enemy player. You and that player each choose 1 of your own Units. Begin a battle between them and only perform the damage step.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "You that player each choose 1 of your own Units Begin a battle between them and only perform the damage step"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST12-014": {
+      "cardNo": "ST12-014",
+      "sourcePrintId": "ST12-014",
+      "name": "Wise Leader's Pride",
+      "type": "COMMAND",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Action】Choose 1 friendly Unit. It gains the following effect during this battle：",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Choose 1 friendly Unit. It gains the following effect during this battle"
+          },
+          "steps": [],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "apMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[M'Quve]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[M'Quve]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST12-015": {
+      "cardNo": "ST12-015",
+      "sourcePrintId": "ST12-015",
+      "name": "Two Unicorns",
+      "type": "COMMAND",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Action】When playing this card, choose 1 of the following effects and activate it：",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "When playing this card, choose 1 of the following effects and activate it"
+          },
+          "steps": [],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "Choose 1 enemy Unit that is Lv.2 or lower. Destroy it.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "Choose 1 friendly Unit and 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to them.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST12-016": {
+      "cardNo": "ST12-016",
+      "sourcePrintId": "ST12-016",
+      "name": "Libra",
+      "type": "BASE",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】Rest this Base：If a friendly Unit paired with a Pilot has destroyed an enemy Unit with battle damage this turn, choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Rest this Base",
+            "restSelf": true
+          },
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If a friendly Unit paired with a Pilot has destroyed an enemy Unit with battle damage this turn"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    }
+  }
+}

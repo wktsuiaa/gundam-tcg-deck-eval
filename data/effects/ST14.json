@@ -1,0 +1,653 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST14",
+  "cardCount": 16,
+  "effects": {
+    "ST14-001": {
+      "cardNo": "ST14-001",
+      "sourcePrintId": "ST14-001",
+      "name": "The-O",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Suppression",
+          "value": null
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "Each enemy player's rested Units with the lowest Lv. won't be set as active during the start phase of their turn.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "FREEZE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-002": {
+      "cardNo": "ST14-002",
+      "sourcePrintId": "ST14-002",
+      "name": "Gundam NT-1 Full Armor",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-003": {
+      "cardNo": "ST14-003",
+      "sourcePrintId": "ST14-003",
+      "name": "Palace Athene",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 enemy player. That player chooses 2 Unit cards from their trash. Exile them from the game.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "EXILE",
+              "target": {
+                "owner": "ENEMY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "That player chooses 2 Unit cards from their trash"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-004": {
+      "cardNo": "ST14-004",
+      "sourcePrintId": "ST14-004",
+      "name": "Geara Doga (Heavy Armed Type)",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "This Unit can't choose the enemy player as its attack target.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "CANT_ATTACK",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-005": {
+      "cardNo": "ST14-005",
+      "sourcePrintId": "ST14-005",
+      "name": "G-Falcon DX",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 enemy Unit that is Lv.6 or lower. Rest it. Then, if there are 7 or more cards in your trash, it gets AP-2 during this turn.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 6
+              }
+            },
+            {
+              "action": "MODIFY_AP",
+              "delta": -2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "count": 7
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST14-006": {
+      "cardNo": "ST14-006",
+      "sourcePrintId": "ST14-006",
+      "name": "Full Armor Unicorn Gundam (Destroy Mode)",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Look at the top 3 cards of your deck. You may reveal a number of cards equal to the number of enemy players among them and add them to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 3,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【During Pair】【Once per Turn】When this Unit would receive battle damage from an enemy Unit with AP equal to or less than it, it doesn't receive that damage.",
+          "timings": [
+            "DURING_PAIR"
+          ],
+          "oncePerTurn": true,
+          "steps": [],
+          "unparsedResidual": "When this Unit would receive battle damage from an enemy Unit with AP equal to or less than it, it doesn't receive that damage"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-007": {
+      "cardNo": "ST14-007",
+      "sourcePrintId": "ST14-007",
+      "name": "Full Armor Unicorn Gundam (Unicorn Mode)",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 3
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-008": {
+      "cardNo": "ST14-008",
+      "sourcePrintId": "ST14-008",
+      "name": "Gundam Heavyarms Custom (EW)",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-009": {
+      "cardNo": "ST14-009",
+      "sourcePrintId": "ST14-009",
+      "name": "Duel Gundam (Assault Shroud)",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Destroyed】Place 1 EX Resource.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "ex": true,
+              "rested": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-010": {
+      "cardNo": "ST14-010",
+      "sourcePrintId": "ST14-010",
+      "name": "Perfect Strike Gundam",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-011": {
+      "cardNo": "ST14-011",
+      "sourcePrintId": "ST14-011",
+      "name": "Paptimus Scirocco",
+      "type": "PILOT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Attack】Choose 1 enemy Unit. Reduce its AP during this battle by an amount equal to the number of rested enemy Units.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "Reduce its AP during this battle by an amount equal to the number of rested enemy Units"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST14-012": {
+      "cardNo": "ST14-012",
+      "sourcePrintId": "ST14-012",
+      "name": "Banagher Links",
+      "type": "PILOT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】Choose 1 friendly Unit that is Lv.5 or higher. During this turn, it may choose an active enemy Unit with 5 or less AP as its attack target.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ALLOW_ATTACK_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST14-013": {
+      "cardNo": "ST14-013",
+      "sourcePrintId": "ST14-013",
+      "name": "Natural Talent",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Choose 1 enemy Unit. It gets AP-3 during this turn.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -3,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】/【Action】When playing this card, choose 1 of the following effects and activate it：",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "When playing this card, choose 1 of the following effects and activate it"
+          },
+          "steps": [],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "Choose 1 to 2 enemy Units with 3 or less HP. Rest them.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": "UP_TO",
+                "maxCount": 2,
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "Choose 1 enemy Unit. It gets AP-3 during this turn.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -3,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST14-014": {
+      "cardNo": "ST14-014",
+      "sourcePrintId": "ST14-014",
+      "name": "Blazing Mobile Suit Rider",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn. If there are 4 or more Command cards in your trash, choose 1 enemy Unit instead.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -3,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": "If there are 4 or more Command cards in your trash, choose 1 enemy Unit instead"
+        },
+        {
+          "raw": "【Pilot】[Garrod Ran & Tiffa Adill]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Garrod Ran & Tiffa Adill]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-015": {
+      "cardNo": "ST14-015",
+      "sourcePrintId": "ST14-015",
+      "name": "Battlefield Emotions",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Place 1 EX Resource.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "ex": true,
+              "rested": false
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】Place 1 rested Resource. Then, if you have not set one of your Resources as active with an effect this turn, choose a number of your Resources equal to the number of enemy players. Set them as active.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "ex": false,
+              "rested": true
+            },
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "Then, if you have not set one of your Resources as active with an effect this turn, choose a number of your Resources equal to the number of enemy players"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST14-016": {
+      "cardNo": "ST14-016",
+      "sourcePrintId": "ST14-016",
+      "name": "Gryphios 2",
+      "type": "BASE",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Once per Turn】During your turn, when a friendly Unit links, choose 1 enemy Unit that is Lv.5 or lower. It gets AP-1 during this turn.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

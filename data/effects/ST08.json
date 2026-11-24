@@ -1,0 +1,598 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST08",
+  "cardCount": 15,
+  "effects": {
+    "ST08-001": {
+      "cardNo": "ST08-001",
+      "sourcePrintId": "ST08-001",
+      "name": "Ξ Gundam",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While you have no Units that are Lv.6 or higher in play, this card in your hand gets Lv. -1 and cost -1 for each enemy Unit in play.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While you have no Units that are Lv.6 or higher in play"
+          },
+          "steps": [],
+          "unparsedResidual": "this card in your hand gets Lv. -1 and cost -1 for each enemy Unit in play"
+        },
+        {
+          "raw": "【When Paired】Choose 1 enemy Unit with the highest Lv. Deal 3 damage to it.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "Choose 1 enemy Unit with the highest Lv. Deal 3 damage to it"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST08-002": {
+      "cardNo": "ST08-002",
+      "sourcePrintId": "ST08-002",
+      "name": "Ξ Gundam",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST08-003": {
+      "cardNo": "ST08-003",
+      "sourcePrintId": "ST08-003",
+      "name": "Messer (Type-F Naked) (Commander Type)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST08-004": {
+      "cardNo": "ST08-004",
+      "sourcePrintId": "ST08-004",
+      "name": "Messer Type-F01",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】If this Unit is attacking an enemy Unit, choose 1 enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If this Unit is attacking an enemy Unit"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST08-005": {
+      "cardNo": "ST08-005",
+      "sourcePrintId": "ST08-005",
+      "name": "Messer Type-F02 Minelayer",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST08-006": {
+      "cardNo": "ST08-006",
+      "sourcePrintId": "ST08-006",
+      "name": "Penelope",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】【Attack】【Once per Turn】If this Unit is attacking the enemy player, reveal 1 (Earth Federation) Unit card from your hand. Return it to the bottom of your deck. If you do, draw 2.",
+          "timings": [
+            "DURING_PAIR",
+            "ATTACK"
+          ],
+          "oncePerTurn": true,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If this Unit is attacking the enemy player"
+          },
+          "steps": [
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            },
+            {
+              "action": "DRAW",
+              "count": 2,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": "reveal 1 (Earth Federation) Unit card from your hand"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST08-007": {
+      "cardNo": "ST08-007",
+      "sourcePrintId": "ST08-007",
+      "name": "Penelope",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST08-008": {
+      "cardNo": "ST08-008",
+      "sourcePrintId": "ST08-008",
+      "name": "Gustav Karl Type-00",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While 3 or more enemy Units are in play, this Unit gains <Blocker>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "UNIT_COUNT_AT_LEAST",
+            "owner": "ENEMY",
+            "count": 3
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Blocker",
+                "value": null
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST08-009": {
+      "cardNo": "ST08-009",
+      "sourcePrintId": "ST08-009",
+      "name": "Jegan Ground Type-A (Man Hunter)",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 rested enemy Unit that is Lv.2 or lower. It won' t be set as active during the start phase of your opponent' s next turn.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "It won' t be set as active during the start phase of your opponent' s next turn"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST08-010": {
+      "cardNo": "ST08-010",
+      "sourcePrintId": "ST08-010",
+      "name": "Hathaway Noa",
+      "type": "PILOT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】If this is a (Mafty) Unit, choose 1 of your (Mafty) Units. During this turn, it may choose a damaged active enemy Unit as its attack target.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "UNIT_TRAIT_IS",
+            "trait": "Mafty"
+          },
+          "steps": [
+            {
+              "action": "ALLOW_ATTACK_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Mafty"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Mafty",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Mafty) Unit",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST08-011": {
+      "cardNo": "ST08-011",
+      "sourcePrintId": "ST08-011",
+      "name": "Lane Aim",
+      "type": "PILOT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "When you draw with an effect, if this is a blue Unit, it gains <High-Maneuver> during this turn.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "High-Maneuver",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST08-012": {
+      "cardNo": "ST08-012",
+      "sourcePrintId": "ST08-012",
+      "name": "Words for Hathaway",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Choose 1 friendly Link Unit. It gains <Breach 1> during this turn.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 1
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Gawman Nobile]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Gawman Nobile]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST08-013": {
+      "cardNo": "ST08-013",
+      "sourcePrintId": "ST08-013",
+      "name": "Lady Luck",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 enemy Unit. Deal 1 damage to it. If a friendly (Mafty) Link Unit is in play, deal 2 damage instead.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "If a friendly (Mafty) Link Unit is in play, deal 2 damage instead"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Mafty",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Mafty) UNIT target",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST08-014": {
+      "cardNo": "ST08-014",
+      "sourcePrintId": "ST08-014",
+      "name": "Valiant",
+      "type": "BASE",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 of your Units. It gets AP+2 during this turn.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST08-015": {
+      "cardNo": "ST08-015",
+      "sourcePrintId": "ST08-015",
+      "name": "Davao",
+      "type": "BASE",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】【Once per Turn】②：Choose 1 of your Units. It recovers 2 HP.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "②",
+            "resourceCost": 2
+          },
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 2,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

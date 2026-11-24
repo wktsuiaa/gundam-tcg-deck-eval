@@ -1,0 +1,642 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST04",
+  "cardCount": 16,
+  "effects": {
+    "ST04-001": {
+      "cardNo": "ST04-001",
+      "sourcePrintId": "ST04-001",
+      "name": "Aile Strike Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【When Paired･Lv.4 or Higher Pilot】Choose 1 enemy Unit with 4 or less HP. Return it to its owner's hand.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "pairFilter": {
+            "lvMin": 4
+          },
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 4
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-002": {
+      "cardNo": "ST04-002",
+      "sourcePrintId": "ST04-002",
+      "name": "Strike Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Draw 1. Then, discard 1.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            },
+            {
+              "action": "DISCARD",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST04-003": {
+      "cardNo": "ST04-003",
+      "sourcePrintId": "ST04-003",
+      "name": "Moebius Zero",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-004": {
+      "cardNo": "ST04-004",
+      "sourcePrintId": "ST04-004",
+      "name": "Moebius",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-005": {
+      "cardNo": "ST04-005",
+      "sourcePrintId": "ST04-005",
+      "name": "Strike Dagger",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-006": {
+      "cardNo": "ST04-006",
+      "sourcePrintId": "ST04-006",
+      "name": "Aegis Gundam",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】If this Unit has 5 or more AP, choose 1 enemy Unit that is Lv.5 or higher. Deal 3 damage to it.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "SELF_AP_AT_LEAST",
+            "minAp": 5
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 3,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "AP_THRESHOLD_5"
+        ],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST04-007": {
+      "cardNo": "ST04-007",
+      "sourcePrintId": "ST04-007",
+      "name": "Aegis Gundam (MA Mode)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 3
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-008": {
+      "cardNo": "ST04-008",
+      "sourcePrintId": "ST04-008",
+      "name": "Ginn",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-009": {
+      "cardNo": "ST04-009",
+      "sourcePrintId": "ST04-009",
+      "name": "Miguel's Ginn",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】【Destroyed】If you have another Link Unit in play, draw 1.",
+          "timings": [
+            "DURING_PAIR",
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If you have another Link Unit in play"
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-010": {
+      "cardNo": "ST04-010",
+      "sourcePrintId": "ST04-010",
+      "name": "Kira Yamato",
+      "type": "PILOT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Attack】Choose 1 enemy Unit. It gets AP-2 during this battle.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -2,
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST04-011": {
+      "cardNo": "ST04-011",
+      "sourcePrintId": "ST04-011",
+      "name": "Athrun Zala",
+      "type": "PILOT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Linked】During this turn, this Unit may choose an active enemy Unit that is Lv.5 or lower as its attack target.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ALLOW_ATTACK_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "ACTIVE",
+                "lvMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST04-012": {
+      "cardNo": "ST04-012",
+      "sourcePrintId": "ST04-012",
+      "name": "Striker Pack",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】If you have no (Earth Alliance) Unit tokens in play, deploy 1 [Aile Strike Gundam]((Earth Alliance)･AP3･HP3･<Blocker>) Unit token.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If you have no (Earth Alliance) Unit tokens in play"
+          },
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 3,
+              "hp": 3
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】If you have no (Earth Alliance) Unit tokens in play, deploy 1 [Sword Strike Gundam]((Earth Alliance)･AP4･HP2･<Blocker>) or 1 [Launcher Strike Gundam]((Earth Alliance)･AP2･HP4･<Blocker>) Unit token.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If you have no (Earth Alliance) Unit tokens in play"
+          },
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 4,
+              "hp": 2
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Earth Alliance",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Earth Alliance)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST04-013": {
+      "cardNo": "ST04-013",
+      "sourcePrintId": "ST04-013",
+      "name": "Hawk of Endymion",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Mu La Flaga]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Mu La Flaga]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-014": {
+      "cardNo": "ST04-014",
+      "sourcePrintId": "ST04-014",
+      "name": "The Magic Bullet of Dusk",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 friendly Unit that is Lv.2 or lower. It gains <First Strike> during this turn.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Miguel Ayman]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Miguel Ayman]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-015": {
+      "cardNo": "ST04-015",
+      "sourcePrintId": "ST04-015",
+      "name": "Archangel",
+      "type": "BASE",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】【Once per Turn】②：Choose 1 friendly Unit with <Blocker>. Set it as active. It can't attack during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "②",
+            "resourceCost": 2
+          },
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            },
+            {
+              "action": "CANT_ATTACK",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST04-016": {
+      "cardNo": "ST04-016",
+      "sourcePrintId": "ST04-016",
+      "name": "Vesalius",
+      "type": "BASE",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】Rest this Base：Choose 1 friendly Unit. It gets AP+1 during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Rest this Base",
+            "restSelf": true
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    }
+  }
+}

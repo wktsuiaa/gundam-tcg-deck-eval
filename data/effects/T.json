@@ -1,0 +1,619 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "T",
+  "cardCount": 37,
+  "effects": {
+    "T-001": {
+      "cardNo": "T-001",
+      "sourcePrintId": "T-001",
+      "name": "Gundam",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-002": {
+      "cardNo": "T-002",
+      "sourcePrintId": "T-002",
+      "name": "Guncannon",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-003": {
+      "cardNo": "T-003",
+      "sourcePrintId": "T-003",
+      "name": "Guntank",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-004": {
+      "cardNo": "T-004",
+      "sourcePrintId": "T-004",
+      "name": "Leo",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-005": {
+      "cardNo": "T-005",
+      "sourcePrintId": "T-005",
+      "name": "Tallgeese",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-006": {
+      "cardNo": "T-006",
+      "sourcePrintId": "T-006",
+      "name": "Char's Zaku Ⅱ",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-007": {
+      "cardNo": "T-007",
+      "sourcePrintId": "T-007",
+      "name": "Zaku Ⅱ",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-008": {
+      "cardNo": "T-008",
+      "sourcePrintId": "T-008",
+      "name": "Aile Strike Gundam",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-009": {
+      "cardNo": "T-009",
+      "sourcePrintId": "T-009",
+      "name": "Launcher Strike Gundam",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-010": {
+      "cardNo": "T-010",
+      "sourcePrintId": "T-010",
+      "name": "Sword Strike Gundam",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-011": {
+      "cardNo": "T-011",
+      "sourcePrintId": "T-011",
+      "name": "Fatum-00",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-012": {
+      "cardNo": "T-012",
+      "sourcePrintId": "T-012",
+      "name": "Daughtress",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-013": {
+      "cardNo": "T-013",
+      "sourcePrintId": "T-013",
+      "name": "Hy-Gogg",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-014": {
+      "cardNo": "T-014",
+      "sourcePrintId": "T-014",
+      "name": "Ad Balloon",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "This Unit can't be set as active or paired with a Pilot.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "This Unit can't be set as active or paired with a Pilot"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-015": {
+      "cardNo": "T-015",
+      "sourcePrintId": "T-015",
+      "name": "CGS Mobile Worker",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-016": {
+      "cardNo": "T-016",
+      "sourcePrintId": "T-016",
+      "name": "Graze Custom",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-017": {
+      "cardNo": "T-017",
+      "sourcePrintId": "T-017",
+      "name": "Gundam Barbatos 4th Form",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-018": {
+      "cardNo": "T-018",
+      "sourcePrintId": "T-018",
+      "name": "Red Gundam",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-019": {
+      "cardNo": "T-019",
+      "sourcePrintId": "T-019",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-020": {
+      "cardNo": "T-020",
+      "sourcePrintId": "T-020",
+      "name": "GFreD",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-021": {
+      "cardNo": "T-021",
+      "sourcePrintId": "T-021",
+      "name": "Parts",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "This Unit can't choose the enemy player as its attack target.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "CANT_ATTACK",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-022": {
+      "cardNo": "T-022",
+      "sourcePrintId": "T-022",
+      "name": "Wire-Guided Arm",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "This Unit can't be paired with a Pilot.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "This Unit can't be paired with a Pilot"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-023": {
+      "cardNo": "T-023",
+      "sourcePrintId": "T-023",
+      "name": "Zeong (Head)",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-024": {
+      "cardNo": "T-024",
+      "sourcePrintId": "T-024",
+      "name": "Alvaaron",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-025": {
+      "cardNo": "T-025",
+      "sourcePrintId": "T-025",
+      "name": "Gundam Exia",
+      "type": "UNIT・TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-026": {
+      "cardNo": "T-026",
+      "sourcePrintId": "T-026",
+      "name": "Gundnode",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 1
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-027": {
+      "cardNo": "T-027",
+      "sourcePrintId": "T-027",
+      "name": "Pluma",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-028": {
+      "cardNo": "T-028",
+      "sourcePrintId": "T-028",
+      "name": "GOOhN",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-029": {
+      "cardNo": "T-029",
+      "sourcePrintId": "T-029",
+      "name": "Bit / Funnel",
+      "type": "UNIT・TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "This Unit can't be paired with a Pilot or attack.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "This Unit can't be paired with a Pilot or attack"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-030": {
+      "cardNo": "T-030",
+      "sourcePrintId": "T-030",
+      "name": "Gozzo",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-031": {
+      "cardNo": "T-031",
+      "sourcePrintId": "T-031",
+      "name": "Turn X (Arms)",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-032": {
+      "cardNo": "T-032",
+      "sourcePrintId": "T-032",
+      "name": "Turn X (Legs)",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-033": {
+      "cardNo": "T-033",
+      "sourcePrintId": "T-033",
+      "name": "Sazabi",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-034": {
+      "cardNo": "T-034",
+      "sourcePrintId": "T-034",
+      "name": "Nu Gundam",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "First Strike",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-035": {
+      "cardNo": "T-035",
+      "sourcePrintId": "T-035",
+      "name": "Gundam Calibarn",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "High-Maneuver",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-036": {
+      "cardNo": "T-036",
+      "sourcePrintId": "T-036",
+      "name": "Gundam Aerial Rebuild",
+      "type": "UNIT TOKEN",
+      "color": "Colorless",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 3
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "T-037": {
+      "cardNo": "T-037",
+      "sourcePrintId": "T-037",
+      "name": "Axis",
+      "type": "BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

@@ -1,0 +1,5078 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "GD01",
+  "cardCount": 130,
+  "effects": {
+    "GD01-001": {
+      "cardNo": "GD01-001",
+      "sourcePrintId": "GD01-001",
+      "name": "Gundam",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "All your (White Base Team) Units gain <Repair 1>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Repair",
+                "value": 1
+              },
+              "target": {
+                "owner": "SELF",
+                "cardType": "BASE",
+                "count": "ALL",
+                "trait": "White Base Team"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】If you have 2 or more other Units in play, draw 1.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If you have 2 or more other Units in play"
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "White Base Team",
+          "cardType": "BASE",
+          "minCopies": 4,
+          "reason": "Requires (White Base Team) BASE target",
+          "primaryClause": false
+        }
+      ]
+    },
+    "GD01-002": {
+      "cardNo": "GD01-002",
+      "sourcePrintId": "GD01-002",
+      "name": "Unicorn Gundam (Destroy Mode)",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "When playing this card from your hand, you may destroy 1 of your Link Units with \"Unicorn Mode\" in its card name that is Lv.5. If you do, play this card as if it has 0 Lv. and cost.",
+          "timings": [
+            "WHEN_PLAYING"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 5,
+                "lvMax": 5,
+                "nameContains": "Unicorn Mode"
+              }
+            }
+          ],
+          "unparsedResidual": "If you do, play this card as if it has 0 Lv. and cost"
+        },
+        {
+          "raw": "【Attack】Choose 1 enemy Unit. Rest it.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "NAME",
+          "nameContains": "Unicorn Mode",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires \"Unicorn Mode\" UNIT",
+          "primaryClause": false
+        }
+      ]
+    },
+    "GD01-003": {
+      "cardNo": "GD01-003",
+      "sourcePrintId": "GD01-003",
+      "name": "Unicorn Gundam 02 Banshee (Destroy Mode)",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Link】【Attack】Choose 12 cards from your trash. Return them to their owner's deck and shuffle it. If you do, set this Unit as active. It gains <First Strike> during this turn.",
+          "timings": [
+            "DURING_LINK",
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            },
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "count": 12,
+                "zone": "TRASH"
+              }
+            }
+          ],
+          "unparsedResidual": "Return them to their owner's deck and shuffle it"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-004": {
+      "cardNo": "GD01-004",
+      "sourcePrintId": "GD01-004",
+      "name": "Guncannon",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [
+        {
+          "name": "Repair",
+          "value": 1
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【When Paired】Choose 1 enemy Unit with 2 or less HP. Rest it.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-005": {
+      "cardNo": "GD01-005",
+      "sourcePrintId": "GD01-005",
+      "name": "Unicorn Gundam (Unicorn Mode)",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Link】【Destroyed】Return this Unit's paired Pilot to its owner's hand. Then, discard 1.",
+          "timings": [
+            "DURING_LINK",
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "PILOT",
+                "count": 1
+              }
+            },
+            {
+              "action": "DISCARD",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-006": {
+      "cardNo": "GD01-006",
+      "sourcePrintId": "GD01-006",
+      "name": "Delta Plus",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [
+        {
+          "name": "Repair",
+          "value": 1
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【During Link】This Unit gets HP+1.",
+          "timings": [
+            "DURING_LINK"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "This Unit gets HP+1"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-007": {
+      "cardNo": "GD01-007",
+      "sourcePrintId": "GD01-007",
+      "name": "Noin's Aries",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Destroyed】If you have another (OZ) Unit in play, draw 1.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If you have another (OZ) Unit in play"
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "OZ",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (OZ)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-008": {
+      "cardNo": "GD01-008",
+      "sourcePrintId": "GD01-008",
+      "name": "Guntank",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 rested enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-009": {
+      "cardNo": "GD01-009",
+      "sourcePrintId": "GD01-009",
+      "name": "G-Fighter",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 of your (White Base Team) Units. It gains <High-Maneuver> during this turn.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "High-Maneuver",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "BASE",
+                "count": 1,
+                "trait": "White Base Team"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "White Base Team",
+          "cardType": "BASE",
+          "minCopies": 4,
+          "reason": "Requires (White Base Team) BASE target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-010": {
+      "cardNo": "GD01-010",
+      "sourcePrintId": "GD01-010",
+      "name": "Unicorn Gundam 02 Banshee (Unicorn Mode)",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired】Choose 1 enemy Unit with 3 or less HP. Rest it.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-011": {
+      "cardNo": "GD01-011",
+      "sourcePrintId": "GD01-011",
+      "name": "Loto",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-012": {
+      "cardNo": "GD01-012",
+      "sourcePrintId": "GD01-012",
+      "name": "Zechs' Leo",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired】Choose 1 enemy Unit with 3 or less HP. Rest it.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-013": {
+      "cardNo": "GD01-013",
+      "sourcePrintId": "GD01-013",
+      "name": "Gundam",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-014": {
+      "cardNo": "GD01-014",
+      "sourcePrintId": "GD01-014",
+      "name": "G-Sky Easy",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Link】【Activate･Action】【Once per Turn】Choose 1 Unit. It recovers 1 HP.",
+          "timings": [
+            "DURING_LINK",
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 1,
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-015": {
+      "cardNo": "GD01-015",
+      "sourcePrintId": "GD01-015",
+      "name": "Ball",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】Choose 1 of your Units. It recovers 1 HP.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 1,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-016": {
+      "cardNo": "GD01-016",
+      "sourcePrintId": "GD01-016",
+      "name": "Jegan",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While you have 2 or more (Earth Federation) Units in play, this card in your hand gets cost -1.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While you have 2 or more (Earth Federation) Units in play"
+          },
+          "steps": [
+            {
+              "action": "COST_REDUCTION",
+              "amount": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Earth Federation",
+          "minCopies": 4,
+          "reason": "Requires (Earth Federation)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-017": {
+      "cardNo": "GD01-017",
+      "sourcePrintId": "GD01-017",
+      "name": "Stark Jegan",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [
+        {
+          "name": "Repair",
+          "value": 1
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-018": {
+      "cardNo": "GD01-018",
+      "sourcePrintId": "GD01-018",
+      "name": "ReZEL",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-019": {
+      "cardNo": "GD01-019",
+      "sourcePrintId": "GD01-019",
+      "name": "Byarlant Custom",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While 4 or more enemy Units are in play, this Unit gains <Blocker>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "UNIT_COUNT_AT_LEAST",
+            "owner": "ENEMY",
+            "count": 4
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Blocker",
+                "value": null
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-020": {
+      "cardNo": "GD01-020",
+      "sourcePrintId": "GD01-020",
+      "name": "Anksha",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 rested enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-021": {
+      "cardNo": "GD01-021",
+      "sourcePrintId": "GD01-021",
+      "name": "Pisces",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-022": {
+      "cardNo": "GD01-022",
+      "sourcePrintId": "GD01-022",
+      "name": "Cancer",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-023": {
+      "cardNo": "GD01-023",
+      "sourcePrintId": "GD01-023",
+      "name": "Char's Gelgoog",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】Discard 1 (Zeon)/(Neo Zeon) Unit card：If a Pilot is not paired with this Unit, choose 1 (Newtype) Pilot card that is Lv.3 or lower from your trash. Pair it with this Unit.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Discard 1 (Zeon)/(Neo Zeon) Unit card",
+            "discardCount": 1
+          },
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If a Pilot is not paired with this Unit"
+          },
+          "steps": [],
+          "unparsedResidual": "Pair it with this Unit"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-024": {
+      "cardNo": "GD01-024",
+      "sourcePrintId": "GD01-024",
+      "name": "Wing Gundam Zero",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [
+        {
+          "name": "High-Maneuver",
+          "value": null
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【Deploy】Deal 3 damage to all Units that are Lv.5 or lower.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 3,
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "lvMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-025": {
+      "cardNo": "GD01-025",
+      "sourcePrintId": "GD01-025",
+      "name": "Gundam Deathscythe",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired･(Operation Meteor) Pilot】Place 1 rested Resource. Then, this Unit gains <First Strike> during this turn.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "pairFilter": {
+            "trait": "Operation Meteor"
+          },
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "ex": false,
+              "rested": true
+            },
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Operation Meteor",
+          "cardType": "PILOT",
+          "minCopies": 4,
+          "reason": "Requires (Operation Meteor) Pilot",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-026": {
+      "cardNo": "GD01-026",
+      "sourcePrintId": "GD01-026",
+      "name": "Char's Zaku Ⅱ",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】【Destroyed】Deploy 1 rested [Char's Zaku Ⅱ]((Zeon)･AP3･HP1) Unit token.",
+          "timings": [
+            "DURING_PAIR",
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 3,
+              "hp": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-027": {
+      "cardNo": "GD01-027",
+      "sourcePrintId": "GD01-027",
+      "name": "Big Zam",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 4
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【Deploy】If there are 10 or more (Zeon)/(Neo Zeon) Unit cards in your trash, deal 4 damage to all Units with <Blocker>.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If there are 10 or more (Zeon)/(Neo Zeon) Unit cards in your trash"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 4,
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": "ALL"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Zeon",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Zeon)",
+          "primaryClause": false
+        }
+      ]
+    },
+    "GD01-028": {
+      "cardNo": "GD01-028",
+      "sourcePrintId": "GD01-028",
+      "name": "Gundam Sandrock",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】You may deploy 1 (Maganac Corps) Unit card from your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "You may deploy 1 (Maganac Corps) Unit card from your hand"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-029": {
+      "cardNo": "GD01-029",
+      "sourcePrintId": "GD01-029",
+      "name": "Shenlong Gundam",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 4
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【Attack】Choose 1 enemy Unit with <Blocker> that is Lv.3 or lower. Destroy it.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-030": {
+      "cardNo": "GD01-030",
+      "sourcePrintId": "GD01-030",
+      "name": "Rick Dom",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 2
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-031": {
+      "cardNo": "GD01-031",
+      "sourcePrintId": "GD01-031",
+      "name": "Gelgoog",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-032": {
+      "cardNo": "GD01-032",
+      "sourcePrintId": "GD01-032",
+      "name": "Gyan",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired･(Zeon) Pilot】Choose 1 enemy Unit with <Blocker> that is Lv.2 or lower. Destroy it.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "pairFilter": {
+            "trait": "Zeon"
+          },
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Zeon",
+          "cardType": "PILOT",
+          "minCopies": 4,
+          "reason": "Requires (Zeon) Pilot",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-033": {
+      "cardNo": "GD01-033",
+      "sourcePrintId": "GD01-033",
+      "name": "Gundam Deathscythe",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [
+        {
+          "name": "Repair",
+          "value": 1
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-034": {
+      "cardNo": "GD01-034",
+      "sourcePrintId": "GD01-034",
+      "name": "Gundam Heavyarms",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】This Unit gains <Breach 3>.",
+          "timings": [
+            "DURING_PAIR"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 3
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-035": {
+      "cardNo": "GD01-035",
+      "sourcePrintId": "GD01-035",
+      "name": "Zaku Ⅱ",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-036": {
+      "cardNo": "GD01-036",
+      "sourcePrintId": "GD01-036",
+      "name": "Gouf",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-037": {
+      "cardNo": "GD01-037",
+      "sourcePrintId": "GD01-037",
+      "name": "Gogg",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-038": {
+      "cardNo": "GD01-038",
+      "sourcePrintId": "GD01-038",
+      "name": "Adzam",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】If 5 or more enemy Units are in play, deal 1 damage to all enemy Units.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "UNIT_COUNT_AT_LEAST",
+            "owner": "ENEMY",
+            "count": 5
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": "ALL"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-039": {
+      "cardNo": "GD01-039",
+      "sourcePrintId": "GD01-039",
+      "name": "Dopp",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Look at the top card of your deck. Return it to the top or bottom of your deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "Look at the top card of your deck"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-040": {
+      "cardNo": "GD01-040",
+      "sourcePrintId": "GD01-040",
+      "name": "Wing Gundam",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-041": {
+      "cardNo": "GD01-041",
+      "sourcePrintId": "GD01-041",
+      "name": "Shenlong Gundam",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 3
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-042": {
+      "cardNo": "GD01-042",
+      "sourcePrintId": "GD01-042",
+      "name": "Duo's Leo",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "This Unit may choose an active enemy Unit that is Lv.2 or lower as its attack target.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ALLOW_ATTACK_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "ACTIVE",
+                "lvMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-043": {
+      "cardNo": "GD01-043",
+      "sourcePrintId": "GD01-043",
+      "name": "Rasid's Maganac",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 of your green Units. During this turn, it may choose an active enemy Unit with 4 or less AP as its attack target.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ALLOW_ATTACK_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-044": {
+      "cardNo": "GD01-044",
+      "sourcePrintId": "GD01-044",
+      "name": "Kshatriya",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired･(Cyber-Newtype)/(Newtype) Pilot】Choose 1 to 2 enemy Units. Deal 1 damage to them.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "pairFilter": {
+            "trait": "Cyber-Newtype"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": "UP_TO",
+                "maxCount": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Cyber-Newtype",
+          "cardType": "PILOT",
+          "minCopies": 4,
+          "reason": "Requires (Cyber-Newtype) Pilot",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-045": {
+      "cardNo": "GD01-045",
+      "sourcePrintId": "GD01-045",
+      "name": "Duel Gundam (Assault Shroud)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired】Look at the top 3 cards of your deck. You may deploy 1 (ZAFT) Unit card that is Lv.4 or lower among them. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 3,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "You may deploy 1 (ZAFT) Unit card that is Lv.4 or lower among them"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-046": {
+      "cardNo": "GD01-046",
+      "sourcePrintId": "GD01-046",
+      "name": "Buster Gundam",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】<Support 3>",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Support",
+                "value": 3
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【During Pair･(Coordinator) Pilot】【Once per Turn】When you use this Unit's <Support> to increase a (ZAFT) Unit's AP, set this Unit as active.",
+          "timings": [
+            "DURING_PAIR"
+          ],
+          "oncePerTurn": true,
+          "pairFilter": {
+            "trait": "Coordinator"
+          },
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Coordinator",
+          "cardType": "PILOT",
+          "minCopies": 4,
+          "reason": "Requires (Coordinator) Pilot",
+          "primaryClause": false
+        }
+      ]
+    },
+    "GD01-047": {
+      "cardNo": "GD01-047",
+      "sourcePrintId": "GD01-047",
+      "name": "Shamblo",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】If 2 or more other rested friendly Units are in play, choose 1 enemy Unit. Deal 3 damage to it.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If 2 or more other rested friendly Units are in play"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 3,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-048": {
+      "cardNo": "GD01-048",
+      "sourcePrintId": "GD01-048",
+      "name": "Zaku I Sniper Type",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】<Support 1>",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Support",
+                "value": 1
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Look at the top card of your deck. If it is a (Zeon)/(Neo Zeon) Unit card, you may reveal it and add it to your hand. Return any remaining card to the bottom of your deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "Look at the top card of your deck If it is a (Zeon)/(Neo Zeon) Unit card, you may reveal it and add it to your hand"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-049": {
+      "cardNo": "GD01-049",
+      "sourcePrintId": "GD01-049",
+      "name": "Blitz Gundam",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 of your (ZAFT) Units with 5 or more AP. It gains <First Strike> during this turn.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "apMin": 5,
+                "trait": "ZAFT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "ZAFT",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (ZAFT) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-050": {
+      "cardNo": "GD01-050",
+      "sourcePrintId": "GD01-050",
+      "name": "LaGOWE",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】If this Unit has 5 or more AP and it is attacking an enemy Unit, choose 1 enemy Unit. Deal 2 damage to it.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "SELF_AP_AT_LEAST",
+            "minAp": 5
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "AP_THRESHOLD_5"
+        ],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-051": {
+      "cardNo": "GD01-051",
+      "sourcePrintId": "GD01-051",
+      "name": "Kshatriya",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-052": {
+      "cardNo": "GD01-052",
+      "sourcePrintId": "GD01-052",
+      "name": "Geara Zulu (Guards Type)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-053": {
+      "cardNo": "GD01-053",
+      "sourcePrintId": "GD01-053",
+      "name": "Geara Doga (Heavy Armed Type)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】【Once per Turn】①：Choose 1 enemy Unit with 2 or less AP. Deal 1 damage to it.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "①",
+            "resourceCost": 1
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "apMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-054": {
+      "cardNo": "GD01-054",
+      "sourcePrintId": "GD01-054",
+      "name": "Duel Gundam",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While this Unit has 5 or more AP, it gains <Breach 3>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "SELF_AP_AT_LEAST",
+            "minAp": 5
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 3
+              },
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "AP_THRESHOLD_5"
+        ],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-055": {
+      "cardNo": "GD01-055",
+      "sourcePrintId": "GD01-055",
+      "name": "BuCUE",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】<Support 2>",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Support",
+                "value": 2
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-056": {
+      "cardNo": "GD01-056",
+      "sourcePrintId": "GD01-056",
+      "name": "Geara Doga (Sleeves)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Destroyed】Choose 1 enemy Unit with 5 or less AP. Deal 1 damage to it.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "apMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-057": {
+      "cardNo": "GD01-057",
+      "sourcePrintId": "GD01-057",
+      "name": "Dreissen (Sleeves)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-058": {
+      "cardNo": "GD01-058",
+      "sourcePrintId": "GD01-058",
+      "name": "Galluss-K",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Action】【Once per Turn】①：Choose 1 Unit that is Lv.4 or higher. It gets AP+1 during this battle.",
+          "timings": [
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "①",
+            "resourceCost": 1
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 4
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-059": {
+      "cardNo": "GD01-059",
+      "sourcePrintId": "GD01-059",
+      "name": "Zee Zulu",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】If you are attacking the enemy player, this Unit gets AP+2 during this battle.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If you are attacking the enemy player"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-060": {
+      "cardNo": "GD01-060",
+      "sourcePrintId": "GD01-060",
+      "name": "Zaku Mariner",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-061": {
+      "cardNo": "GD01-061",
+      "sourcePrintId": "GD01-061",
+      "name": "ZuOOT",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】<Support 1>",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Support",
+                "value": 1
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-062": {
+      "cardNo": "GD01-062",
+      "sourcePrintId": "GD01-062",
+      "name": "GOOhN",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-063": {
+      "cardNo": "GD01-063",
+      "sourcePrintId": "GD01-063",
+      "name": "ZnO",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "During your turn, while this Unit is battling an enemy Unit that is Lv.2 or lower, it gains <First Strike>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "while this Unit is battling an enemy Unit that is Lv.2 or lower"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-064": {
+      "cardNo": "GD01-064",
+      "sourcePrintId": "GD01-064",
+      "name": "DINN",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-065": {
+      "cardNo": "GD01-065",
+      "sourcePrintId": "GD01-065",
+      "name": "Freedom Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【During Pair】【Once per Turn】When you pair a Pilot with this Unit or one of your white Units, choose 1 enemy Unit. It gets AP-2 during this turn.",
+          "timings": [
+            "DURING_PAIR"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-066": {
+      "cardNo": "GD01-066",
+      "sourcePrintId": "GD01-066",
+      "name": "Justice Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Deploy 1 [Fatum-00] Unit token.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【During Pair】【Attack】Choose 1 of your (Triple Ship Alliance) Unit tokens. It may attack on the turn it is deployed.",
+          "timings": [
+            "DURING_PAIR",
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "It may attack on the turn it is deployed"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-067": {
+      "cardNo": "GD01-067",
+      "sourcePrintId": "GD01-067",
+      "name": "Gundam Aerial Rebuild",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired】Choose 1 Command card that is Lv.5 or lower from your trash. Add it to your hand.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_FROM_TRASH_TO_HAND",
+              "target": {
+                "owner": "SELF",
+                "cardType": "COMMAND",
+                "count": 1,
+                "lvMax": 5,
+                "zone": "TRASH"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-068": {
+      "cardNo": "GD01-068",
+      "sourcePrintId": "GD01-068",
+      "name": "Perfect Strike Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 enemy Unit with 1 HP. Return it to its owner's hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-069": {
+      "cardNo": "GD01-069",
+      "sourcePrintId": "GD01-069",
+      "name": "Strike Rouge",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】【Once per Turn】①：Choose 1 of your rested white Units with <Blocker>. Set it as active. It can't attack during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "①",
+            "resourceCost": 1
+          },
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            },
+            {
+              "action": "CANT_ATTACK",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-070": {
+      "cardNo": "GD01-070",
+      "sourcePrintId": "GD01-070",
+      "name": "Gundam Aerial",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While there are 4 or more Command cards in your trash, this card in your hand gets cost -2.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "TRASH_COUNT_AT_LEAST",
+            "count": 4,
+            "cardType": "COMMAND"
+          },
+          "steps": [
+            {
+              "action": "COST_REDUCTION",
+              "amount": 2
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "CARD_TYPE",
+          "cardType": "COMMAND",
+          "minCopies": 8,
+          "reason": "Requires 4+ COMMAND cards in trash",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-071": {
+      "cardNo": "GD01-071",
+      "sourcePrintId": "GD01-071",
+      "name": "Gundam Pharact",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Link】【Attack】Choose 1 enemy Unit. It gets AP-2 during this battle.",
+          "timings": [
+            "DURING_LINK",
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -2,
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-072": {
+      "cardNo": "GD01-072",
+      "sourcePrintId": "GD01-072",
+      "name": "Launcher Strike Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-073": {
+      "cardNo": "GD01-073",
+      "sourcePrintId": "GD01-073",
+      "name": "Sword Strike Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Link】【Attack】Choose 1 enemy Unit with 2 or less HP. Return it to its owner's hand.",
+          "timings": [
+            "DURING_LINK",
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-074": {
+      "cardNo": "GD01-074",
+      "sourcePrintId": "GD01-074",
+      "name": "Chuchu's Demi Trainer",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】Draw 1. Then, discard 1.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            },
+            {
+              "action": "DISCARD",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-075": {
+      "cardNo": "GD01-075",
+      "sourcePrintId": "GD01-075",
+      "name": "Darilbalde",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 enemy Unit with 1 HP. Return it to its owner's hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-076": {
+      "cardNo": "GD01-076",
+      "sourcePrintId": "GD01-076",
+      "name": "Michaelis",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While there are 4 or more Command cards in your trash, this Unit gets AP+1 and HP+1.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "TRASH_COUNT_AT_LEAST",
+            "count": 4,
+            "cardType": "COMMAND"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "CARD_TYPE",
+          "cardType": "COMMAND",
+          "minCopies": 8,
+          "reason": "Requires 4+ COMMAND cards in trash",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-077": {
+      "cardNo": "GD01-077",
+      "sourcePrintId": "GD01-077",
+      "name": "Strike Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-078": {
+      "cardNo": "GD01-078",
+      "sourcePrintId": "GD01-078",
+      "name": "Mistral",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 enemy Unit. It gets AP-1 during this turn.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-079": {
+      "cardNo": "GD01-079",
+      "sourcePrintId": "GD01-079",
+      "name": "Skygrasper",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-080": {
+      "cardNo": "GD01-080",
+      "sourcePrintId": "GD01-080",
+      "name": "Cagalli's Skygrasper",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Destroyed】Choose 1 enemy Unit that is Lv.2 or lower. Return it to its owner's hand.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-081": {
+      "cardNo": "GD01-081",
+      "sourcePrintId": "GD01-081",
+      "name": "M1 Astray",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While you have another (Triple Ship Alliance) Unit in play, this Unit gets AP+1 and <Blocker>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While you have another (Triple Ship Alliance) Unit in play"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Triple Ship Alliance",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Triple Ship Alliance)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-082": {
+      "cardNo": "GD01-082",
+      "sourcePrintId": "GD01-082",
+      "name": "Gundam Aerial (Mirasoul Flight Unit)",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】【Activate･Action】【Once per Turn】②：Choose 1 enemy Unit. It gets AP-1 during this battle.",
+          "timings": [
+            "DURING_PAIR",
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "②",
+            "resourceCost": 2
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -1,
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-083": {
+      "cardNo": "GD01-083",
+      "sourcePrintId": "GD01-083",
+      "name": "Guel's Dilanza",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-084": {
+      "cardNo": "GD01-084",
+      "sourcePrintId": "GD01-084",
+      "name": "Beguir-Pente",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-085": {
+      "cardNo": "GD01-085",
+      "sourcePrintId": "GD01-085",
+      "name": "Demi Garrison",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-086": {
+      "cardNo": "GD01-086",
+      "sourcePrintId": "GD01-086",
+      "name": "Gundam Lfrith",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-087": {
+      "cardNo": "GD01-087",
+      "sourcePrintId": "GD01-087",
+      "name": "Sayla Mass",
+      "type": "PILOT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "While this Unit is blue, it gains <Repair 1>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While this Unit is blue"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Repair",
+                "value": 1
+              },
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-088": {
+      "cardNo": "GD01-088",
+      "sourcePrintId": "GD01-088",
+      "name": "Banagher Links",
+      "type": "PILOT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Linked】Draw 1.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-089": {
+      "cardNo": "GD01-089",
+      "sourcePrintId": "GD01-089",
+      "name": "Riddhe Marcenas",
+      "type": "PILOT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "While this Unit has <Repair>, it gets AP+1.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While this Unit has <Repair>"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-090": {
+      "cardNo": "GD01-090",
+      "sourcePrintId": "GD01-090",
+      "name": "Duo Maxwell",
+      "type": "PILOT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【During Link】This Unit's AP can't be reduced by enemy effects.",
+          "timings": [
+            "DURING_LINK"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "This Unit's AP can't be reduced by enemy effects"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-091": {
+      "cardNo": "GD01-091",
+      "sourcePrintId": "GD01-091",
+      "name": "Chang Wufei",
+      "type": "PILOT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "During your turn, while this Unit has <Breach>, it can't receive battle damage from enemy Units with 3 or less AP.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "while this Unit has <Breach>"
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "it can't receive battle damage from enemy Units with 3 or less AP"
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-092": {
+      "cardNo": "GD01-092",
+      "sourcePrintId": "GD01-092",
+      "name": "M'Quve",
+      "type": "PILOT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "While this Unit is (Zeon), it gains <Breach 1>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While this Unit is (Zeon)"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 1
+              },
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Zeon",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Zeon)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-093": {
+      "cardNo": "GD01-093",
+      "sourcePrintId": "GD01-093",
+      "name": "Marida Cruz",
+      "type": "PILOT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【During Link】【Attack】Choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Deal 1 damage to it.",
+          "timings": [
+            "DURING_LINK",
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-094": {
+      "cardNo": "GD01-094",
+      "sourcePrintId": "GD01-094",
+      "name": "Yzak Jule",
+      "type": "PILOT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Once per Turn】 When an enemy Link Unit is destroyed with damage while this Unit is attacking, draw 1.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-095": {
+      "cardNo": "GD01-095",
+      "sourcePrintId": "GD01-095",
+      "name": "Dearka Elthman",
+      "type": "PILOT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Linked】Discard 1. If you do, draw 1.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DISCARD",
+              "count": 1
+            },
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL",
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-096": {
+      "cardNo": "GD01-096",
+      "sourcePrintId": "GD01-096",
+      "name": "Cagalli Yula Athha",
+      "type": "PILOT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "While this Unit is white, it gains <Blocker>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While this Unit is white"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Blocker",
+                "value": null
+              },
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-097": {
+      "cardNo": "GD01-097",
+      "sourcePrintId": "GD01-097",
+      "name": "Guel Jeturk",
+      "type": "PILOT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】【Once per Turn】If your opponent has 8 or more cards in their hand, set this Unit as active. It can't attack during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If your opponent has 8 or more cards in their hand"
+          },
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            },
+            {
+              "action": "CANT_ATTACK",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-098": {
+      "cardNo": "GD01-098",
+      "sourcePrintId": "GD01-098",
+      "name": "Elan Ceres (Enhanced Person Number 4)",
+      "type": "PILOT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Action】【Once per Turn】If an enemy Unit with 1 or less AP is in play, this Unit recovers 1 HP.",
+          "timings": [
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": true,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If an enemy Unit with 1 or less AP is in play"
+          },
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 1,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-099": {
+      "cardNo": "GD01-099",
+      "sourcePrintId": "GD01-099",
+      "name": "Intercept Orders",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Choose 1 enemy Unit with 5 or less HP. Rest it.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】/【Action】Choose 1 to 2 enemy Units with 3 or less HP. Rest them.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": "UP_TO",
+                "maxCount": 2,
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-100": {
+      "cardNo": "GD01-100",
+      "sourcePrintId": "GD01-100",
+      "name": "A Show of Resolve",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Draw 2.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 2,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-101": {
+      "cardNo": "GD01-101",
+      "sourcePrintId": "GD01-101",
+      "name": "Deep Devotion",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 friendly Link Unit. It recovers 3 HP.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 3,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Lucrezia Noin]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Lucrezia Noin]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-102": {
+      "cardNo": "GD01-102",
+      "sourcePrintId": "GD01-102",
+      "name": "Securing the Supply Line",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】All friendly Units that are Lv.4 or lower recover 2 HP.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 2,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "lvMax": 4
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-103": {
+      "cardNo": "GD01-103",
+      "sourcePrintId": "GD01-103",
+      "name": "The Stubborn Cog",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Choose 1 active friendly (Earth Federation) Unit and 1 active enemy Unit. Rest them.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "ACTIVE",
+                "trait": "Earth Federation"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Daguza Mackle]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Daguza Mackle]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Earth Federation",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Earth Federation) UNIT target",
+          "primaryClause": false
+        }
+      ]
+    },
+    "GD01-104": {
+      "cardNo": "GD01-104",
+      "sourcePrintId": "GD01-104",
+      "name": "Signs of a Revolution",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Draw 1.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】Choose 1 rested enemy Unit. Deal 2 damage to it.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-105": {
+      "cardNo": "GD01-105",
+      "sourcePrintId": "GD01-105",
+      "name": "Citizens, Take a Stand!",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】All your Units get AP+2 during this turn.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "ALL"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-106": {
+      "cardNo": "GD01-106",
+      "sourcePrintId": "GD01-106",
+      "name": "Fortress Defense",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Deploy 2 [Zaku Ⅱ]((Zeon)･AP1･HP1) Unit tokens.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 2,
+              "ap": 1,
+              "hp": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Dozle Zabi]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Dozle Zabi]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-107": {
+      "cardNo": "GD01-107",
+      "sourcePrintId": "GD01-107",
+      "name": "First Contact",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Place 1 EX Resource.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "ex": true,
+              "rested": false
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】Place 1 rested Resource.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "ex": false,
+              "rested": true
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-108": {
+      "cardNo": "GD01-108",
+      "sourcePrintId": "GD01-108",
+      "name": "Strategic Arms",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Deal 2 damage to all Units with <Blocker>.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": "ALL"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-109": {
+      "cardNo": "GD01-109",
+      "sourcePrintId": "GD01-109",
+      "name": "The Path to Victory or Defeat",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Look at the top 5 cards of your deck. You may reveal 1 (Operation Meteor)/(G Team) Unit card/Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 5,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true,
+              "trait": "Operation Meteor"
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Operation Meteor",
+          "minCopies": 8,
+          "reason": "Searches (Operation Meteor) cards",
+          "primaryClause": false
+        }
+      ]
+    },
+    "GD01-110": {
+      "cardNo": "GD01-110",
+      "sourcePrintId": "GD01-110",
+      "name": "Rasid's Orders",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 Unit that is Lv.4 or higher. During this turn, it may choose an active enemy Unit with 6 or less AP as its attack target.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ALLOW_ATTACK_ACTIVE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 6,
+                "state": "ACTIVE",
+                "apMax": 6
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Rasid Kurama]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Rasid Kurama]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-111": {
+      "cardNo": "GD01-111",
+      "sourcePrintId": "GD01-111",
+      "name": "Battle of Aces",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Choose 1 enemy Unit. Deal 2 damage to it.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】/【Action】Choose 1 damaged enemy Unit. Deal 3 damage to it.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 3,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "DAMAGED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "DAMAGED_ENEMY_TARGET"
+        ],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-112": {
+      "cardNo": "GD01-112",
+      "sourcePrintId": "GD01-112",
+      "name": "Extreme Hatred",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Choose 2 of your active Units. Rest them. If you do, choose 1 enemy Unit. Deal 3 damage to it.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 2,
+                "state": "ACTIVE"
+              }
+            },
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 3,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Loni Garvey]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Loni Garvey]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-113": {
+      "cardNo": "GD01-113",
+      "sourcePrintId": "GD01-113",
+      "name": "The Desert Tiger",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 friendly (ZAFT) Unit. It gets AP+3 during this turn.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 3,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "ZAFT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Andrew Waldfeld]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Andrew Waldfeld]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "ZAFT",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (ZAFT) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "GD01-114": {
+      "cardNo": "GD01-114",
+      "sourcePrintId": "GD01-114",
+      "name": "Assault on Torrington Base",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Action】Choose 2 friendly Units. They get AP+1 during this turn.",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Yonem Kirks]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Yonem Kirks]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-115": {
+      "cardNo": "GD01-115",
+      "sourcePrintId": "GD01-115",
+      "name": "Zeon Remnant Forces",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-116": {
+      "cardNo": "GD01-116",
+      "sourcePrintId": "GD01-116",
+      "name": "Stealth Stratagem",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 enemy Unit with 2 or less AP. Deal 2 damage to it.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "apMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Nicol Amarfi]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Nicol Amarfi]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-117": {
+      "cardNo": "GD01-117",
+      "sourcePrintId": "GD01-117",
+      "name": "The Witch and the Bride",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Activate this card's 【Main】.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ACTIVATE_MAIN_EFFECT"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】/【Action】Choose 1 enemy Unit with 5 or less HP. Return it to its owner's hand.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-118": {
+      "cardNo": "GD01-118",
+      "sourcePrintId": "GD01-118",
+      "name": "Overflowing Affection",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Draw 2. Then, discard 1.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 2,
+              "bothPlayers": false
+            },
+            {
+              "action": "DISCARD",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-119": {
+      "cardNo": "GD01-119",
+      "sourcePrintId": "GD01-119",
+      "name": "Iron-Fisted Discipline",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 enemy Unit that is Lv.4 or lower. It gets AP-2 during this turn.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Chuatury Panlunch]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Chuatury Panlunch]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-120": {
+      "cardNo": "GD01-120",
+      "sourcePrintId": "GD01-120",
+      "name": "Naval Bombardment",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Choose 1 enemy Unit. It gets AP-3 during this turn.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -3,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Action】Choose 1 friendly Unit with <Blocker>. It gets AP+3 during this turn.",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 3,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-121": {
+      "cardNo": "GD01-121",
+      "sourcePrintId": "GD01-121",
+      "name": "Midair Modifications",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Activate this card's 【Main】.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ACTIVATE_MAIN_EFFECT"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】Choose 1 rested Unit with <Blocker>. Set it as active. It can't attack during this turn.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            },
+            {
+              "action": "CANT_ATTACK",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-122": {
+      "cardNo": "GD01-122",
+      "sourcePrintId": "GD01-122",
+      "name": "Covert Operative",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Choose 1 enemy Unit with 2 or less HP. Return it to its owner's hand. If you have a Link Unit in play, choose 1 enemy Unit with 4 or less HP instead.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": "If you have a Link Unit in play, choose 1 enemy Unit with 4 or less HP instead"
+        },
+        {
+          "raw": "【Pilot】[Shaddiq Zenelli]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Shaddiq Zenelli]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-123": {
+      "cardNo": "GD01-123",
+      "sourcePrintId": "GD01-123",
+      "name": "Nahel Argama",
+      "type": "BASE",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 enemy Unit with 3 or less HP. Rest it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "GD01-124": {
+      "cardNo": "GD01-124",
+      "sourcePrintId": "GD01-124",
+      "name": "Side 7",
+      "type": "BASE",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】Rest this Base：Choose 1 friendly Unit. It recovers 1 HP.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Rest this Base",
+            "restSelf": true
+          },
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 1,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-125": {
+      "cardNo": "GD01-125",
+      "sourcePrintId": "GD01-125",
+      "name": "Zanzibar",
+      "type": "BASE",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, you may deploy 1 (Zeon) Unit card that is Lv.4 or lower from your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": "Then, if it is your turn, you may deploy 1 (Zeon) Unit card that is Lv.4 or lower from your hand"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-126": {
+      "cardNo": "GD01-126",
+      "sourcePrintId": "GD01-126",
+      "name": "Underground Desert Base",
+      "type": "BASE",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-127": {
+      "cardNo": "GD01-127",
+      "sourcePrintId": "GD01-127",
+      "name": "Gamow",
+      "type": "BASE",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Action】Rest this Base：Choose 1 friendly (ZAFT) Unit with 5 or more AP. It gains <Breach 3> during this battle.",
+          "timings": [
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Rest this Base",
+            "restSelf": true
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 3
+              },
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "apMin": 5,
+                "trait": "ZAFT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "ZAFT",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (ZAFT) UNIT target",
+          "primaryClause": false
+        }
+      ]
+    },
+    "GD01-128": {
+      "cardNo": "GD01-128",
+      "sourcePrintId": "GD01-128",
+      "name": "Mining Asteroid Palau",
+      "type": "BASE",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-129": {
+      "cardNo": "GD01-129",
+      "sourcePrintId": "GD01-129",
+      "name": "Kusanagi",
+      "type": "BASE",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "GD01-130": {
+      "cardNo": "GD01-130",
+      "sourcePrintId": "GD01-130",
+      "name": "13th Tactical Testing Sector",
+      "type": "BASE",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】Rest this Base：If a friendly (Academy) Unit is in play, choose 1 enemy Unit. It gets AP-1 during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Rest this Base",
+            "restSelf": true
+          },
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If a friendly (Academy) Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Academy",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Academy)",
+          "primaryClause": false
+        }
+      ]
+    }
+  }
+}

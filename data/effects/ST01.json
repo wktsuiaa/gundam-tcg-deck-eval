@@ -1,0 +1,631 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST01",
+  "cardCount": 16,
+  "effects": {
+    "ST01-001": {
+      "cardNo": "ST01-001",
+      "sourcePrintId": "ST01-001",
+      "name": "Gundam",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [
+        {
+          "name": "Repair",
+          "value": 2
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【During Pair】During your turn, all your Units get AP+1.",
+          "timings": [
+            "DURING_PAIR"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "ALL"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST01-002": {
+      "cardNo": "ST01-002",
+      "sourcePrintId": "ST01-002",
+      "name": "Gundam (MA Form)",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired･(White Base Team) Pilot】Draw 1.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "pairFilter": {
+            "trait": "White Base Team",
+            "color": "White"
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "White Base Team",
+          "color": "White",
+          "cardType": "PILOT",
+          "minCopies": 4,
+          "reason": "Requires White (White Base Team) Pilot",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST01-003": {
+      "cardNo": "ST01-003",
+      "sourcePrintId": "ST01-003",
+      "name": "Guncannon",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-004": {
+      "cardNo": "ST01-004",
+      "sourcePrintId": "ST01-004",
+      "name": "Guntank",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST01-005": {
+      "cardNo": "ST01-005",
+      "sourcePrintId": "ST01-005",
+      "name": "GM",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-006": {
+      "cardNo": "ST01-006",
+      "sourcePrintId": "ST01-006",
+      "name": "Gundam Aerial (Permet Score Six)",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -3,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-007": {
+      "cardNo": "ST01-007",
+      "sourcePrintId": "ST01-007",
+      "name": "Gundam Aerial (Bit on Form)",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-008": {
+      "cardNo": "ST01-008",
+      "sourcePrintId": "ST01-008",
+      "name": "Demi Trainer",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-009": {
+      "cardNo": "ST01-009",
+      "sourcePrintId": "ST01-009",
+      "name": "Zowort",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "This Unit can't choose the enemy player as its attack target.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "CANT_ATTACK",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-010": {
+      "cardNo": "ST01-010",
+      "sourcePrintId": "ST01-010",
+      "name": "Amuro Ray",
+      "type": "PILOT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "RESTED_ENEMY_TARGET",
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST01-011": {
+      "cardNo": "ST01-011",
+      "sourcePrintId": "ST01-011",
+      "name": "Suletta Mercury",
+      "type": "PILOT",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "RESOURCE",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST01-012": {
+      "cardNo": "ST01-012",
+      "sourcePrintId": "ST01-012",
+      "name": "Thoroughly Damaged",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Hayato Kobayashi]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Hayato Kobayashi]"
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST01-013": {
+      "cardNo": "ST01-013",
+      "sourcePrintId": "ST01-013",
+      "name": "Kai's Resolve",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 3,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Kai Shiden]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Kai Shiden]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-014": {
+      "cardNo": "ST01-014",
+      "sourcePrintId": "ST01-014",
+      "name": "Unforeseen Incident",
+      "type": "COMMAND",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Activate this card's 【Main】.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ACTIVATE_MAIN_EFFECT"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -3,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-015": {
+      "cardNo": "ST01-015",
+      "sourcePrintId": "ST01-015",
+      "name": "White Base",
+      "type": "BASE",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "②",
+            "resourceCost": 2
+          },
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 3,
+              "hp": 3
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST01-016": {
+      "cardNo": "ST01-016",
+      "sourcePrintId": "ST01-016",
+      "name": "Asticassia School of Technology, Earth House",
+      "type": "BASE",
+      "color": "White",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Rest this Base",
+            "restSelf": true
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "ALL"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    }
+  }
+}

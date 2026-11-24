@@ -1,0 +1,640 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST11",
+  "cardCount": 16,
+  "effects": {
+    "ST11-001": {
+      "cardNo": "ST11-001",
+      "sourcePrintId": "ST11-001",
+      "name": "Char's Z'Gok",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】While 2 or more other friendly (Marine) Units are in play, enemy Units can't choose this Unit as their attack target.",
+          "timings": [
+            "DURING_PAIR"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While 2 or more other friendly (Marine) Units are in play"
+          },
+          "steps": [],
+          "unparsedResidual": "enemy Units can't choose this Unit as their attack target"
+        },
+        {
+          "raw": "【Deploy】If another friendly (Marine) Unit is in play, choose 1 enemy Unit that is Lv.2 or lower. Return it to the bottom of its owner's deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If another friendly (Marine) Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "minCopies": 4,
+          "reason": "Requires (Marine)",
+          "primaryClause": true
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Marine)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST11-002": {
+      "cardNo": "ST11-002",
+      "sourcePrintId": "ST11-002",
+      "name": "Acguy",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "During your opponent's turn, while this Unit is rested, friendly (Marine) Units with 2 or less HP can't receive enemy effect damage.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "During your opponent's turn, while this Unit is rested, friendly (Marine) Units with 2 or less HP can't receive enemy effect damage"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST11-003": {
+      "cardNo": "ST11-003",
+      "sourcePrintId": "ST11-003",
+      "name": "Zock",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While another friendly (Marine) Unit is in play, this Unit gains <Blocker>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While another friendly (Marine) Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Blocker",
+                "value": null
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Marine)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST11-004": {
+      "cardNo": "ST11-004",
+      "sourcePrintId": "ST11-004",
+      "name": "ZnO",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Deploy 1 rested [GOOhN]((ZAFT) (Marine)･AP1･HP1) Unit token.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 1,
+              "hp": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST11-005": {
+      "cardNo": "ST11-005",
+      "sourcePrintId": "ST11-005",
+      "name": "Ash",
+      "type": "UNIT",
+      "color": "Blue",
+      "keywords": [
+        {
+          "name": "Repair",
+          "value": 2
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST11-006": {
+      "cardNo": "ST11-006",
+      "sourcePrintId": "ST11-006",
+      "name": "Shamblo",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "If another friendly (Marine) Unit is in play at the start of your opponent's turn, during this turn, when a friendly shield area card receives enemy effect damage, reduce it by 5.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If another friendly (Marine) Unit is in play at the start of your opponent's turn"
+          },
+          "steps": [],
+          "unparsedResidual": "during this turn, when a friendly shield area card receives enemy effect damage, reduce it by 5"
+        },
+        {
+          "raw": "【Deploy】Choose 1 (Marine) Unit card from your trash. Add it to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_FROM_TRASH_TO_HAND",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Marine",
+                "zone": "TRASH"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 8,
+          "reason": "Requires (Marine)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST11-007": {
+      "cardNo": "ST11-007",
+      "sourcePrintId": "ST11-007",
+      "name": "Gundam Leopard",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST11-008": {
+      "cardNo": "ST11-008",
+      "sourcePrintId": "ST11-008",
+      "name": "Daughseat",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST11-009": {
+      "cardNo": "ST11-009",
+      "sourcePrintId": "ST11-009",
+      "name": "Kapool",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Destroyed】If it is your opponent's turn and a friendly (Marine) Unit is in play, draw 1.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If it is your opponent's turn and a friendly (Marine) Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Marine)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST11-010": {
+      "cardNo": "ST11-010",
+      "sourcePrintId": "ST11-010",
+      "name": "Abyss Gundam",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST11-011": {
+      "cardNo": "ST11-011",
+      "sourcePrintId": "ST11-011",
+      "name": "Char Aznable",
+      "type": "PILOT",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】All friendly (Marine) Units get AP+1 during this turn.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "trait": "Marine"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Marine) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST11-012": {
+      "cardNo": "ST11-012",
+      "sourcePrintId": "ST11-012",
+      "name": "Loni Garvey",
+      "type": "PILOT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】Choose 1 friendly (Marine) Unit. During this turn, when it receives battle damage from an enemy Unit, reduce it by 2.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "During this turn, when it receives battle damage from an enemy Unit, reduce it by 2"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST11-013": {
+      "cardNo": "ST11-013",
+      "sourcePrintId": "ST11-013",
+      "name": "Poorly Planned Offensive",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Choose 1 rested enemy Unit with 3 or less HP. Return it to its owner's hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED",
+                "hpMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】/【Action】Choose 1 rested enemy Unit with 3 or less HP. Return it to its owner's hand. If you do, draw 1.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED",
+                "hpMax": 3
+              }
+            },
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST11-014": {
+      "cardNo": "ST11-014",
+      "sourcePrintId": "ST11-014",
+      "name": "The Orca of Red Sea",
+      "type": "COMMAND",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Action】Choose 1 friendly (Marine) Unit. Enemy Units can't choose it as their attack target this turn.",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "Enemy Units can't choose it as their attack target this turn"
+        },
+        {
+          "raw": "【Pilot】[Marco Morassim]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Marco Morassim]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST11-015": {
+      "cardNo": "ST11-015",
+      "sourcePrintId": "ST11-015",
+      "name": "A Twinkle from the Abyss",
+      "type": "COMMAND",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Choose 1 (Marine) Unit card that is Lv.4 or lower from your trash. Deploy it rested.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_FROM_TRASH",
+              "free": true,
+              "rested": true,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4,
+                "trait": "Marine",
+                "zone": "TRASH"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DEPLOY_FROM_TRASH"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 8,
+          "reason": "Requires (Marine) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST11-016": {
+      "cardNo": "ST11-016",
+      "sourcePrintId": "ST11-016",
+      "name": "Mad Angler",
+      "type": "BASE",
+      "color": "Blue",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if 4 or more enemy Units are in play, choose 1 rested enemy Unit. Deal 2 damage to it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "Then, if 4 or more enemy Units are in play, choose 1 rested enemy Unit"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

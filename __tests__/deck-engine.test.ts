@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { GundamCardPrint, StrategyBlueprint } from '@/types/gundam';
-import { extractEffectPrerequisites } from '@/lib/effect-parser';
+import { compileCardEffect, type CompiledCardEffect, type EffectShardFile } from '@/lib/effect-parser';
 import {
   analyzeDeck,
   computeTurnWinChances,
@@ -24,7 +24,7 @@ import {
 } from '@/lib/deck-engine';
 
 function makeCard(overrides: Partial<GundamCardPrint>): GundamCardPrint {
-  return {
+  const card: GundamCardPrint = {
     printId: overrides.printId ?? 'GD01-001',
     cardNo: overrides.cardNo ?? 'GD01-001',
     name: overrides.name ?? 'Test Unit',
@@ -51,6 +51,10 @@ function makeCard(overrides: Partial<GundamCardPrint>): GundamCardPrint {
     packageNames: ['Booster Pack 1 [GD01]'],
     packageCodes: ['GD01'],
     ...overrides,
+  };
+  return {
+    ...card,
+    compiledEffect: overrides.compiledEffect ?? compileCardEffect(card),
   };
 }
 
@@ -516,11 +520,23 @@ describe('Seam 2: Parsed Effect Styles, False-Positive Fixes & Knowledge Map Syn
 
 describe('Seam 3: Effect Prerequisite Enforcement, Trait Cohesion & Multi-Pass Deck Builder', () => {
   function loadRealCatalog(): GundamCardPrint[] {
+    const effectsDir = path.join(process.cwd(), 'data', 'effects');
+    const effectsByCardNo = new Map<string, CompiledCardEffect>();
+    for (const file of fs.readdirSync(effectsDir).filter((f) => f.endsWith('.json')).sort()) {
+      const shard = JSON.parse(fs.readFileSync(path.join(effectsDir, file), 'utf8')) as EffectShardFile;
+      for (const [cardNo, eff] of Object.entries(shard.effects ?? {})) {
+        effectsByCardNo.set(cardNo, eff);
+      }
+    }
+
     const dir = path.join(process.cwd(), 'data', 'collections');
     const out: GundamCardPrint[] = [];
     for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
       const raw = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
-      out.push(...((raw.cards ?? []) as GundamCardPrint[]));
+      for (const card of (raw.cards ?? []) as GundamCardPrint[]) {
+        const compiledEffect = effectsByCardNo.get(card.cardNo);
+        out.push(compiledEffect ? { ...card, compiledEffect } : card);
+      }
     }
     return out;
   }
@@ -586,7 +602,7 @@ describe('Seam 3: Effect Prerequisite Enforcement, Trait Cohesion & Multi-Pass D
     const expanded = generated.mainDeck.map((e) => ({ card: byCardNo.get(e.cardNo)!, qty: e.qty }));
     for (const { card, qty } of expanded) {
       if (card.traits.includes('ZAFT')) zaftCopies += qty;
-      for (const prereq of extractEffectPrerequisites(card)) {
+      for (const prereq of card.compiledEffect?.prerequisites ?? []) {
         if (!prereq.primaryClause) continue;
         const matchingCopies = expanded.reduce((sum, item) => {
           if (item.card.cardNo === card.cardNo) return sum;

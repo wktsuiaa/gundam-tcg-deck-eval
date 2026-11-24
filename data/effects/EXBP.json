@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "EXBP",
+  "cardCount": 27,
+  "effects": {
+    "EXBP-001": {
+      "cardNo": "EXBP-001",
+      "sourcePrintId": "EXBP-001",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-002": {
+      "cardNo": "EXBP-002",
+      "sourcePrintId": "EXBP-002",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-003": {
+      "cardNo": "EXBP-003",
+      "sourcePrintId": "EXBP-003",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-004": {
+      "cardNo": "EXBP-004",
+      "sourcePrintId": "EXBP-004",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-005": {
+      "cardNo": "EXBP-005",
+      "sourcePrintId": "EXBP-005",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-006": {
+      "cardNo": "EXBP-006",
+      "sourcePrintId": "EXBP-006",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-007": {
+      "cardNo": "EXBP-007",
+      "sourcePrintId": "EXBP-007",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-008": {
+      "cardNo": "EXBP-008",
+      "sourcePrintId": "EXBP-008",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-009": {
+      "cardNo": "EXBP-009",
+      "sourcePrintId": "EXBP-009",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-010": {
+      "cardNo": "EXBP-010",
+      "sourcePrintId": "EXBP-010",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-011": {
+      "cardNo": "EXBP-011",
+      "sourcePrintId": "EXBP-011",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-019": {
+      "cardNo": "EXBP-019",
+      "sourcePrintId": "EXBP-019",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-020": {
+      "cardNo": "EXBP-020",
+      "sourcePrintId": "EXBP-020",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-021": {
+      "cardNo": "EXBP-021",
+      "sourcePrintId": "EXBP-021",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-022": {
+      "cardNo": "EXBP-022",
+      "sourcePrintId": "EXBP-022",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-023": {
+      "cardNo": "EXBP-023",
+      "sourcePrintId": "EXBP-023",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-024": {
+      "cardNo": "EXBP-024",
+      "sourcePrintId": "EXBP-024",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-025": {
+      "cardNo": "EXBP-025",
+      "sourcePrintId": "EXBP-025",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-026": {
+      "cardNo": "EXBP-026",
+      "sourcePrintId": "EXBP-026",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-027": {
+      "cardNo": "EXBP-027",
+      "sourcePrintId": "EXBP-027",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-028": {
+      "cardNo": "EXBP-028",
+      "sourcePrintId": "EXBP-028_p1",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-029": {
+      "cardNo": "EXBP-029",
+      "sourcePrintId": "EXBP-029",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-030": {
+      "cardNo": "EXBP-030",
+      "sourcePrintId": "EXBP-030",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-031": {
+      "cardNo": "EXBP-031",
+      "sourcePrintId": "EXBP-031",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-032": {
+      "cardNo": "EXBP-032",
+      "sourcePrintId": "EXBP-032",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-034": {
+      "cardNo": "EXBP-034",
+      "sourcePrintId": "EXBP-034",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXBP-035": {
+      "cardNo": "EXBP-035",
+      "sourcePrintId": "EXBP-035",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

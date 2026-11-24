@@ -1,0 +1,713 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST06",
+  "cardCount": 15,
+  "effects": {
+    "ST06-001": {
+      "cardNo": "ST06-001",
+      "sourcePrintId": "ST06-001",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【When Linked】If another friendly (Clan) Unit is in play, this gains <First Strike> during this turn.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If another friendly (Clan) Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST06-002": {
+      "cardNo": "ST06-002",
+      "sourcePrintId": "ST06-002",
+      "name": "GQuuuuuuX (Omega Psycommu)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】If another friendly (Clan) Unit is in play, choose 1 enemy Unit. Deal 1 damage to it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If another friendly (Clan) Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST06-003": {
+      "cardNo": "ST06-003",
+      "sourcePrintId": "ST06-003",
+      "name": "Gaia's Rick Dom (GQ)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】<Support 1>",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Support",
+                "value": 1
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST06-004": {
+      "cardNo": "ST06-004",
+      "sourcePrintId": "ST06-004",
+      "name": "Gelgoog (GQ)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST06-005": {
+      "cardNo": "ST06-005",
+      "sourcePrintId": "ST06-005",
+      "name": "Red Gundam",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 1
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【Attack】Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "UP_TO",
+                "maxCount": 2,
+                "trait": "Clan"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan) UNIT target",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST06-006": {
+      "cardNo": "ST06-006",
+      "sourcePrintId": "ST06-006",
+      "name": "Red Gundam",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST06-007": {
+      "cardNo": "ST06-007",
+      "sourcePrintId": "ST06-007",
+      "name": "Ortega's Rick Dom (GQ)",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Choose 1 of your other (Clan) Units. During this turn, it may choose an active enemy Unit with 3 or less AP as its attack target.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ALLOW_ATTACK_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "other": true,
+                "trait": "Clan"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST06-008": {
+      "cardNo": "ST06-008",
+      "sourcePrintId": "ST06-008",
+      "name": "Sugai's Gelgoog (GQ)",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST06-009": {
+      "cardNo": "ST06-009",
+      "sourcePrintId": "ST06-009",
+      "name": "Amate Yuzuriha (Machu)",
+      "type": "PILOT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Linked】Look at the top card of your deck. If it is a (Clan) card, you may reveal it and add it to your hand. Return any remaining card to the bottom of your deck.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "Look at the top card of your deck If it is a (Clan) card, you may reveal it and add it to your hand"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST06-010": {
+      "cardNo": "ST06-010",
+      "sourcePrintId": "ST06-010",
+      "name": "Shuji Itō",
+      "type": "PILOT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【During Link】【Attack】If you have a (Clan) Unit in play, look at the top card of your deck. Return it to the top or bottom of your deck.",
+          "timings": [
+            "DURING_LINK",
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If you have a (Clan) Unit in play"
+          },
+          "steps": [
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "look at the top card of your deck"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST06-011": {
+      "cardNo": "ST06-011",
+      "sourcePrintId": "ST06-011",
+      "name": "Ruthless Tactics",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "UP_TO",
+                "maxCount": 2,
+                "trait": "Clan"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Gaia (GQ)]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Gaia (GQ)]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST06-012": {
+      "cardNo": "ST06-012",
+      "sourcePrintId": "ST06-012",
+      "name": "Schoolgirl and Smuggler",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Look at the top 3 cards of your deck. You may reveal 1 (Clan) Unit card/Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 3,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true,
+              "trait": "Clan"
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "minCopies": 8,
+          "reason": "Searches (Clan) cards",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST06-013": {
+      "cardNo": "ST06-013",
+      "sourcePrintId": "ST06-013",
+      "name": "Fierce Unity",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Action】Choose 1 to 2 friendly (Clan) Units. They can't receive battle damage from enemy Units that are Lv.2 or lower during this turn.",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "They can't receive battle damage from enemy Units that are Lv.2 or lower during this turn",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "UP_TO",
+                "maxCount": 2,
+                "trait": "Clan"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Ortega (GQ)]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Ortega (GQ)]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST06-014": {
+      "cardNo": "ST06-014",
+      "sourcePrintId": "ST06-014",
+      "name": "Clan Battle",
+      "type": "BASE",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】Rest this Base：If a friendly (Clan) Link Unit is in play, choose 1 friendly Unit. It gets AP+2 during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "Rest this Base",
+            "restSelf": true
+          },
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If a friendly (Clan) Link Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan)",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST06-015": {
+      "cardNo": "ST06-015",
+      "sourcePrintId": "ST06-015",
+      "name": "Kaneban Co., Ltd.",
+      "type": "BASE",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Once per Turn】When a friendly (Clan) Unit links, it gains <Breach 3> during this turn.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 3
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan) UNIT target",
+          "primaryClause": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,945 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "RP",
+  "cardCount": 67,
+  "effects": {
+    "RP-001": {
+      "cardNo": "RP-001",
+      "sourcePrintId": "RP-001",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-002": {
+      "cardNo": "RP-002",
+      "sourcePrintId": "RP-002",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-003": {
+      "cardNo": "RP-003",
+      "sourcePrintId": "RP-003",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-004": {
+      "cardNo": "RP-004",
+      "sourcePrintId": "RP-004",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-005": {
+      "cardNo": "RP-005",
+      "sourcePrintId": "RP-005",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-006": {
+      "cardNo": "RP-006",
+      "sourcePrintId": "RP-006",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-007": {
+      "cardNo": "RP-007",
+      "sourcePrintId": "RP-007",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-008": {
+      "cardNo": "RP-008",
+      "sourcePrintId": "RP-008",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-009": {
+      "cardNo": "RP-009",
+      "sourcePrintId": "RP-009",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-010": {
+      "cardNo": "RP-010",
+      "sourcePrintId": "RP-010",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-011": {
+      "cardNo": "RP-011",
+      "sourcePrintId": "RP-011",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-012": {
+      "cardNo": "RP-012",
+      "sourcePrintId": "RP-012",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-013": {
+      "cardNo": "RP-013",
+      "sourcePrintId": "RP-013",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-014": {
+      "cardNo": "RP-014",
+      "sourcePrintId": "RP-014",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-015": {
+      "cardNo": "RP-015",
+      "sourcePrintId": "RP-015",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-016": {
+      "cardNo": "RP-016",
+      "sourcePrintId": "RP-016",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-017": {
+      "cardNo": "RP-017",
+      "sourcePrintId": "RP-017",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-018": {
+      "cardNo": "RP-018",
+      "sourcePrintId": "RP-018",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-019": {
+      "cardNo": "RP-019",
+      "sourcePrintId": "RP-019",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-020": {
+      "cardNo": "RP-020",
+      "sourcePrintId": "RP-020",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-021": {
+      "cardNo": "RP-021",
+      "sourcePrintId": "RP-021",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-022": {
+      "cardNo": "RP-022",
+      "sourcePrintId": "RP-022",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-023": {
+      "cardNo": "RP-023",
+      "sourcePrintId": "RP-023",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-024": {
+      "cardNo": "RP-024",
+      "sourcePrintId": "RP-024",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-025": {
+      "cardNo": "RP-025",
+      "sourcePrintId": "RP-025",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-026": {
+      "cardNo": "RP-026",
+      "sourcePrintId": "RP-026",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-027": {
+      "cardNo": "RP-027",
+      "sourcePrintId": "RP-027",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-028": {
+      "cardNo": "RP-028",
+      "sourcePrintId": "RP-028",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-029": {
+      "cardNo": "RP-029",
+      "sourcePrintId": "RP-029",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-030": {
+      "cardNo": "RP-030",
+      "sourcePrintId": "RP-030",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-031": {
+      "cardNo": "RP-031",
+      "sourcePrintId": "RP-031",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-032": {
+      "cardNo": "RP-032",
+      "sourcePrintId": "RP-032",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-033": {
+      "cardNo": "RP-033",
+      "sourcePrintId": "RP-033",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-034": {
+      "cardNo": "RP-034",
+      "sourcePrintId": "RP-034",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-035": {
+      "cardNo": "RP-035",
+      "sourcePrintId": "RP-035",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-036": {
+      "cardNo": "RP-036",
+      "sourcePrintId": "RP-036",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-037": {
+      "cardNo": "RP-037",
+      "sourcePrintId": "RP-037",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-038": {
+      "cardNo": "RP-038",
+      "sourcePrintId": "RP-038",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-039": {
+      "cardNo": "RP-039",
+      "sourcePrintId": "RP-039",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-040": {
+      "cardNo": "RP-040",
+      "sourcePrintId": "RP-040",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-041": {
+      "cardNo": "RP-041",
+      "sourcePrintId": "RP-041",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-042": {
+      "cardNo": "RP-042",
+      "sourcePrintId": "RP-042",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-043": {
+      "cardNo": "RP-043",
+      "sourcePrintId": "RP-043",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-044": {
+      "cardNo": "RP-044",
+      "sourcePrintId": "RP-044",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-045": {
+      "cardNo": "RP-045",
+      "sourcePrintId": "RP-045",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-046": {
+      "cardNo": "RP-046",
+      "sourcePrintId": "RP-046",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-047": {
+      "cardNo": "RP-047",
+      "sourcePrintId": "RP-047",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-048": {
+      "cardNo": "RP-048",
+      "sourcePrintId": "RP-048",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-049": {
+      "cardNo": "RP-049",
+      "sourcePrintId": "RP-049",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-050": {
+      "cardNo": "RP-050",
+      "sourcePrintId": "RP-050",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-051": {
+      "cardNo": "RP-051",
+      "sourcePrintId": "RP-051",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-052": {
+      "cardNo": "RP-052",
+      "sourcePrintId": "RP-052",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-053": {
+      "cardNo": "RP-053",
+      "sourcePrintId": "RP-053",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-054": {
+      "cardNo": "RP-054",
+      "sourcePrintId": "RP-054",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-055": {
+      "cardNo": "RP-055",
+      "sourcePrintId": "RP-055",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-056": {
+      "cardNo": "RP-056",
+      "sourcePrintId": "RP-056",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-057": {
+      "cardNo": "RP-057",
+      "sourcePrintId": "RP-057",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-058": {
+      "cardNo": "RP-058",
+      "sourcePrintId": "RP-058",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-059": {
+      "cardNo": "RP-059",
+      "sourcePrintId": "RP-059",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-060": {
+      "cardNo": "RP-060",
+      "sourcePrintId": "RP-060",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-061": {
+      "cardNo": "RP-061",
+      "sourcePrintId": "RP-061",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-062": {
+      "cardNo": "RP-062",
+      "sourcePrintId": "RP-062",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-063": {
+      "cardNo": "RP-063",
+      "sourcePrintId": "RP-063",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-064": {
+      "cardNo": "RP-064",
+      "sourcePrintId": "RP-064",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-065": {
+      "cardNo": "RP-065",
+      "sourcePrintId": "RP-065",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-067": {
+      "cardNo": "RP-067",
+      "sourcePrintId": "RP-067",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "RP-068": {
+      "cardNo": "RP-068",
+      "sourcePrintId": "RP-068",
+      "name": "Resource",
+      "type": "RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

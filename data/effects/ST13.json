@@ -1,0 +1,667 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST13",
+  "cardCount": 16,
+  "effects": {
+    "ST13-001": {
+      "cardNo": "ST13-001",
+      "sourcePrintId": "ST13-001",
+      "name": "Qubeley",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Once per Turn】During your turn, when you pair a Pilot with one of your Units, deploy 1 to 2 [Bit / Funnel] Unit tokens.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Main】【Once per Turn】①：Choose 1 of your Unit tokens and 1 enemy Unit. Begin a battle between them and only perform the damage step.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "①",
+            "resourceCost": 1
+          },
+          "steps": [],
+          "unparsedResidual": "Begin a battle between them and only perform the damage step"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-002": {
+      "cardNo": "ST13-002",
+      "sourcePrintId": "ST13-002",
+      "name": "Elmeth",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Deploy 1 [Bit / Funnel] Unit token.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-003": {
+      "cardNo": "ST13-003",
+      "sourcePrintId": "ST13-003",
+      "name": "Bertigo",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-004": {
+      "cardNo": "ST13-004",
+      "sourcePrintId": "ST13-004",
+      "name": "GX-Bit",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】Look at the top card of your deck. Return it to the top or bottom of your deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "Look at the top card of your deck"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-005": {
+      "cardNo": "ST13-005",
+      "sourcePrintId": "ST13-005",
+      "name": "GFreD",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】If 4 or more enemy Units are in play, look at the top 5 cards of your deck. You may reveal 1 Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "UNIT_COUNT_AT_LEAST",
+            "owner": "ENEMY",
+            "count": 4
+          },
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 5,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-006": {
+      "cardNo": "ST13-006",
+      "sourcePrintId": "ST13-006",
+      "name": "Gundam Aerial",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【During Pair】【Attack】If you are attacking the enemy player, choose 1 enemy Unit. Deal 2 damage to it.",
+          "timings": [
+            "DURING_PAIR",
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If you are attacking the enemy player"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Activate･Action】【Once per Turn】Rest 1 friendly Unit：Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it.",
+          "timings": [
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "Rest 1 friendly Unit"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST13-007": {
+      "cardNo": "ST13-007",
+      "sourcePrintId": "ST13-007",
+      "name": "Gyunei's Jagd Doga",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】<Support 1>",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Support",
+                "value": 1
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-008": {
+      "cardNo": "ST13-008",
+      "sourcePrintId": "ST13-008",
+      "name": "Gundam Throne Zwei",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-009": {
+      "cardNo": "ST13-009",
+      "sourcePrintId": "ST13-009",
+      "name": "Gundam Pharact",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Attack】Choose 1 enemy player. That player chooses 2 Unit cards from their trash. Exile them from the game.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "EXILE",
+              "target": {
+                "owner": "ENEMY",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "That player chooses 2 Unit cards from their trash"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-010": {
+      "cardNo": "ST13-010",
+      "sourcePrintId": "ST13-010",
+      "name": "Red Gundam (0079)",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】【Once per Turn】Destroy 1 friendly Unit token：This Unit gains <Breach 3> during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "Destroy 1 friendly Unit token"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 3
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-011": {
+      "cardNo": "ST13-011",
+      "sourcePrintId": "ST13-011",
+      "name": "Haman Karn",
+      "type": "PILOT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】Look at the top 5 cards of your deck. You may reveal 1 Pilot card whose Lv. is equal to or lower than this Unit among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 5,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST13-012": {
+      "cardNo": "ST13-012",
+      "sourcePrintId": "ST13-012",
+      "name": "Suletta Mercury",
+      "type": "PILOT",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Once per Turn】When an enemy Unit is destroyed with effect damage while this Unit is attacking, draw 1.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST13-013": {
+      "cardNo": "ST13-013",
+      "sourcePrintId": "ST13-013",
+      "name": "I'm a Newtype",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Deploy 1 to 2 [Bit / Funnel] Unit tokens.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Pilot】[Carris Nautilus]",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [],
+          "unparsedResidual": "[Carris Nautilus]"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-014": {
+      "cardNo": "ST13-014",
+      "sourcePrintId": "ST13-014",
+      "name": "Final Duty",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Choose 1 of your Units. Destroy it. If you do, look at the top 4 cards of your deck. You may deploy 1 Unit card that is Lv.4 or lower among them. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 4,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": "You may deploy 1 Unit card that is Lv.4 or lower among them"
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST13-015": {
+      "cardNo": "ST13-015",
+      "sourcePrintId": "ST13-015",
+      "name": "Operation to Intercept Solomon",
+      "type": "COMMAND",
+      "color": "Red",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Main】/【Action】Choose 3 Unit cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit. Deal 3 damage to it.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "EXILE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 3,
+                "zone": "TRASH"
+              }
+            },
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 3,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST13-016": {
+      "cardNo": "ST13-016",
+      "sourcePrintId": "ST13-016",
+      "name": "Sodon",
+      "type": "BASE",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, deploy 1 [Bit / Funnel] Unit token.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

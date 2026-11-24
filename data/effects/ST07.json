@@ -1,0 +1,711 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST07",
+  "cardCount": 15,
+  "effects": {
+    "ST07-001": {
+      "cardNo": "ST07-001",
+      "sourcePrintId": "ST07-001",
+      "name": "Gundam Exia",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "At the end of your turn, if there are 7 or more (CB) cards in your trash, choose 1 of your Resources. Set it as active.",
+          "timings": [
+            "END_OF_TURN"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "TRASH_COUNT_AT_LEAST",
+            "count": 7,
+            "trait": "CB"
+          },
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "RESOURCE",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】Place the top 2 cards of your deck into your trash. If you place a (CB) card with this effect, draw 1.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MILL",
+              "count": 2
+            }
+          ],
+          "unparsedResidual": "If you place a (CB) card with this effect, draw 1"
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "minCopies": 8,
+          "reason": "Requires 7+ (CB) cards in trash",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST07-002": {
+      "cardNo": "ST07-002",
+      "sourcePrintId": "ST07-002",
+      "name": "Gundam Exia",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST07-003": {
+      "cardNo": "ST07-003",
+      "sourcePrintId": "ST07-003",
+      "name": "Gundam Virtue",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST07-004": {
+      "cardNo": "ST07-004",
+      "sourcePrintId": "ST07-004",
+      "name": "Gundam Virtue",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "While you have a (CB) Pilot in play, this Unit gains <Blocker>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While you have a (CB) Pilot in play"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Blocker",
+                "value": null
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "PILOT",
+          "minCopies": 4,
+          "reason": "Requires (CB)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST07-005": {
+      "cardNo": "ST07-005",
+      "sourcePrintId": "ST07-005",
+      "name": "Gundam Dynames",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "During your turn, when this Unit destroys an enemy Unit with battle damage, this Unit recovers 2 HP.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "RECOVER_HP",
+              "amount": 2,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【During Link】This Unit gets AP+2.",
+          "timings": [
+            "DURING_LINK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": []
+    },
+    "ST07-006": {
+      "cardNo": "ST07-006",
+      "sourcePrintId": "ST07-006",
+      "name": "Gundam Dynames",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST07-007": {
+      "cardNo": "ST07-007",
+      "sourcePrintId": "ST07-007",
+      "name": "Gundam Kyrios",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "During your turn, while you have a (CB) Pilot in play, this Unit gets AP+2.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "while you have a (CB) Pilot in play"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 2,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "PILOT",
+          "minCopies": 4,
+          "reason": "Requires (CB)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST07-008": {
+      "cardNo": "ST07-008",
+      "sourcePrintId": "ST07-008",
+      "name": "Gundam Kyrios (Flight Mode)",
+      "type": "UNIT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST07-009": {
+      "cardNo": "ST07-009",
+      "sourcePrintId": "ST07-009",
+      "name": "Setsuna F. Seiei",
+      "type": "PILOT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Attack】This Unit gets AP+1 during this turn. If there are 7 or more (CB) cards in your trash, all your (CB) Units get AP+1 instead.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            },
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "trait": "CB"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (CB) UNIT target",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST07-010": {
+      "cardNo": "ST07-010",
+      "sourcePrintId": "ST07-010",
+      "name": "Tieria Erde",
+      "type": "PILOT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Destroyed】If it is your opponent's turn and this is a (CB) Unit, draw 1.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "If it is your opponent's turn and this is a (CB) Unit"
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (CB)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST07-011": {
+      "cardNo": "ST07-011",
+      "sourcePrintId": "ST07-011",
+      "name": "Lockon Stratos (Neil)",
+      "type": "PILOT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【When Paired】If this is a (CB) Unit, it may choose an active enemy Unit whose Lv. is equal to or lower than this Unit as its attack target during this turn.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "UNIT_TRAIT_IS",
+            "trait": "CB"
+          },
+          "steps": [
+            {
+              "action": "ALLOW_ATTACK_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "ACTIVE"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (CB) Unit",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST07-012": {
+      "cardNo": "ST07-012",
+      "sourcePrintId": "ST07-012",
+      "name": "Allelujah Haptism",
+      "type": "PILOT",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "During your turn, while you have a (CB) Link Unit in play, this Unit can't receive battle damage from enemy Units with 3 or less AP.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "while you have a (CB) Link Unit in play"
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "this Unit can't receive battle damage from enemy Units with 3 or less AP"
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (CB)",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST07-013": {
+      "cardNo": "ST07-013",
+      "sourcePrintId": "ST07-013",
+      "name": "Armed Intervention",
+      "type": "COMMAND",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Draw 1.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Action】Choose 1 rested friendly (CB) Unit. Change the attack target of the battling enemy Unit to it.",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "Change the attack target of the battling enemy Unit to it",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED",
+                "trait": "CB"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (CB) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST07-014": {
+      "cardNo": "ST07-014",
+      "sourcePrintId": "ST07-014",
+      "name": "Tactical Visionary",
+      "type": "COMMAND",
+      "color": "Green",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】Look at the top 3 cards of your deck. You may reveal 1 (CB) Unit card/Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 3,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true,
+              "trait": "CB"
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "minCopies": 8,
+          "reason": "Searches (CB) cards",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST07-015": {
+      "cardNo": "ST07-015",
+      "sourcePrintId": "ST07-015",
+      "name": "Ptolemaios",
+      "type": "BASE",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "While a rested friendly (CB) Unit is in play, this Base can't receive damage from enemy Units that are Lv.3 or lower, other than Unit tokens.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "RAW_CONDITION",
+            "text": "While a rested friendly (CB) Unit is in play"
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "this Base can't receive damage from enemy Units that are Lv.3 or lower, other than Unit tokens"
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (CB)",
+          "primaryClause": false
+        }
+      ]
+    }
+  }
+}

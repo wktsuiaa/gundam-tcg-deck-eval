@@ -1,0 +1,430 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "ST09",
+  "cardCount": 10,
+  "effects": {
+    "ST09-001": {
+      "cardNo": "ST09-001",
+      "sourcePrintId": "ST09-001",
+      "name": "Impulse Gundam",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Activate･Main】②, return this Unit to the bottom of its owner's deck：Choose 1 Unit card with \"Impulse Gundam\" in its card name that is Lv.4 or higher from your trash. Deploy it.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "cost": {
+            "raw": "②, return this Unit to the bottom of its owner's deck",
+            "resourceCost": 2,
+            "returnSelfToDeckBottom": true
+          },
+          "steps": [
+            {
+              "action": "DEPLOY_FROM_TRASH",
+              "free": true,
+              "rested": false,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 4,
+                "nameContains": "Impulse Gundam",
+                "zone": "TRASH"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "DEPLOY_FROM_TRASH"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "NAME",
+          "nameContains": "Impulse Gundam",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires \"Impulse Gundam\" UNIT",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST09-002": {
+      "cardNo": "ST09-002",
+      "sourcePrintId": "ST09-002",
+      "name": "Force Impulse Gundam",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Destroyed】Choose 1 (Minerva Squad) Unit card without \"Force Impulse Gundam\" in its card name from your trash. Add it to your hand.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_FROM_TRASH_TO_HAND",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Minerva Squad",
+                "excludeName": "Force Impulse Gundam",
+                "zone": "TRASH"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Minerva Squad",
+          "cardType": "UNIT",
+          "minCopies": 8,
+          "reason": "Requires (Minerva Squad) UNIT target",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST09-003": {
+      "cardNo": "ST09-003",
+      "sourcePrintId": "ST09-003",
+      "name": "Saviour Gundam",
+      "type": "UNIT",
+      "color": "Red",
+      "keywords": [
+        {
+          "name": "Breach",
+          "value": 3
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "【When Linked】If there are 5 or more purple cards in your trash, deal 2 damage to all Units with 5 or less AP.",
+          "timings": [
+            "WHEN_LINKED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "TRASH_COUNT_AT_LEAST",
+            "count": 5,
+            "color": "Purple"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "apMax": 5
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
+        "enables": []
+      },
+      "prerequisites": [
+        {
+          "kind": "COLOR",
+          "color": "Purple",
+          "minCopies": 8,
+          "reason": "Requires 5+ Purple cards in trash",
+          "primaryClause": false
+        }
+      ]
+    },
+    "ST09-004": {
+      "cardNo": "ST09-004",
+      "sourcePrintId": "ST09-004",
+      "name": "Freedom Gundam",
+      "type": "UNIT",
+      "color": "White",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [
+        {
+          "raw": "While a friendly Base in play, this Unit gains <Suppression>.",
+          "timings": [
+            "CONTINUOUS"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "FRIENDLY_BASE_IN_PLAY"
+          },
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Suppression",
+                "value": null
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST09-005": {
+      "cardNo": "ST09-005",
+      "sourcePrintId": "ST09-005",
+      "name": "Zaku Warrior",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST09-006": {
+      "cardNo": "ST09-006",
+      "sourcePrintId": "ST09-006",
+      "name": "Sword Impulse Gundam",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Deploy】If you deploy this Unit from your trash, choose 1 enemy Unit that is Lv.3 or lower. Destroy it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "DEPLOYED_FROM_ZONE",
+            "zone": "trash"
+          },
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 3
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [
+          "DEPLOY_FROM_TRASH"
+        ],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST09-007": {
+      "cardNo": "ST09-007",
+      "sourcePrintId": "ST09-007",
+      "name": "Blast Impulse Gundam",
+      "type": "UNIT",
+      "color": "Purple",
+      "keywords": [
+        {
+          "name": "Blocker",
+          "value": null
+        }
+      ],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST09-008": {
+      "cardNo": "ST09-008",
+      "sourcePrintId": "ST09-008",
+      "name": "Shinn Asuka",
+      "type": "PILOT",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Attack】If this is a (Minerva Squad) Unit, choose 1 of your Resources. Set it as active.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "UNIT_TRAIT_IS",
+            "trait": "Minerva Squad"
+          },
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "RESOURCE",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
+      },
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Minerva Squad",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Minerva Squad) Unit",
+          "primaryClause": true
+        }
+      ]
+    },
+    "ST09-009": {
+      "cardNo": "ST09-009",
+      "sourcePrintId": "ST09-009",
+      "name": "Giant Killing",
+      "type": "COMMAND",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Main】/【Action】Choose 1 active enemy Unit with 4 or less AP. Destroy it.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "ACTIVE",
+                "apMax": 4
+              }
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "ST09-010": {
+      "cardNo": "ST09-010",
+      "sourcePrintId": "ST09-010",
+      "name": "Minerva",
+      "type": "BASE",
+      "color": "Purple",
+      "keywords": [],
+      "clauses": [
+        {
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ],
+          "unparsedResidual": ""
+        },
+        {
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, look at the top 2 cards of your deck and return 1 to the top. Place the remaining card into your trash.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 2,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "MILL",
+              "count": 1
+            }
+          ],
+          "unparsedResidual": ""
+        }
+      ],
+      "synergy": {
+        "requires": [],
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
+      },
+      "prerequisites": []
+    }
+  }
+}

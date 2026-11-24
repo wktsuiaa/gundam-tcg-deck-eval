@@ -124,6 +124,31 @@ export interface ParsedCardEffects {
   clauses: EffectClause[];
 }
 
+export interface CompiledCardEffect {
+  cardNo: string;
+  sourcePrintId: string;
+  name: string;
+  type: string;
+  color: CardColor;
+  keywords: KeywordAbility[];
+  clauses: EffectClause[];
+  synergy: CardSynergyProfile;
+  prerequisites: EffectPrerequisite[];
+}
+
+export interface EffectShardFile {
+  schemaVersion: 1;
+  setPrefix: string;
+  cardCount: number;
+  effects: Record<string, CompiledCardEffect>;
+}
+
+export function getEffectSetPrefix(cardNo: string): string {
+  const m = cardNo.match(/^([A-Za-z0-9]+)-/);
+  const raw = m ? m[1] : 'MISC';
+  return raw.replace(/[^A-Za-z0-9_-]/g, '_') || 'MISC';
+}
+
 const KEYWORD_NAMES: Record<string, KeywordName> = {
   repair: 'Repair',
   breach: 'Breach',
@@ -1043,3 +1068,21 @@ export function extractEffectPrerequisites(
 
   return [...collected.values()];
 }
+
+export function compileCardEffect(
+  card: Pick<GundamCardPrint, 'cardNo' | 'printId' | 'name' | 'type' | 'color' | 'ap' | 'effect'>
+): CompiledCardEffect {
+  const parsed = parseCardEffects(card);
+  return {
+    cardNo: card.cardNo,
+    sourcePrintId: card.printId,
+    name: card.name,
+    type: card.type,
+    color: card.color,
+    keywords: parsed.keywords,
+    clauses: parsed.clauses,
+    synergy: extractSynergyProfile(card, parsed),
+    prerequisites: extractEffectPrerequisites(card, parsed),
+  };
+}
+

@@ -24,14 +24,14 @@ import type {
   TurnWinChancePoint,
 } from '@/types/gundam';
 import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
-import {
-  extractEffectPrerequisites,
-  extractSynergyProfile,
-  parseCardEffects,
-  type EffectPrerequisite,
-  type EffectStep,
-  type SynergyNodeKey,
+import type {
+  CardSynergyProfile,
+  EffectPrerequisite,
+  EffectStep,
+  SynergyNodeKey,
 } from '@/lib/effect-parser';
+
+const EMPTY_SYNERGY: CardSynergyProfile = { requires: [], enables: [] };
 
 const MAIN_DECK_TYPES = new Set(['UNIT', 'PILOT', 'COMMAND', 'BASE']);
 
@@ -357,7 +357,7 @@ export function validateDeck(
 }
 
 function collectStepsAndResiduals(card: GundamCardPrint) {
-  const parsed = parseCardEffects(card);
+  const parsed = card.compiledEffect ?? { keywords: [], clauses: [] };
   const steps: { step: EffectStep; gated: boolean }[] = [];
   const residuals: string[] = [];
 
@@ -1308,7 +1308,7 @@ function generateDeckPlaybook(
   };
   const profiles = mainExpanded.map((x) => ({
     card: x.card,
-    profile: extractSynergyProfile(x.card),
+    profile: x.card.compiledEffect?.synergy ?? EMPTY_SYNERGY,
   }));
   const seenSynergy = new Set<string>();
   for (const payoff of profiles) {
@@ -1800,7 +1800,7 @@ function evaluateCardPrerequisites(
   pool: GundamCardPrint[],
   focusPool: GundamCardPrint[]
 ): UnmetPrereqCheck {
-  const prereqs = extractEffectPrerequisites(card);
+  const prereqs = card.compiledEffect?.prerequisites ?? [];
   if (prereqs.length === 0) return { unmetPrimary: false, penalty: 0, reasons: [] };
 
   let unmetPrimary = false;
@@ -1889,10 +1889,10 @@ function rankCandidatesForStrategy(
   const deckPayoffs = new Map<SynergyNodeKey, GundamCardPrint>();
   const neededDeckPrereqs: { card: GundamCardPrint; prereq: EffectPrerequisite }[] = [];
   for (const { card: c } of currentCardObjs) {
-    const prof = extractSynergyProfile(c);
+    const prof = c.compiledEffect?.synergy ?? EMPTY_SYNERGY;
     for (const k of prof.enables) if (!deckEnablers.has(k)) deckEnablers.set(k, c);
     for (const k of prof.requires) if (!deckPayoffs.has(k)) deckPayoffs.set(k, c);
-    for (const p of extractEffectPrerequisites(c)) {
+    for (const p of c.compiledEffect?.prerequisites ?? []) {
       const have = currentCardObjs.reduce(
         (s, x) => (x.card.cardNo !== c.cardNo && matchesEffectPrerequisite(x.card, p) ? s + x.qty : s),
         0
@@ -1966,7 +1966,7 @@ function rankCandidatesForStrategy(
     }
 
     // 2. Effect Style factor bonuses & Self-mill/Discard Trash fuel enablers
-    const candSynergy = extractSynergyProfile(card);
+    const candSynergy = card.compiledEffect?.synergy ?? EMPTY_SYNERGY;
     const matchedEffectStyles = sig.effectStyles.filter((es) => selectedEffects.has(es));
     if (matchedEffectStyles.length > 0) {
       fit += matchedEffectStyles.length * 18;

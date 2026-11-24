@@ -2,7 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { GundamCardPrint } from '@/types/gundam';
-import { extractEffectPrerequisites, parseCardEffects } from '@/lib/effect-parser';
+import {
+  compileCardEffect,
+  extractEffectPrerequisites,
+  getEffectSetPrefix,
+  parseCardEffects,
+  type CompiledCardEffect,
+  type EffectShardFile,
+} from '@/lib/effect-parser';
 
 function loadCorpus(): Map<string, GundamCardPrint> {
   const dir = path.join(process.cwd(), 'data', 'collections');
@@ -194,5 +201,23 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
     expect(reminderLeaks).toBe(0);
     expect(totalClauses).toBeGreaterThan(1000);
     expect(coverage).toBeGreaterThanOrEqual(0.8);
+  });
+
+  it('keeps pre-compiled Effect Shards under data/effects/ complete and in sync with data/collections/', () => {
+    const effectsDir = path.join(process.cwd(), 'data', 'effects');
+    const compiledByNo = new Map<string, CompiledCardEffect>();
+    for (const file of fs.readdirSync(effectsDir).filter((f) => f.endsWith('.json')).sort()) {
+      const shard = JSON.parse(fs.readFileSync(path.join(effectsDir, file), 'utf8')) as EffectShardFile;
+      expect(shard.schemaVersion).toBe(1);
+      expect(shard.cardCount).toBe(Object.keys(shard.effects).length);
+      for (const [cardNo, eff] of Object.entries(shard.effects)) {
+        expect(getEffectSetPrefix(cardNo)).toBe(shard.setPrefix);
+        compiledByNo.set(cardNo, eff);
+      }
+    }
+
+    for (const [cardNo, card] of corpus.entries()) {
+      expect(compiledByNo.get(cardNo)).toEqual(compileCardEffect(card));
+    }
   });
 });

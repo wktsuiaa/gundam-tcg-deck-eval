@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "clean": "next clean"
+    "clean": "next clean",
+    "compile:effects": "node --experimental-strip-types scripts/compile_effects.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

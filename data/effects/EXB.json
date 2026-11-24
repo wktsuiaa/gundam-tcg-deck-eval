@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "EXB",
+  "cardCount": 3,
+  "effects": {
+    "EXB-001": {
+      "cardNo": "EXB-001",
+      "sourcePrintId": "EXB-001_p5",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXB-002": {
+      "cardNo": "EXB-002",
+      "sourcePrintId": "EXB-002",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXB-003": {
+      "cardNo": "EXB-003",
+      "sourcePrintId": "EXB-003",
+      "name": "EX Base",
+      "type": "EX BASE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

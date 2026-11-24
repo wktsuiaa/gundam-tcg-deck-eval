@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GundamCardPrint, SavedDeck } from '@/types/gundam';
+import { compileCardEffect } from '@/lib/effect-parser';
 import { resolveCardMap } from '@/lib/deck-engine';
 import {
   applySandboxMove,
@@ -86,7 +87,8 @@ function buildSandboxCards(): GundamCardPrint[] {
   return Array.from({ length: 13 }, (_, idx) => {
     const template = idx % 3 === 0 ? unitLow : idx % 3 === 1 ? pilotLink : cmdRemove;
     const no = `TST-${String(idx + 1).padStart(3, '0')}`;
-    return { ...template, printId: no, cardNo: no };
+    const card = { ...template, printId: no, cardNo: no };
+    return { ...card, compiledEffect: compileCardEffect(card) };
   });
 }
 
@@ -133,10 +135,16 @@ describe('2-Deck Match Sandbox & Reactive Best-Move Advisor', () => {
 
 describe('Seam 3: Fail-Closed Clause Execution & FAQ Conformance in Sandbox', () => {
   const baseTemplate = buildSandboxCards()[0];
-  const makeRealCard = (over: Partial<GundamCardPrint>): GundamCardPrint => ({
-    ...baseTemplate,
-    ...over,
-  });
+  const makeRealCard = (over: Partial<GundamCardPrint>): GundamCardPrint => {
+    const card: GundamCardPrint = {
+      ...baseTemplate,
+      ...over,
+    };
+    return {
+      ...card,
+      compiledEffect: over.compiledEffect ?? compileCardEffect(card),
+    };
+  };
 
   const st09001 = makeRealCard({
     printId: 'ST09-001',

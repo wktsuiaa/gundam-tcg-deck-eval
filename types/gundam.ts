@@ -1,3 +1,5 @@
+import type { CompiledCardEffect } from '@/lib/effect-parser';
+
 export type CardColor = 'Blue' | 'Green' | 'Red' | 'Purple' | 'White' | 'Colorless';
 
 export type CardType =
@@ -42,6 +44,7 @@ export interface GundamCardPrint {
   packageIds: string[];
   packageNames: string[];
   packageCodes: string[];
+  compiledEffect?: CompiledCardEffect;
 }
 
 export interface GundamCardGroup {

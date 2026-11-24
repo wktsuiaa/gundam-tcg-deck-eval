@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "setPrefix": "EXR",
+  "cardCount": 11,
+  "effects": {
+    "EXR-001": {
+      "cardNo": "EXR-001",
+      "sourcePrintId": "EXR-001_p5",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-002": {
+      "cardNo": "EXR-002",
+      "sourcePrintId": "EXR-002",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-003": {
+      "cardNo": "EXR-003",
+      "sourcePrintId": "EXR-003",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-004": {
+      "cardNo": "EXR-004",
+      "sourcePrintId": "EXR-004",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-005": {
+      "cardNo": "EXR-005",
+      "sourcePrintId": "EXR-005",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-006": {
+      "cardNo": "EXR-006",
+      "sourcePrintId": "EXR-006",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-007": {
+      "cardNo": "EXR-007",
+      "sourcePrintId": "EXR-007",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-008": {
+      "cardNo": "EXR-008",
+      "sourcePrintId": "EXR-008",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-009": {
+      "cardNo": "EXR-009",
+      "sourcePrintId": "EXR-009",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-010": {
+      "cardNo": "EXR-010",
+      "sourcePrintId": "EXR-010",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    },
+    "EXR-011": {
+      "cardNo": "EXR-011",
+      "sourcePrintId": "EXR-011",
+      "name": "EX Resource",
+      "type": "EX RESOURCE",
+      "color": "Colorless",
+      "keywords": [],
+      "clauses": [],
+      "synergy": {
+        "requires": [],
+        "enables": []
+      },
+      "prerequisites": []
+    }
+  }
+}

@@ -27,6 +27,7 @@ describe('Split Collection Shards & SQLite DB Hydration', () => {
     expect(catalog.packages.length).toBe(split.packages.length);
     expect(catalog.rules?.deckConstruction.mainDeckSize).toBe(50);
     expect(catalog.rules?.deckConstruction.resourceDeckSize).toBe(10);
+    expect(catalog.cards.every((c) => Boolean(c.compiledEffect))).toBe(true);
   });
 
   it('sanitizes collection shard paths safely inside data/collections/', () => {
@@ -44,5 +45,6 @@ describe('Split Collection Shards & SQLite DB Hydration', () => {
     expect(catalog.totalPrints).toBe(split.cards.length);
     expect(catalog.packages.length).toBe(split.packages.length);
     expect(catalog.rules?.deckConstruction.mainDeckSize).toBe(50);
+    expect(catalog.cards.every((c) => Boolean(c.compiledEffect))).toBe(true);
   });
 });
