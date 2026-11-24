@@ -19,6 +19,7 @@ import type {
   SandboxMatchState,
   SandboxMoveSuggestion,
   SandboxSide,
+  SandboxUnitInstance,
   SavedDeck,
 } from '@/types/gundam';
 import {
@@ -28,10 +29,12 @@ import {
 } from '@/lib/deck-engine';
 import {
   applySandboxMove,
+  canActivateUnitMain,
   canPayCard,
   canUnitAttack,
   createInitialSandboxMatch,
   evaluateSandboxBestMoves,
+  getLegalTargetOptions,
   stepSandboxBot,
 } from '@/lib/sandbox-engine';
 import { CardArtwork } from '@/components/CardArtwork';
@@ -76,6 +79,10 @@ export function MatchSandbox({
   const [revealHandB, setRevealHandB] = useState(true);
   const [selectedPilotCard, setSelectedPilotCard] = useState<GundamCardPrint | null>(null);
   const [selectedAttackerId, setSelectedAttackerId] = useState<string | null>(null);
+  const [pendingTargetMove, setPendingTargetMove] = useState<{
+    move: SandboxMoveSuggestion;
+    options: SandboxUnitInstance[];
+  } | null>(null);
 
   const deckA = selectableDecks.find((d) => d.id === deckAId) ?? selectableDecks[0];
   const deckB = selectableDecks.find((d) => d.id === deckBId) ?? selectableDecks[1] ?? selectableDecks[0];
@@ -84,6 +91,7 @@ export function MatchSandbox({
     if (!deckA || !deckB) return;
     setSelectedPilotCard(null);
     setSelectedAttackerId(null);
+    setPendingTargetMove(null);
     setMatch(createInitialSandboxMatch(deckA, deckB, firstSide, byPrintId, byCardNo));
   };
 
@@ -96,6 +104,7 @@ export function MatchSandbox({
     if (!match) return;
     setSelectedPilotCard(null);
     setSelectedAttackerId(null);
+    setPendingTargetMove(null);
     setMatch(applySandboxMove(match, move));
   };
 
@@ -103,6 +112,7 @@ export function MatchSandbox({
     if (!match || match.winner) return;
     setSelectedPilotCard(null);
     setSelectedAttackerId(null);
+    setPendingTargetMove(null);
     setMatch(stepSandboxBot(match));
   };
 
@@ -117,7 +127,24 @@ export function MatchSandbox({
     }
     setSelectedPilotCard(null);
     setSelectedAttackerId(null);
+    setPendingTargetMove(null);
     setMatch(current);
+  };
+
+  const dispatchTargetedOrImmediate = (
+    side: SandboxSide,
+    move: SandboxMoveSuggestion,
+    card: GundamCardPrint,
+    timing: 'DEPLOY' | 'MAIN' | 'ACTIVATE_MAIN',
+    selfUnit?: SandboxUnitInstance
+  ) => {
+    if (!match) return;
+    const options = getLegalTargetOptions(match, side, card, timing, selfUnit);
+    if (options.length >= 2) {
+      setPendingTargetMove({ move, options });
+      return;
+    }
+    executeMove({ ...move, targetInstanceId: options[0]?.instanceId });
   };
 
   const handleManualCardClick = (side: SandboxSide, card: GundamCardPrint) => {
@@ -142,7 +169,7 @@ export function MatchSandbox({
         : null;
 
     if (!actionType) return;
-    executeMove({
+    const move: SandboxMoveSuggestion = {
       id: `manual-${card.printId}-${match.turn}-${match.log.length}`,
       rank: 1,
       actionType,
@@ -151,7 +178,12 @@ export function MatchSandbox({
       winDeltaPct: 0,
       priorityScore: 0,
       card,
-    });
+    };
+    if (actionType === 'DEPLOY_UNIT' || actionType === 'PLAY_COMMAND') {
+      dispatchTargetedOrImmediate(side, move, card, actionType === 'DEPLOY_UNIT' ? 'DEPLOY' : 'MAIN');
+    } else {
+      executeMove(move);
+    }
   };
 
   const handlePairSelectedPilot = (side: SandboxSide, unitInstanceId: string) => {
@@ -288,6 +320,18 @@ export function MatchSandbox({
                   Click a rested enemy Unit to attack it (or click Attack Shield on attacker)
                 </span>
               )}
+              {pendingTargetMove && match.activeSide !== side && (
+                <span className="flex items-center gap-2 text-amber-300">
+                  <span>Select legal target for {pendingTargetMove.move.card?.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPendingTargetMove(null)}
+                    className="rounded border border-white/20 px-1.5 py-0.5 text-[10px] text-slate-200 hover:bg-white/10"
+                  >
+                    Cancel
+                  </button>
+                </span>
+              )}
             </div>
 
             {player.battleArea.length === 0 ? (
@@ -382,6 +426,46 @@ export function MatchSandbox({
                             )}
                           </>
                         )}
+                        {isActive && !canPair && canActivateUnitMain(match, side, u) && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              dispatchTargetedOrImmediate(
+                                side,
+                                {
+                                  id: `act-${u.instanceId}-${match.turn}`,
+                                  rank: 1,
+                                  actionType: 'ACTIVATE_MAIN',
+                                  title: `Activate ${u.card.name}`,
+                                  reason: 'Manual Activate Main',
+                                  winDeltaPct: 0,
+                                  priorityScore: 0,
+                                  card: u.card,
+                                  unitInstanceId: u.instanceId,
+                                },
+                                u.card,
+                                'ACTIVATE_MAIN',
+                                u
+                              )
+                            }
+                            className="w-full rounded bg-purple-600/80 px-2 py-1 text-[10px] font-semibold text-white hover:bg-purple-500"
+                          >
+                            Activate Main
+                          </button>
+                        )}
+                        {pendingTargetMove &&
+                          match.activeSide !== side &&
+                          pendingTargetMove.options.some((opt) => opt.instanceId === u.instanceId) && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                executeMove({ ...pendingTargetMove.move, targetInstanceId: u.instanceId })
+                              }
+                              className="w-full rounded bg-amber-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-amber-500"
+                            >
+                              Choose Target
+                            </button>
+                          )}
                         {isAttackTarget && selectedAttackerId && (
                           <button
                             type="button"

@@ -303,6 +303,8 @@ export interface SandboxUnitInstance {
   damage: number;
   apBuff: number;
   summonedTurn: number;
+  deployedFromZone?: 'hand' | 'trash';
+  activatedMainTurn?: number;
 }
 
 export interface SandboxPlayerState {
@@ -330,7 +332,7 @@ export interface SandboxActionLogEntry {
 export interface SandboxMoveSuggestion {
   id: string;
   rank: 1 | 2 | 3;
-  actionType: 'DEPLOY_UNIT' | 'PAIR_PILOT' | 'PLAY_COMMAND' | 'DEPLOY_BASE' | 'ATTACK_SHIELD' | 'ATTACK_UNIT' | 'PASS_TURN';
+  actionType: 'DEPLOY_UNIT' | 'PAIR_PILOT' | 'PLAY_COMMAND' | 'DEPLOY_BASE' | 'ACTIVATE_MAIN' | 'ATTACK_SHIELD' | 'ATTACK_UNIT' | 'PASS_TURN';
   title: string;
   reason: string;
   winDeltaPct: number;

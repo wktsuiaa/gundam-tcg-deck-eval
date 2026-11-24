@@ -24,6 +24,14 @@ import type {
   TurnWinChancePoint,
 } from '@/types/gundam';
 import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
+import {
+  extractEffectPrerequisites,
+  extractSynergyProfile,
+  parseCardEffects,
+  type EffectPrerequisite,
+  type EffectStep,
+  type SynergyNodeKey,
+} from '@/lib/effect-parser';
 
 const MAIN_DECK_TYPES = new Set(['UNIT', 'PILOT', 'COMMAND', 'BASE']);
 
@@ -348,32 +356,95 @@ export function validateDeck(
   };
 }
 
+function collectStepsAndResiduals(card: GundamCardPrint) {
+  const parsed = parseCardEffects(card);
+  const steps: { step: EffectStep; gated: boolean }[] = [];
+  const residuals: string[] = [];
+
+  for (const clause of parsed.clauses) {
+    const gated = Boolean(
+      clause.condition &&
+        (clause.condition.kind === 'DEPLOYED_FROM_ZONE' ||
+          clause.condition.kind === 'TRASH_COUNT_AT_LEAST' ||
+          clause.condition.kind === 'DEVELOPMENT_EXILE')
+    );
+    for (const step of clause.steps) steps.push({ step, gated });
+    if (clause.unparsedResidual) residuals.push(clause.unparsedResidual);
+  }
+  return { parsed, steps, residualText: residuals.join(' ') };
+}
+
 export function detectEffectStyles(card: GundamCardPrint): EffectStyleTag[] {
-  const eff = card.effect || '';
-  const tags: EffectStyleTag[] = [];
+  const { parsed, steps, residualText } = collectStepsAndResiduals(card);
+  const tags = new Set<EffectStyleTag>();
 
-  if (/ap-|ap\s*-\d|gets\s*-\d+\s*ap|ap is reduced/i.test(eff)) tags.push('AP Deduction');
-  if (/\bdestroy\b/i.test(eff)) tags.push('Destroy');
-  if (
-    /reduce.*damage|cannot be damaged|take no damage|cannot be destroyed|cannot be chosen/i.test(eff)
-  ) {
-    tags.push('Damage Proof');
+  for (const kw of parsed.keywords) {
+    if (kw.name === 'Repair') tags.add('Repair');
+    else tags.add('Combat Keywords');
   }
-  if (/<repair|recover\s+\d+\s+hp/i.test(eff)) tags.push('Repair');
-  if (/return.*to.*hand/i.test(eff)) tags.push('Bounce');
-  if (/\brest\b|won't be set as active/i.test(eff)) tags.push('Rest Lock');
-  if (/\bdeal \d+ damage/i.test(eff)) tags.push('Direct Damage');
-  if (/\bdraw\s+\d+|look at the top|reveal|search|add this card to your hand/i.test(eff)) {
-    tags.push('Draw & Search');
-  }
-  if (/from your trash/i.test(eff)) tags.push('Trash Recursion');
-  if (/resource area|ex resource|reduce the cost|cost -/i.test(eff)) tags.push('Resource Ramp');
-  if (/<blocker|<breach|<first strike|<high-maneuver|<support|<suppression/i.test(eff)) {
-    tags.push('Combat Keywords');
-  }
-  if (/\btoken\b|deploy 1/i.test(eff)) tags.push('Token Deploy');
 
-  return tags;
+  for (const { step } of steps) {
+    switch (step.action) {
+      case 'MODIFY_AP':
+        if (step.delta < 0) tags.add('AP Deduction');
+        break;
+      case 'DESTROY':
+        tags.add('Destroy');
+        break;
+      case 'DAMAGE_PROOF':
+        tags.add('Damage Proof');
+        break;
+      case 'RECOVER_HP':
+        tags.add('Repair');
+        break;
+      case 'BOUNCE':
+        tags.add('Bounce');
+        break;
+      case 'REST':
+      case 'FREEZE':
+        tags.add('Rest Lock');
+        break;
+      case 'DEAL_DAMAGE':
+        tags.add('Direct Damage');
+        break;
+      case 'DRAW':
+      case 'LOOK_TOP':
+      case 'REVEAL_TOP':
+        tags.add('Draw & Search');
+        break;
+      case 'ADD_FROM_TRASH_TO_HAND':
+      case 'DEPLOY_FROM_TRASH':
+        tags.add('Trash Recursion');
+        break;
+      case 'ADD_RESOURCE':
+      case 'COST_REDUCTION':
+        tags.add('Resource Ramp');
+        break;
+      case 'GRANT_KEYWORD':
+        tags.add(step.keyword.name === 'Repair' ? 'Repair' : 'Combat Keywords');
+        break;
+      case 'DEPLOY_TOKEN':
+        tags.add('Token Deploy');
+        break;
+    }
+  }
+
+  // Fallback only on unparsed residual prose (never on reminder text or parsed condition gates)
+  if (residualText) {
+    if (/ap-|ap\s*-\d|gets\s*-\d+\s*ap|ap is reduced/i.test(residualText)) tags.add('AP Deduction');
+    if (/\bdestroy\b/i.test(residualText)) tags.add('Destroy');
+    if (/reduce.*damage|cannot be damaged|take no damage|cannot be destroyed|cannot be chosen/i.test(residualText)) tags.add('Damage Proof');
+    if (/recover\s+\d+\s+hp/i.test(residualText)) tags.add('Repair');
+    if (/return.*to.*hand/i.test(residualText)) tags.add('Bounce');
+    if (/\brest\b|won't be set as active/i.test(residualText)) tags.add('Rest Lock');
+    if (/\bdeal \d+ damage/i.test(residualText)) tags.add('Direct Damage');
+    if (/\bdraw\s+\d+|look at the top|reveal|search/i.test(residualText)) tags.add('Draw & Search');
+    if (/(?:choose|return|add|deploy|play).*from your trash/i.test(residualText)) tags.add('Trash Recursion');
+    if (/resource area|ex resource|reduce the cost|cost -/i.test(residualText)) tags.add('Resource Ramp');
+    if (/\btoken\b|deploy 1/i.test(residualText)) tags.add('Token Deploy');
+  }
+
+  return [...tags];
 }
 
 export interface CardSignalScores {
@@ -394,49 +465,55 @@ export interface CardSignalScores {
   hasFirstStrike: boolean;
   hasSupport: boolean;
   hasPairTrigger: boolean;
+  hasConditionalGate: boolean;
   effectStyles: EffectStyleTag[];
 }
 
 export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores {
-  const eff = (card.effect || '').toLowerCase();
+  const { parsed, steps, residualText } = collectStepsAndResiduals(card);
+  const resLower = residualText.toLowerCase();
   const cost = card.cost ?? 2;
   const lv = card.lv ?? 2;
   const ap = card.ap ?? 0;
   const hp = card.hp ?? 0;
   const effectStyles = detectEffectStyles(card);
 
+  const hasStep = (pred: (s: EffectStep) => boolean) => steps.some((x) => pred(x.step));
+  const hasKeywordNamed = (name: string) =>
+    parsed.keywords.some((k) => k.name === name) ||
+    hasStep((s) => s.action === 'GRANT_KEYWORD' && s.keyword.name === name);
+
   const hasDraw =
-    /\bdraw\s+\d+/i.test(eff) ||
-    eff.includes('add this card to your hand') ||
-    eff.includes('add it to your hand');
+    hasStep((s) => s.action === 'DRAW') ||
+    /\bdraw\s+\d+/i.test(resLower);
   const hasSearch =
-    eff.includes('look at the top') ||
-    eff.includes('reveal') ||
-    eff.includes('search') ||
-    eff.includes('from your trash');
+    hasStep((s) => s.action === 'LOOK_TOP' || s.action === 'REVEAL_TOP' || s.action === 'ADD_FROM_TRASH_TO_HAND' || s.action === 'DEPLOY_FROM_TRASH') ||
+    resLower.includes('look at the top') ||
+    resLower.includes('reveal') ||
+    resLower.includes('search');
   const hasRamp =
-    eff.includes('resource area') ||
-    eff.includes('ex resource') ||
-    eff.includes('reduce the cost') ||
-    eff.includes('cost -');
-  const hasRest = eff.includes('rest it') || eff.includes('rest them') || eff.includes('rest 1') || eff.includes('rest ');
+    hasStep((s) => s.action === 'ADD_RESOURCE' || s.action === 'COST_REDUCTION') ||
+    resLower.includes('resource area') ||
+    resLower.includes('ex resource') ||
+    resLower.includes('reduce the cost');
+  const hasRest =
+    hasStep((s) => s.action === 'REST' || s.action === 'FREEZE') ||
+    /\brest\b/.test(resLower);
   const hasRemoval =
-    eff.includes('deal ') ||
-    eff.includes('destroy') ||
-    eff.includes('return') ||
-    eff.includes('ap-') ||
-    eff.includes('hp-');
-  const hasRepair = eff.includes('<repair');
-  const hasBlocker = eff.includes('<blocker');
-  const hasBreach = eff.includes('<breach');
-  const hasFirstStrike = eff.includes('<first strike');
-  const hasHighManeuver = eff.includes('<high-maneuver');
-  const hasSupport = eff.includes('<support');
-  const hasPairTrigger =
-    eff.includes('【when paired】') ||
-    eff.includes('【when linked】') ||
-    eff.includes('【during pair】') ||
-    eff.includes('【during link】');
+    hasStep((s) => s.action === 'DEAL_DAMAGE' || s.action === 'DESTROY' || s.action === 'BOUNCE' || (s.action === 'MODIFY_AP' && s.delta < 0)) ||
+    /\b(deal \d+ damage|destroy|return .* hand|ap-)\b/.test(resLower);
+
+  const hasRepair = hasKeywordNamed('Repair');
+  const hasBlocker = hasKeywordNamed('Blocker');
+  const hasBreach = hasKeywordNamed('Breach');
+  const hasFirstStrike = hasKeywordNamed('First Strike');
+  const hasHighManeuver = hasKeywordNamed('High-Maneuver');
+  const hasSupport = hasKeywordNamed('Support');
+  const hasPairTrigger = parsed.clauses.some((c) =>
+    c.timings.some((t) => t === 'WHEN_PAIRED' || t === 'WHEN_LINKED' || t === 'DURING_PAIR' || t === 'DURING_LINK')
+  );
+  const hasConditionalGate = steps.length > 0 && steps.every((x) => x.gated);
+  const gateMult = hasConditionalGate ? 0.5 : 1;
 
   let aggro = 0;
   let defense = 0;
@@ -459,8 +536,8 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (hasBreach) aggro += 28;
   if (hasFirstStrike) aggro += 22;
   if (hasHighManeuver) aggro += 22;
-  if (eff.includes('【attack】')) aggro += 16;
-  if (eff.includes('ap+')) aggro += 12;
+  if (parsed.clauses.some((c) => c.timings.includes('ATTACK'))) aggro += 16;
+  if (hasStep((s) => s.action === 'MODIFY_AP' && s.delta > 0)) aggro += 12;
 
   // Defense / Durability
   if (card.type === 'UNIT') {
@@ -474,37 +551,42 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (hasBlocker) defense += 34;
   if (hasRepair) defense += 32;
   if (effectStyles.includes('Damage Proof')) defense += 28;
-  if (eff.includes('shield') || eff.includes('recover')) defense += 14;
+  if (hasStep((s) => s.action === 'RECOVER_HP' || s.action === 'ADD_SHIELD_TO_HAND')) defense += 14;
 
   // Tempo / Resource
   if (lv <= 3 && cost <= 2) tempo += 34;
   else if (lv <= 4 && cost <= 3) tempo += 20;
   if (hasRamp) tempo += 42;
-  if (eff.includes('deploy 1') || eff.includes('play 1') || eff.includes('token')) tempo += 25;
-  if (eff.includes('set 1 of your') && eff.includes('active')) tempo += 24;
+  if (hasStep((s) => s.action === 'DEPLOY_TOKEN' || s.action === 'DEPLOY_FROM_TRASH')) tempo += 25;
+  if (hasStep((s) => s.action === 'SET_ACTIVE' && s.target.owner === 'SELF')) tempo += 24;
 
   // Card Liquidity
-  if (hasDraw) liquidity += 48;
-  if (hasSearch) liquidity += 34;
-  if (eff.includes('【burst】') && (hasDraw || eff.includes('hand'))) liquidity += 18;
-  if (eff.includes('trash') && eff.includes('hand')) liquidity += 16;
+  if (hasDraw) liquidity += 48 * gateMult;
+  if (hasSearch) liquidity += 34 * gateMult;
+  if (parsed.clauses.some((c) => c.timings.includes('BURST') && c.steps.some((s) => s.action === 'DRAW' || s.action === 'ADD_SELF_TO_HAND'))) {
+    // Burst self-add preserves card presence without inflating active deck draw velocity
+    if (hasDraw) liquidity += 12;
+  }
 
   // Synergy / Link
   if (card.link) synergy += 26;
   if (card.type === 'PILOT') synergy += 32;
   if (hasPairTrigger) synergy += 28;
   if (hasSupport) synergy += 24;
+  if (hasStep((s) => s.action === 'PAIR_SELF_FROM_TRASH')) synergy += 14;
   if (card.traits.length > 0 && /\([a-z0-9 '&-]+\)\s*unit/i.test(card.effect)) synergy += 22;
 
-  // Control / Disruption
+  // Control / Disruption (with conditional discount on gated effects like ST09-006)
   if (card.type === 'COMMAND') control += 26;
-  if (hasRest) control += 26;
-  if (hasRemoval) control += 32;
-  if (effectStyles.includes('AP Deduction')) control += 18;
-  if (effectStyles.includes('Destroy')) control += 20;
-  if (effectStyles.includes('Bounce')) control += 20;
-  if (eff.includes('【burst】') && (hasRest || hasRemoval)) control += 14;
-  if (eff.includes('cannot attack') || eff.includes('choose 1 enemy')) control += 16;
+  if (hasRest) control += 26 * gateMult;
+  if (hasRemoval) control += 32 * gateMult;
+  if (effectStyles.includes('AP Deduction')) control += 18 * gateMult;
+  if (effectStyles.includes('Destroy')) control += 20 * gateMult;
+  if (effectStyles.includes('Bounce')) control += 20 * gateMult;
+  if (parsed.clauses.some((c) => c.timings.includes('BURST') && c.steps.some((s) => s.action === 'REST' || s.action === 'DESTROY' || s.action === 'DEAL_DAMAGE' || s.action === 'ACTIVATE_MAIN_EFFECT'))) {
+    control += 14;
+  }
+  if (hasStep((s) => s.action === 'CANT_ATTACK')) control += 16 * gateMult;
 
   return {
     aggro: clamp(aggro),
@@ -524,6 +606,7 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
     hasFirstStrike,
     hasSupport,
     hasPairTrigger,
+    hasConditionalGate,
     effectStyles,
   };
 }
@@ -1214,35 +1297,42 @@ function generateDeckPlaybook(
     }
   }
 
+  // Knowledge Map Enabler <-> Payoff Mechanic Chains derived from parsed Effect Clauses
   const mechanicCombos: DetectedCombo[] = [];
-  const restCards = mainExpanded.filter((x) => scoreSingleCardSignals(x.card).hasRest).map((x) => x.card);
-  const breachCards = mainExpanded.filter((x) => scoreSingleCardSignals(x.card).hasBreach).map((x) => x.card);
-  const supportCards = mainExpanded.filter((x) => scoreSingleCardSignals(x.card).hasSupport).map((x) => x.card);
-
-  if (restCards.length > 0 && (breachCards.length > 0 || units.length > 0)) {
-    const attacker = breachCards[0] ?? units[0]?.card;
-    if (attacker) {
-      mechanicCombos.push({
-        title: `Rest & Punish (${restCards[0].name} → ${attacker.name})`,
-        category: 'Mechanic Chain',
-        cards: [restCards[0], attacker],
-        description: `Rest opposing blockers/threats with ${restCards[0].name} so ${attacker.name} swings cleanly into rested targets or Shields.`,
-      });
+  const SYNERGY_LABELS: Record<SynergyNodeKey, { title: string; verb: string }> = {
+    DEPLOY_FROM_TRASH: { title: 'Trash-Deploy Payoff', verb: 'recurs from trash to unlock' },
+    TRASH_COUNT_FUEL: { title: 'Trash-Threshold Engine', verb: 'fuels Trash count for' },
+    AP_THRESHOLD_5: { title: '5+ AP Threshold Boost', verb: 'pushes AP to 5+ for' },
+    DAMAGED_ENEMY_TARGET: { title: 'Ping & Punish', verb: 'marks damaged enemy Units for' },
+    RESTED_ENEMY_TARGET: { title: 'Rest & Punish', verb: 'rests enemy Units for' },
+  };
+  const profiles = mainExpanded.map((x) => ({
+    card: x.card,
+    profile: extractSynergyProfile(x.card),
+  }));
+  const seenSynergy = new Set<string>();
+  for (const payoff of profiles) {
+    for (const key of payoff.profile.requires) {
+      const enabler = profiles.find(
+        (e) => e.card.cardNo !== payoff.card.cardNo && e.profile.enables.includes(key)
+      );
+      if (enabler) {
+        const pairKey = `${key}:${enabler.card.cardNo}:${payoff.card.cardNo}`;
+        if (!seenSynergy.has(pairKey) && mechanicCombos.length < 4) {
+          seenSynergy.add(pairKey);
+          const meta = SYNERGY_LABELS[key];
+          mechanicCombos.push({
+            title: `${meta.title} (${enabler.card.name} → ${payoff.card.name})`,
+            category: 'Mechanic Chain',
+            cards: [enabler.card, payoff.card],
+            description: `${enabler.card.name} ${meta.verb} ${payoff.card.name}'s Effect Clause.`,
+          });
+        }
+      }
     }
   }
-  if (supportCards.length > 0 && units.length > 1) {
-    const finisher = units.find((u) => u.card.cardNo !== supportCards[0].cardNo)?.card;
-    if (finisher) {
-      mechanicCombos.push({
-        title: `<Support> Boost (${supportCards[0].name} → ${finisher.name})`,
-        category: 'Mechanic Chain',
-        cards: [supportCards[0], finisher],
-        description: `Tap ${supportCards[0].name} during Main Phase to amplify ${finisher.name}'s AP for favorable trades or shield pressure.`,
-      });
-    }
-  }
 
-  const combos = [...linkCombos.slice(0, 6), ...traitCombos.slice(0, 3), ...mechanicCombos.slice(0, 3)];
+  const combos = [...linkCombos.slice(0, 6), ...traitCombos.slice(0, 3), ...mechanicCombos.slice(0, 4)];
 
   const earlyCount = earlyUnits.reduce((s, x) => s + x.qty, 0);
   const drawCount = liquidityCards.reduce((s, x) => s + x.qty, 0);
@@ -1689,17 +1779,78 @@ const AXIS_LABELS: Record<keyof HexagonAxes, string> = {
   control: 'Control / Disruption',
 };
 
-export function getRecommendedCardsForStrategy(
+function matchesEffectPrerequisite(card: GundamCardPrint, prereq: EffectPrerequisite): boolean {
+  if (prereq.cardType && prereq.cardType !== 'CARD' && card.type !== prereq.cardType) return false;
+  if (prereq.color && card.color !== prereq.color) return false;
+  if (prereq.trait && !card.traits.some((t) => t.toLowerCase() === prereq.trait!.toLowerCase())) return false;
+  if (prereq.nameContains && !card.name.toLowerCase().includes(prereq.nameContains.toLowerCase())) return false;
+  return true;
+}
+
+interface UnmetPrereqCheck {
+  unmetPrimary: boolean;
+  penalty: number;
+  reasons: string[];
+}
+
+function evaluateCardPrerequisites(
+  card: GundamCardPrint,
+  currentEntries: DeckEntry[],
+  currentCardObjs: { card: GundamCardPrint; qty: number }[],
+  pool: GundamCardPrint[],
+  focusPool: GundamCardPrint[]
+): UnmetPrereqCheck {
+  const prereqs = extractEffectPrerequisites(card);
+  if (prereqs.length === 0) return { unmetPrimary: false, penalty: 0, reasons: [] };
+
+  let unmetPrimary = false;
+  let penalty = 0;
+  const reasons: string[] = [];
+  const hasDeckContext = currentEntries.length > 0;
+
+  for (const prereq of prereqs) {
+    let met: boolean;
+    if (hasDeckContext) {
+      const deckMatches = currentCardObjs.reduce(
+        (sum, e) => (e.card.cardNo !== card.cardNo && matchesEffectPrerequisite(e.card, prereq) ? sum + e.qty : sum),
+        0
+      );
+      met = deckMatches >= prereq.minCopies;
+    } else if (focusPool.length > 0 && prereq.kind === 'TRAIT') {
+      // shortcut: blank-deck check infers trait availability from focusPool rather than brute-forcing sub-archetype shares; upgrade to full archetype graph if multi-subtrait pools proliferate
+      met = focusPool.some((c) => c.cardNo !== card.cardNo && matchesEffectPrerequisite(c, prereq));
+    } else {
+      const poolMatches = pool.filter((c) => c.cardNo !== card.cardNo && matchesEffectPrerequisite(c, prereq)).length;
+      met = poolMatches >= (prereq.minCopies === 8 ? 2 : 1);
+    }
+
+    if (!met) {
+      if (prereq.primaryClause) unmetPrimary = true;
+      penalty += prereq.primaryClause ? 70 : 30;
+      reasons.push(prereq.reason);
+    }
+  }
+
+  return { unmetPrimary, penalty, reasons };
+}
+
+interface RankedInternal extends DeckRecommendation {
+  unmetPrimary: boolean;
+  enablesUnitPrereq: boolean;
+}
+
+function rankCandidatesForStrategy(
   allCards: GundamCardPrint[],
   blueprint: StrategyBlueprint,
   currentEntries: DeckEntry[],
   limit = 24
-): DeckRecommendation[] {
+): RankedInternal[] {
   const pool = filterPoolByConstraints(allCards, blueprint);
   const uniqueByNo = new Map(pool.map((c) => [c.cardNo, c]));
 
   const maxCopies = blueprint.constraints?.maxCopiesPerCard ?? 4;
   const currentCounts = new Map<string, number>();
+  const currentCardObjs: { card: GundamCardPrint; qty: number }[] = [];
   const currentCards: GundamCardPrint[] = [];
   const deckTraitFreq = new Map<string, number>();
 
@@ -1707,6 +1858,7 @@ export function getRecommendedCardsForStrategy(
     currentCounts.set(e.cardNo, (currentCounts.get(e.cardNo) ?? 0) + e.qty);
     const c = uniqueByNo.get(e.cardNo);
     if (c) {
+      currentCardObjs.push({ card: c, qty: e.qty });
       currentCards.push(c);
       for (const tr of c.traits) {
         deckTraitFreq.set(tr.toLowerCase(), (deckTraitFreq.get(tr.toLowerCase()) ?? 0) + e.qty);
@@ -1714,7 +1866,6 @@ export function getRecommendedCardsForStrategy(
     }
   }
 
-  // Also count Trait density across the eligible pool so blank decks still prioritize coherent Trait networks
   const poolTraitFreq = new Map<string, number>();
   for (const c of pool) {
     for (const tr of c.traits) {
@@ -1726,6 +1877,29 @@ export function getRecommendedCardsForStrategy(
   const currentPilots = currentCards.filter((c) => c.type === 'PILOT');
   const poolUnits = pool.filter((c) => c.type === 'UNIT');
   const poolPilots = pool.filter((c) => c.type === 'PILOT');
+
+  const focuses = normalizeTraitFocus(blueprint.traitFocus as unknown as string | string[]);
+  const focusPool =
+    focuses.length > 0
+      ? pool.filter((c) => c.traits.some((tr) => focuses.some((f) => tr.toLowerCase().includes(f.toLowerCase()))))
+      : [];
+
+  // Knowledge Map Enabler/Payoff sets across cards already in the deck
+  const deckEnablers = new Map<SynergyNodeKey, GundamCardPrint>();
+  const deckPayoffs = new Map<SynergyNodeKey, GundamCardPrint>();
+  const neededDeckPrereqs: { card: GundamCardPrint; prereq: EffectPrerequisite }[] = [];
+  for (const { card: c } of currentCardObjs) {
+    const prof = extractSynergyProfile(c);
+    for (const k of prof.enables) if (!deckEnablers.has(k)) deckEnablers.set(k, c);
+    for (const k of prof.requires) if (!deckPayoffs.has(k)) deckPayoffs.set(k, c);
+    for (const p of extractEffectPrerequisites(c)) {
+      const have = currentCardObjs.reduce(
+        (s, x) => (x.card.cardNo !== c.cardNo && matchesEffectPrerequisite(x.card, p) ? s + x.qty : s),
+        0
+      );
+      if (have < p.minCopies) neededDeckPrereqs.push({ card: c, prereq: p });
+    }
+  }
 
   const blendedTarget = blendTargetHexagon(blueprint);
   const totalWeight = Math.max(
@@ -1740,8 +1914,9 @@ export function getRecommendedCardsForStrategy(
 
   const selectedStyles = new Set(blueprint.styles);
   const selectedEffects = new Set(blueprint.effectStyles ?? []);
+  const wantsTrashFuel = selectedEffects.has('Trash Recursion') || deckEnablers.has('DEPLOY_FROM_TRASH');
 
-  const scored: DeckRecommendation[] = [];
+  const scored: RankedInternal[] = [];
 
   for (const card of pool) {
     if ((currentCounts.get(card.cardNo) ?? 0) >= maxCopies) continue;
@@ -1790,11 +1965,16 @@ export function getRecommendedCardsForStrategy(
       fit += 16;
     }
 
-    // 2. Effect Style factor bonuses
+    // 2. Effect Style factor bonuses & Self-mill/Discard Trash fuel enablers
+    const candSynergy = extractSynergyProfile(card);
     const matchedEffectStyles = sig.effectStyles.filter((es) => selectedEffects.has(es));
     if (matchedEffectStyles.length > 0) {
       fit += matchedEffectStyles.length * 18;
       reasons.push(`Matches Effect Style: ${matchedEffectStyles.join(', ')}`);
+    }
+    if (wantsTrashFuel && candSynergy.enables.includes('TRASH_COUNT_FUEL')) {
+      fit += 18;
+      reasons.push('Feeds Trash Recursion / self-mill setup');
     }
 
     // 3. Pacing alignment
@@ -1818,13 +1998,12 @@ export function getRecommendedCardsForStrategy(
     }
 
     // 4. Trait + Linkage Coherence Counting (Series intentionally excluded per Q9)
-    const focuses = normalizeTraitFocus(blueprint.traitFocus as unknown as string | string[]);
     if (focuses.length > 0) {
       const matchedFocuses = focuses.filter((focus) =>
         card.traits.some((tr) => tr.toLowerCase().includes(focus.toLowerCase()))
       );
       if (matchedFocuses.length > 0) {
-        coherenceScore += 32;
+        coherenceScore += card.type === 'COMMAND' ? 32 : 56;
         reasons.push(`Trait coherence: (${matchedFocuses.join(', ')})`);
       }
     }
@@ -1878,6 +2057,40 @@ export function getRecommendedCardsForStrategy(
       }
     }
 
+    // Knowledge Map Enabler <-> Payoff synergy (restores conditional discount + boosts coherence)
+    for (const req of candSynergy.requires) {
+      const enabler = deckEnablers.get(req);
+      if (enabler && enabler.cardNo !== card.cardNo) {
+        coherenceScore += 28;
+        if (sig.hasConditionalGate) fit += 20;
+        reasons.push(`Payoff unlocked by ${enabler.name} in deck`);
+      }
+    }
+    for (const en of candSynergy.enables) {
+      const payoff = deckPayoffs.get(en);
+      if (payoff && payoff.cardNo !== card.cardNo) {
+        coherenceScore += 24;
+        reasons.push(`Enables ${payoff.name} in deck`);
+      }
+    }
+
+    let enablesUnitPrereq = false;
+    for (const need of neededDeckPrereqs) {
+      if (need.card.cardNo !== card.cardNo && matchesEffectPrerequisite(card, need.prereq)) {
+        coherenceScore += need.prereq.primaryClause ? 30 : 14;
+        enablesUnitPrereq = true;
+        reasons.push(`Enables ${need.card.name} (${need.prereq.reason})`);
+        break;
+      }
+    }
+
+    // 5. Effect Prerequisite penalty (enforces trait/color/pilot presence thresholds)
+    const prereqCheck = evaluateCardPrerequisites(card, currentEntries, currentCardObjs, pool, focusPool);
+    if (prereqCheck.penalty > 0) {
+      fit -= prereqCheck.penalty;
+      reasons.unshift(...prereqCheck.reasons);
+    }
+
     const combinedFit = clamp(fit + coherenceScore * 0.65);
 
     scored.push({
@@ -1890,11 +2103,24 @@ export function getRecommendedCardsForStrategy(
       reason:
         reasons[0] ??
         `${AXIS_LABELS[primaryAxis]} specialist (${card.color} ${card.type}, Lv.${card.lv ?? '-'})`,
+      unmetPrimary: prereqCheck.unmetPrimary,
+      enablesUnitPrereq,
     });
   }
 
   scored.sort((a, b) => b.fitScore - a.fitScore || b.coherenceScore - a.coherenceScore);
   return scored.slice(0, limit);
+}
+
+export function getRecommendedCardsForStrategy(
+  allCards: GundamCardPrint[],
+  blueprint: StrategyBlueprint,
+  currentEntries: DeckEntry[],
+  limit = 24
+): DeckRecommendation[] {
+  return rankCandidatesForStrategy(allCards, blueprint, currentEntries, limit).map(
+    ({ unmetPrimary: _u, enablesUnitPrereq: _e, ...rec }) => rec
+  );
 }
 
 export function generateStrategyDeck(
@@ -1944,7 +2170,6 @@ export function generateStrategyDeck(
     effectiveBlueprint = { ...blueprint, colors: bestPair };
   }
 
-  const ranked = getRecommendedCardsForStrategy(allCards, effectiveBlueprint, [], 400);
   const activeStyles = new Set(effectiveBlueprint.styles);
 
   const targetUnits =
@@ -1960,6 +2185,9 @@ export function generateStrategyDeck(
   const chosen = new Map<string, { card: GundamCardPrint; qty: number }>();
   let total = 0;
 
+  const toEntries = (): DeckEntry[] =>
+    [...chosen.values()].map(({ card, qty }) => ({ cardNo: card.cardNo, printId: card.printId, qty }));
+
   const addCopies = (card: GundamCardPrint, desiredQty: number) => {
     if (total >= 50) return;
     const existing = chosen.get(card.cardNo)?.qty ?? 0;
@@ -1969,22 +2197,24 @@ export function generateStrategyDeck(
     total += room;
   };
 
+  // Pass 1: Units ranked against pool & Trait Focus
+  const pass1Units = rankCandidatesForStrategy(allCards, effectiveBlueprint, [], 400);
   let unitTotal = 0;
   let earlyUnitTotal = 0;
   const minEarlyUnits = effectiveBlueprint.pacing === 'Early Rush' ? 16 : 10;
 
-  for (const { card } of ranked) {
+  for (const { card, unmetPrimary } of pass1Units) {
     if (earlyUnitTotal >= minEarlyUnits || unitTotal >= targetUnits) break;
-    if (card.type === 'UNIT' && (card.cost ?? 9) <= 2) {
+    if (card.type === 'UNIT' && (card.cost ?? 9) <= 2 && !unmetPrimary) {
       const q = Math.min(maxCopies, minEarlyUnits - earlyUnitTotal, targetUnits - unitTotal);
       addCopies(card, q);
       earlyUnitTotal += q;
       unitTotal += q;
     }
   }
-  for (const { card } of ranked) {
+  for (const { card, unmetPrimary } of pass1Units) {
     if (unitTotal >= targetUnits) break;
-    if (card.type === 'UNIT') {
+    if (card.type === 'UNIT' && !unmetPrimary) {
       const prev = chosen.get(card.cardNo)?.qty ?? 0;
       if (prev >= maxCopies) continue;
       const q = Math.min(Math.min(3, maxCopies), targetUnits - unitTotal, maxCopies - prev);
@@ -1993,45 +2223,59 @@ export function generateStrategyDeck(
     }
   }
 
-  // Pick Pilots prioritizing Link matches with chosen Units + Trait coherence
+  // Pass 2: Pilots & Bases re-scored against chosen Units
   const chosenUnits = [...chosen.values()].filter((x) => x.card.type === 'UNIT').map((x) => x.card);
-  const pilotRanked = ranked
-    .filter((r) => r.card.type === 'PILOT')
+  const pass2Ranked = rankCandidatesForStrategy(allCards, effectiveBlueprint, toEntries(), 400);
+  const pilotRanked = pass2Ranked
+    .filter((r) => r.card.type === 'PILOT' && !r.unmetPrimary)
     .map((r) => {
       const linkMatches = chosenUnits.filter((u) => doesPilotLinkUnit(r.card, u)).length;
-      return { ...r, score: r.fitScore + linkMatches * 35 };
+      return { ...r, score: r.fitScore + linkMatches * 35 + (r.enablesUnitPrereq ? 50 : 0) };
     })
     .sort((a, b) => b.score - a.score);
 
   let pilotTotal = 0;
-  for (const { card } of pilotRanked) {
+  for (const { card, enablesUnitPrereq } of pilotRanked) {
     if (pilotTotal >= targetPilots) break;
-    const q = Math.min(Math.min(3, maxCopies), targetPilots - pilotTotal);
+    const cap = enablesUnitPrereq ? maxCopies : Math.min(3, maxCopies);
+    const q = Math.min(cap, targetPilots - pilotTotal);
     addCopies(card, q);
     pilotTotal += q;
   }
 
   let baseTotal = 0;
-  for (const { card } of ranked) {
+  for (const { card, unmetPrimary } of pass2Ranked) {
     if (baseTotal >= targetBases) break;
-    if (card.type === 'BASE') {
+    if (card.type === 'BASE' && !unmetPrimary) {
       const q = Math.min(Math.min(2, maxCopies), targetBases - baseTotal);
       addCopies(card, q);
       baseTotal += q;
     }
   }
 
+  // Pass 3: Commands & remaining slots re-scored against chosen Units + Pilots + Bases
+  const pass3Ranked = rankCandidatesForStrategy(allCards, effectiveBlueprint, toEntries(), 400);
   let cmdTotal = 0;
-  for (const { card } of ranked) {
+  for (const { card, unmetPrimary } of pass3Ranked) {
     if (cmdTotal >= targetCommands || total >= 50) break;
-    if (card.type === 'COMMAND') {
+    if (card.type === 'COMMAND' && !unmetPrimary) {
       const q = Math.min(Math.min(3, maxCopies), targetCommands - cmdTotal, 50 - total);
       addCopies(card, q);
       cmdTotal += q;
     }
   }
 
-  for (const { card } of ranked) {
+  for (const { card, unmetPrimary } of pass3Ranked) {
+    if (total >= 50) break;
+    if (unmetPrimary) continue;
+    const prev = chosen.get(card.cardNo)?.qty ?? 0;
+    if (prev < maxCopies) {
+      addCopies(card, Math.min(maxCopies - prev, 50 - total));
+    }
+  }
+
+  // Fallback only if constrained pool cannot reach 50 without relaxing primary prerequisites
+  for (const { card } of pass3Ranked) {
     if (total >= 50) break;
     const prev = chosen.get(card.cardNo)?.qty ?? 0;
     if (prev < maxCopies) {

@@ -1,5 +1,8 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { GundamCardPrint, StrategyBlueprint } from '@/types/gundam';
+import { extractEffectPrerequisites } from '@/lib/effect-parser';
 import {
   analyzeDeck,
   computeTurnWinChances,
@@ -16,6 +19,7 @@ import {
   normalizeTraitFocus,
   parseDeckFromText,
   resolveCardMap,
+  scoreSingleCardSignals,
   validateDeck,
 } from '@/lib/deck-engine';
 
@@ -368,3 +372,235 @@ describe('Playbook Turn 1-6+ Best/Worst Actions & Turn Win-Chance Settings', () 
     expect(optimalFirst[0].winChancePct).toBeGreaterThan(mulliganedFirst[0].winChancePct);
   });
 });
+
+describe('Seam 2: Parsed Effect Styles, False-Positive Fixes & Knowledge Map Synergy', () => {
+  const st09006 = makeCard({
+    printId: 'ST09-006',
+    cardNo: 'ST09-006',
+    name: 'Sword Impulse Gundam',
+    color: 'Purple',
+    type: 'UNIT',
+    lv: 4,
+    cost: 2,
+    ap: 4,
+    hp: 2,
+    traits: ['ZAFT', 'Minerva Squad'],
+    link: '(Coordinator) Trait / (Minerva Squad) Trait',
+    effect:
+      '【Deploy】If you deploy this Unit from your trash, choose 1 enemy Unit that is Lv.3 or lower. Destroy it.',
+  });
+
+  const st09001 = makeCard({
+    printId: 'ST09-001',
+    cardNo: 'ST09-001',
+    name: 'Impulse Gundam',
+    color: 'Purple',
+    type: 'UNIT',
+    lv: 3,
+    cost: 2,
+    ap: 3,
+    hp: 3,
+    traits: ['ZAFT', 'Minerva Squad'],
+    link: '[Shinn Asuka]',
+    effect:
+      '【Activate･Main】②, return this Unit to the bottom of its owner\'s deck：Choose 1 Unit card with "Impulse Gundam" in its card name that is Lv.4 or higher from your trash. Deploy it.',
+  });
+
+  const kiraBurst = makeCard({
+    printId: 'ST04-010',
+    cardNo: 'ST04-010',
+    name: 'Kira Yamato',
+    color: 'White',
+    type: 'PILOT',
+    lv: 4,
+    cost: 1,
+    ap: 2,
+    hp: 1,
+    traits: ['Earth Alliance', 'Coordinator'],
+    link: '',
+    effect:
+      '【Burst】Add this card to your hand.\n【Attack】Choose 1 enemy Unit. It gets AP-2 during this battle.',
+  });
+
+  const blastBlocker = makeCard({
+    printId: 'ST09-007',
+    cardNo: 'ST09-007',
+    name: 'Blast Impulse Gundam',
+    color: 'Purple',
+    type: 'UNIT',
+    lv: 5,
+    cost: 3,
+    ap: 5,
+    hp: 3,
+    traits: ['ZAFT', 'Minerva Squad'],
+    link: '[Shinn Asuka]',
+    effect: '<Blocker> (Rest this Unit to change the attack target to it.)',
+  });
+
+  it('eliminates Trash Recursion/Search false positives on ST09-006 and applies conditional discount', () => {
+    expect(detectEffectStyles(st09006)).toEqual(['Destroy']);
+    const sig = scoreSingleCardSignals(st09006);
+    expect(sig.hasSearch).toBe(false);
+    expect(sig.hasRemoval).toBe(true);
+    expect(sig.liquidity).toBe(0);
+
+    // Unconditional destroy Command should outscore conditional ST09-006 on Control axis
+    const unconditionalDestroy = makeCard({
+      printId: 'TST-DEST',
+      cardNo: 'TST-DEST',
+      name: 'Direct Destroy',
+      color: 'Purple',
+      type: 'COMMAND',
+      effect: '【Main】Choose 1 enemy Unit that is Lv.3 or lower. Destroy it.',
+    });
+    expect(scoreSingleCardSignals(unconditionalDestroy).control).toBeGreaterThan(sig.control);
+  });
+
+  it('prevents 【Burst】Add to hand and <Blocker> reminder text from inflating Draw/Rest signals', () => {
+    expect(detectEffectStyles(kiraBurst)).toEqual(['AP Deduction']);
+    const kiraSig = scoreSingleCardSignals(kiraBurst);
+    expect(kiraSig.hasDraw).toBe(false);
+    expect(kiraSig.hasSearch).toBe(false);
+    expect(kiraSig.liquidity).toBe(0);
+
+    expect(detectEffectStyles(blastBlocker)).toEqual(['Combat Keywords']);
+    expect(scoreSingleCardSignals(blastBlocker).hasRest).toBe(false);
+  });
+
+  it('surfaces Knowledge Map Enabler-Payoff combo and recommendation boost for Impulse -> Sword Impulse', () => {
+    const filler = Array.from({ length: 12 }, (_, i) =>
+      makeCard({
+        printId: `ST09-F${i}`,
+        cardNo: `ST09-F${i}`,
+        name: `ZAFT Trooper ${i}`,
+        color: 'Purple',
+        type: 'UNIT',
+        traits: ['ZAFT'],
+        effect: '-',
+      })
+    );
+    const pool = [st09001, st09006, ...filler];
+    const { byPrintId, byCardNo } = resolveCardMap(pool);
+
+    const deck = createBlankCustomDeck(1);
+    deck.mainDeck = [
+      { cardNo: 'ST09-001', printId: 'ST09-001', qty: 4 },
+      { cardNo: 'ST09-006', printId: 'ST09-006', qty: 4 },
+      ...filler.slice(0, 10).map((f) => ({ cardNo: f.cardNo, printId: f.printId, qty: 4 })),
+    ];
+    const analysis = analyzeDeck(deck, byPrintId, byCardNo);
+    expect(
+      analysis.playbook.combos.some(
+        (c) => c.description.includes('Impulse Gundam') && c.description.includes('Sword Impulse Gundam')
+      )
+    ).toBe(true);
+
+    const bp: StrategyBlueprint = { ...DEFAULT_BLUEPRINT, colors: ['Purple'] };
+    const withEnabler = getRecommendedCardsForStrategy(
+      pool,
+      bp,
+      [{ cardNo: 'ST09-001', printId: 'ST09-001', qty: 4 }],
+      15
+    );
+    const withoutEnabler = getRecommendedCardsForStrategy(
+      [st09006, ...filler],
+      bp,
+      [],
+      15
+    );
+    const recWith = withEnabler.find((r) => r.card.cardNo === 'ST09-006')!;
+    const recWithout = withoutEnabler.find((r) => r.card.cardNo === 'ST09-006')!;
+    expect(recWith.fitScore).toBeGreaterThan(recWithout.fitScore);
+  });
+});
+
+describe('Seam 3: Effect Prerequisite Enforcement, Trait Cohesion & Multi-Pass Deck Builder', () => {
+  function loadRealCatalog(): GundamCardPrint[] {
+    const dir = path.join(process.cwd(), 'data', 'collections');
+    const out: GundamCardPrint[] = [];
+    for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
+      const raw = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+      out.push(...((raw.cards ?? []) as GundamCardPrint[]));
+    }
+    return out;
+  }
+
+  const realCatalog = loadRealCatalog();
+  const { byPrintId, byCardNo } = resolveCardMap(realCatalog);
+
+  const zaftMidrangeBp: StrategyBlueprint = {
+    ...DEFAULT_BLUEPRINT,
+    colors: ['Purple', 'Red'],
+    pacing: 'Midrange Tempo',
+    styles: ['Balanced Midrange'],
+    traitFocus: ['ZAFT'],
+    effectStyles: ['Destroy', 'Trash Recursion'],
+  };
+
+  it('stops tagging GD05-112 and GD05-113 as Trash Recursion or Search', () => {
+    for (const cardNo of ['GD05-112', 'GD05-113']) {
+      const card = byCardNo.get(cardNo)!;
+      expect(detectEffectStyles(card)).not.toContain('Trash Recursion');
+      expect(scoreSingleCardSignals(card).hasSearch).toBe(false);
+    }
+  });
+
+  it('penalizes unmet Effect Prerequisites (MF/Zeon/Neo Zeon) while rewarding generic removal and self-mill ZAFT enablers', () => {
+    const recsEmpty = getRecommendedCardsForStrategy(realCatalog, zaftMidrangeBp, [], 400);
+    const byNoEmpty = new Map(recsEmpty.map((r) => [r.card.cardNo, r]));
+
+    expect(byNoEmpty.get('ST09-009')!.fitScore).toBeGreaterThan(byNoEmpty.get('GD05-112')!.fitScore);
+    expect(byNoEmpty.get('ST05-014')!.fitScore).toBeGreaterThan(byNoEmpty.get('GD05-113')!.fitScore);
+    expect(byNoEmpty.get('GD05-112')!.reason).toMatch(/Requires \(MF\)/i);
+
+    // With Trash-recursion & Minerva Squad Units in deck, GD04-116 Reliable Big Brother gets full self-mill synergy
+    const withMinervaUnits = [
+      { cardNo: 'ST09-001', printId: byCardNo.get('ST09-001')!.printId, qty: 4 },
+      { cardNo: 'ST09-006', printId: byCardNo.get('ST09-006')!.printId, qty: 4 },
+      { cardNo: 'ST09-002', printId: byCardNo.get('ST09-002')!.printId, qty: 4 },
+    ];
+    const recsWithUnits = getRecommendedCardsForStrategy(realCatalog, zaftMidrangeBp, withMinervaUnits, 400);
+    const rec4116 = recsWithUnits.find((r) => r.card.cardNo === 'GD04-116')!;
+    expect(rec4116.fitScore).toBeGreaterThan(recsWithUnits.find((r) => r.card.cardNo === 'GD05-112')!.fitScore);
+  });
+
+  it('builds a legal 50+10 Purple/Red ZAFT Midrange deck with zero dead-brick (MF)/(Zeon) Commands', () => {
+    const generated = generateStrategyDeck(realCatalog, zaftMidrangeBp);
+    expect(generated.feasibility.feasible).toBe(true);
+
+    const deck = createBlankCustomDeck(1);
+    deck.mainDeck = generated.mainDeck;
+    deck.resourceDeck = generated.resourceDeck;
+    const validation = validateDeck(deck, byPrintId, byCardNo);
+    expect(validation.isLegal).toBe(true);
+    expect(validation.mainCount).toBe(50);
+
+    const cardNos = new Set(generated.mainDeck.map((e) => e.cardNo));
+    expect(cardNos.has('GD05-112')).toBe(false);
+    expect(cardNos.has('GD05-113')).toBe(false);
+    expect(cardNos.has('GD06-116')).toBe(false);
+    expect(cardNos.has('GD05-115')).toBe(false);
+
+    // Count ZAFT copies and verify every primaryClause Effect Prerequisite has >= minCopies matching enablers
+    let zaftCopies = 0;
+    const expanded = generated.mainDeck.map((e) => ({ card: byCardNo.get(e.cardNo)!, qty: e.qty }));
+    for (const { card, qty } of expanded) {
+      if (card.traits.includes('ZAFT')) zaftCopies += qty;
+      for (const prereq of extractEffectPrerequisites(card)) {
+        if (!prereq.primaryClause) continue;
+        const matchingCopies = expanded.reduce((sum, item) => {
+          if (item.card.cardNo === card.cardNo) return sum;
+          if (prereq.cardType && item.card.type !== prereq.cardType) return sum;
+          if (prereq.color && item.card.color !== prereq.color) return sum;
+          if (prereq.trait && !item.card.traits.some((t) => t.toLowerCase() === prereq.trait!.toLowerCase())) return sum;
+          if (prereq.nameContains && !item.card.name.toLowerCase().includes(prereq.nameContains.toLowerCase())) return sum;
+          return sum + item.qty;
+        }, 0);
+        expect(matchingCopies).toBeGreaterThanOrEqual(prereq.minCopies);
+      }
+    }
+    expect(zaftCopies).toBeGreaterThanOrEqual(24);
+  });
+});
+
+

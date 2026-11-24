@@ -12,19 +12,23 @@ npm test
 
 1. **`__tests__/deck-engine.test.ts`**:
    - Strict `<number> <cardNo>` parser & exporter (verifies `4x` syntax, comments, and trailing card names are rejected, while `RESOURCE` cards auto-route to the Resource Deck).
-   - Effect Style classification (`detectEffectStyles`).
+   - Effect Style classification (`detectEffectStyles`), parsed `ST09-006` conditional discount, and `ST04-010` / `<Blocker>` false-positive guards.
    - Verification that `sourceTitle` (Series) has **zero** impact on card coherence or fit scores.
    - Strategy generation under hard constraints (`maxCopiesPerCard`, `maxCost`, `rarityCap`, `Any (Auto Best 2)` colors) producing tournament-legal 50+10 decks.
    - Constraint infeasibility guard when pool size cannot reach 50 cards.
+   - Full-catalog **Effect Prerequisite** & 3-pass Deck Builder audit on `Purple/Red + Midrange Tempo + ZAFT + Destroy & Trash Recursion` (verifying `GD05-112` / `GD05-113` / `GD06-116` / `GD05-115` exclusion, `GD04-116` self-mill synergy, and `>= minCopies` prerequisite satisfaction).
    - Turn 1–6+ Best/Worst Action generation and Turn-by-Turn Win-Chance sensitivity across Turn Order and Opening Hand Quality settings.
-2. **`__tests__/gundam-db.test.ts`**:
+2. **`__tests__/effect-parser.test.ts`**:
+   - Typed `EffectClause` parsing (`ST09-006`, `ST09-001`, `ST09-003`, `ST09-004`, `ST04-010`, `GD01-054`, `GD06-050`, `GD05-112`, `GD05-113`, `GD05-121`, `GD04-116`) including `PAIR_SELF_FROM_TRASH` and `extractEffectPrerequisites`.
+   - Full 1,278-card corpus invariant audit (zero crashes, zero reminder-text leaks, >=80% full clause parse coverage).
+3. **`__tests__/gundam-db.test.ts`**:
    - Loads `data/packages.json` and all 26 `data/collections/*.json` shards.
    - Verifies strict `printId` deduplication and automatic SQLite hydration (`ensureHydratedCatalogFromDb`) including synced `RulesPayload`.
    - Verifies path-traversal sanitization (`resolveSafeCollectionPath`) and graceful fallback to split JSON shards when the SQLite path is read-only or unwritable.
-3. **`__tests__/sandbox-engine.test.ts`**:
+4. **`__tests__/sandbox-engine.test.ts`**:
    - Initializes a 2-deck Sandbox match (5-card hands, 6 Shields, Turn 1 active side).
-   - Verifies reactive Top 3 Best-Move Advisor ranking (`evaluateSandboxBestMoves`).
-   - Verifies turn handover, resource progression, card draw, and `stepSandboxBot` execution.
+   - Verifies reactive Top 3 Best-Move Advisor ranking (`evaluateSandboxBestMoves`), turn handover, and `stepSandboxBot` execution.
+   - Verifies fail-closed **Effect Clause** execution (`ST09-006` hand vs. trash deploy, `ST09-001` → `ST09-006` chain, `ST09-003` symmetrical AoE, `ST09-004` conditional `<Suppression>`, `ST09-009` target filter, `GD05-112` `PAIR_SELF_FROM_TRASH` gating onto `(MF)` Units, and `"Manual resolution required"` fail-closed logs).
 
 ## Build & Lint Verification
 

@@ -31,3 +31,16 @@ _Avoid_: Deck legality
 **Trait Focus**:
 An optional multi-select set of card traits (matched with OR logic) used to anchor coherence scoring and strict trait/link locking during recommendations and deck generation.
 _Avoid_: Series filter, Faction lock
+
+**Effect Clause**:
+A single ability unit on a card, scoped by a trigger timing or continuous state and composed of an optional activation cost or condition, a target selector, and a resolution action.
+_Avoid_: Effect line, card rule, effect tag
+
+**Keyword Ability**:
+A standardized, angle-bracketed gameplay rule on a card (such as `<Blocker>`, `<Breach X>`, or `<Repair X>`) that carries fixed engine semantics independent of prose effect clauses.
+_Avoid_: Effect Style, mechanic tag
+
+**Effect Prerequisite**:
+A condition or friendly card requirement inside an **Effect Clause**—such as a required friendly `(Trait)` Unit, Pilot, color, card type, or minimum card density in play or in the Trash—that must be supported by the deck or board state for the clause to resolve.
+_Avoid_: Generation Constraint, Trait Focus
+
