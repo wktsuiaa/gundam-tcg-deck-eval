@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    {
+      "id": "GEN-FAQ-0AP-SHIELD",
+      "faqRef": {
+        "kind": "GENERAL",
+        "questionPrefix": "Can an attack from a Unit with 0 AP destroy an opponent's Shield?"
+      },
+      "setup": {
+        "turn": 3,
+        "attacker": { "cardNo": "TST-0AP", "ap": 0, "hp": 3 },
+        "defenderShields": [{ "cardNo": "SH-1" }]
+      },
+      "playLine": [{ "type": "ATTACK_SHIELD", "side": "A", "attackerId": "A-0" }],
+      "witness": {},
+      "expected": { "legal": true, "defenderShieldCount": 1 }
+    },
+    {
+      "id": "GEN-FAQ-RESTED-BLOCKER",
+      "faqRef": {
+        "kind": "GENERAL",
+        "questionPrefix": "Can <Blocker> on a rested Unit be activated?"
+      },
+      "setup": {
+        "turn": 3,
+        "attacker": { "cardNo": "TST-ATK", "ap": 3, "hp": 3 },
+        "defenderUnits": [{ "cardNo": "TST-BLK", "ap": 2, "hp": 4, "effect": "<Blocker>", "rested": true }],
+        "defenderShields": [{ "cardNo": "SH-1" }]
+      },
+      "playLine": [{ "type": "ATTACK_SHIELD", "side": "A", "attackerId": "A-0" }],
+      "witness": {
+        "actionSteps": [{ "kind": "BLOCKER", "side": "B", "unitId": "B-0" }]
+      },
+      "expected": { "legal": false, "reason": "PROHIBITED_BY_CANT" }
+    },
+    {
+      "id": "GEN-FAQ-FIRST-STRIKE-NO-RECIPROCAL",
+      "faqRef": {
+        "kind": "GENERAL",
+        "questionPrefix": "As a result of dealing damage first with <First Strike> during the damage step, the enemy Unit is destroyed."
+      },
+      "setup": {
+        "turn": 3,
+        "attacker": { "cardNo": "TST-FS", "ap": 4, "hp": 3, "effect": "<First Strike>" },
+        "defenderUnits": [{ "cardNo": "TST-EN", "ap": 4, "hp": 3, "rested": true }]
+      },
+      "playLine": [{ "type": "ATTACK_UNIT", "side": "A", "attackerId": "A-0", "targetId": "B-0" }],
+      "witness": {},
+      "expected": { "legal": true, "attackerDamage": 0, "defenderUnitCount": 0 }
+    },
+    {
+      "id": "GEN-FAQ-SHIELD-ADD-NO-BURST",
+      "faqRef": {
+        "kind": "GENERAL",
+        "questionPrefix": "When a card added to my hand with the effect \"Add 1 of your Shields to your hand\" has a 【Burst】 effect"
+      },
+      "setup": {
+        "turn": 3,
+        "activeHand": [
+          { "cardNo": "TST-BASE", "type": "BASE", "lv": 1, "cost": 1, "hp": 5, "effect": "【Deploy】Add 1 of your Shields to your hand." }
+        ],
+        "activeShields": [
+          { "cardNo": "TST-BST", "type": "COMMAND", "effect": "【Burst】Draw 1.\n【Main】Draw 1." }
+        ],
+        "activeDeck": [{ "cardNo": "DK-1" }]
+      },
+      "playLine": [{ "type": "DEPLOY_BASE", "side": "A", "handIndex": 0 }],
+      "witness": {},
+      "expected": { "legal": true, "activeHandCount": 1, "activeShieldCount": 0 }
+    },
+    {
+      "id": "GEN-FAQ-NO-LEGAL-TARGET",
+      "faqRef": {
+        "kind": "GENERAL",
+        "questionPrefix": "Can I activate an effect or play a card if doing so requires that a target be selected but there are no targets available?"
+      },
+      "setup": {
+        "turn": 3,
+        "activeHand": [
+          { "cardNo": "TST-RM", "type": "COMMAND", "lv": 1, "cost": 1, "effect": "【Main】Choose 1 enemy Unit that is Lv.2 or lower. Destroy it." }
+        ]
+      },
+      "playLine": [{ "type": "PLAY_COMMAND", "side": "A", "handIndex": 0 }],
+      "witness": {},
+      "expected": { "legal": false, "reason": "NO_LEGAL_TARGET" }
+    },
+    {
+      "id": "GEN-FAQ-DEPTH-FIRST-INTERRUPT",
+      "faqRef": {
+        "kind": "GENERAL",
+        "questionPrefix": "Multiple effects activate at the same time and a new effect activates while they are being resolved."
+      },
+      "setup": {
+        "turn": 3,
+        "activeHand": [
+          { "cardNo": "TST-SP", "lv": 1, "cost": 1, "effect": "【Deploy】Choose 1 Lv.1 Unit card from your trash. Deploy it.\n【Deploy】Draw 1." }
+        ],
+        "activeTrash": [
+          { "cardNo": "TST-CH", "lv": 1, "cost": 1, "effect": "【Deploy】Draw 1." }
+        ],
+        "activeDeck": [{ "cardNo": "DK-1" }, { "cardNo": "DK-2" }]
+      },
+      "playLine": [{ "type": "DEPLOY_UNIT", "side": "A", "handIndex": 0 }],
+      "witness": { "triggerOrders": [[0, 1]] },
+      "expected": { "legal": true, "triggerOrderIncludes": ["TST-SP", "TST-CH", "TST-SP"] }
+    },
+    {
+      "id": "GEN-FAQ-CANT-DOMINATES",
+      "faqRef": {
+        "kind": "GENERAL",
+        "questionPrefix": "If an effect negates another effect, or says it \"can't\" have an effect, how are those effects resolved?"
+      },
+      "setup": {
+        "turn": 3,
+        "attacker": { "cardNo": "TST-BLK-CANT", "ap": 3, "hp": 3 },
+        "defenderUnits": [
+          { "cardNo": "TST-BLK", "ap": 2, "hp": 4, "effect": "<Blocker>", "cantBlock": true }
+        ],
+        "defenderShields": [{ "cardNo": "SH-1" }]
+      },
+      "playLine": [{ "type": "ATTACK_SHIELD", "side": "A", "attackerId": "A-0" }],
+      "witness": {
+        "actionSteps": [{ "kind": "BLOCKER", "side": "B", "unitId": "B-0" }]
+      },
+      "expected": { "legal": false, "reason": "PROHIBITED_BY_CANT" }
+    },
+    {
+      "id": "GEN-FAQ-SUPPRESSION-BURST-BASE-BOUNDARY",
+      "faqRef": {
+        "kind": "GENERAL",
+        "questionPrefix": "A Shield destroyed by <Suppression> damage is revealed to be a Base card with a 【Burst】 effect."
+      },
+      "setup": {
+        "turn": 3,
+        "attacker": { "cardNo": "TST-SUP", "ap": 3, "hp": 4, "effect": "<Suppression>" },
+        "defenderShields": [
+          { "cardNo": "TST-BB", "type": "BASE", "hp": 5, "effect": "【Burst】Deploy this card.\n【Deploy】Add 1 of your Shields to your hand." },
+          { "cardNo": "SH-2" },
+          { "cardNo": "SH-3" }
+        ]
+      },
+      "playLine": [{ "type": "ATTACK_SHIELD", "side": "A", "attackerId": "A-0" }],
+      "witness": { "burstOrder": [0, 1], "burstAccepts": [true] },
+      "expected": { "legal": true, "defenderHandCardNos": ["SH-3"], "defenderShieldCount": 0 }
+    },
+    {
+      "id": "CARD-FAQ-GD02-018-NO-PLAYER-BASE-SHIELD",
+      "faqRef": {
+        "kind": "CARD",
+        "cardNo": "GD02-018",
+        "questionPrefix": "Does \"This Unit can't choose the enemy player as its attack target\" mean it can't attack the enemy Base or Shields either?"
+      },
+      "setup": {
+        "turn": 4,
+        "attacker": { "corpusCardNo": "GD02-018" },
+        "defenderShields": [{ "cardNo": "SH-1" }]
+      },
+      "playLine": [{ "type": "ATTACK_SHIELD", "side": "A", "attackerId": "A-0" }],
+      "witness": {},
+      "expected": { "legal": false, "reason": "PROHIBITED_BY_CANT" }
+    },
+    {
+      "id": "CARD-FAQ-GD01-097-STAYS-CANT-ATTACK",
+      "faqRef": {
+        "kind": "CARD",
+        "cardNo": "GD01-097",
+        "questionPrefix": "Will a Unit set as active by this 【Activate･Main】 effect be able to attack if the opponent's hand shrinks to seven or less cards"
+      },
+      "setup": {
+        "turn": 4,
+        "attacker": { "cardNo": "TST-U", "ap": 4, "hp": 4, "rested": true, "pilotCorpusCardNo": "GD01-097" },
+        "defenderHandCount": 8,
+        "defenderShields": [{ "cardNo": "SH-1" }]
+      },
+      "playLine": [
+        { "type": "ACTIVATE_ABILITY", "side": "A", "sourceId": "A-0", "clauseIndex": 1 },
+        { "type": "ATTACK_SHIELD", "side": "A", "attackerId": "A-0" }
+      ],
+      "witness": {},
+      "expected": { "legal": false, "reason": "PROHIBITED_BY_CANT" }
+    },
+    {
+      "id": "CARD-FAQ-GD02-001-BASE-OR-SHIELD-DESTROY",
+      "faqRef": {
+        "kind": "CARD",
+        "cardNo": "GD02-001",
+        "questionPrefix": "Does the second effect activate when it destroys either the enemy Base or a Shield?"
+      },
+      "setup": {
+        "turn": 4,
+        "attacker": {
+          "corpusCardNo": "GD02-001",
+          "damage": 2,
+          "pilot": { "cardNo": "TST-CN", "type": "PILOT", "ap": 1, "hp": 1, "traits": ["Cyber-Newtype"] }
+        },
+        "defenderBase": { "cardNo": "B-BASE", "hp": 3 }
+      },
+      "playLine": [{ "type": "ATTACK_SHIELD", "side": "A", "attackerId": "A-0" }],
+      "witness": {},
+      "expected": { "legal": true, "attackerDamage": 0 }
+    },
+    {
+      "id": "CARD-FAQ-ST02-013-SHIELD-IMMUNITY",
+      "faqRef": {
+        "kind": "CARD",
+        "cardNo": "ST02-013",
+        "questionPrefix": "Does \"your shield area cards can't receive damage from enemy Units that are Lv.4 or lower\""
+      },
+      "setup": {
+        "turn": 4,
+        "attacker": { "cardNo": "TST-BR4", "lv": 4, "ap": 4, "hp": 4, "effect": "<Breach 3>" },
+        "defenderUnits": [{ "cardNo": "TST-CHUMP", "lv": 2, "ap": 1, "hp": 2, "rested": true }],
+        "defenderHand": [{ "corpusCardNo": "ST02-013" }],
+        "defenderShields": [{ "cardNo": "SH-1" }]
+      },
+      "playLine": [{ "type": "ATTACK_UNIT", "side": "A", "attackerId": "A-0", "targetId": "B-0" }],
+      "witness": {
+        "actionSteps": [{ "kind": "PLAY_ACTION", "side": "B", "handIndex": 0 }]
+      },
+      "expected": { "legal": true, "defenderShieldCount": 1 }
+    }
+  ]
+}

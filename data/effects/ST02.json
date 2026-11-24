@@ -38,6 +38,25 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 0,
+          "raw": "This Unit may choose an active enemy Unit that is Lv.4 or lower as its attack target.",
+          "layer": 2,
+          "activeIn": "BATTLE_AREA",
+          "duration": "CONTINUOUS",
+          "modifier": {
+            "type": "STATIC_PERMISSION",
+            "summary": "This Unit may choose an active enemy Unit that is Lv.4 or lower as its attack target.",
+            "target": {
+              "owner": "SELF",
+              "self": true,
+              "cardType": "UNIT"
+            }
+          }
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -67,6 +86,25 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Deploy】Place 1 EX Resource.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "ex": true,
+              "rested": false
+            }
+          ]
         }
       ],
       "synergy": {
@@ -120,6 +158,45 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【During Pair】During your turn, when this Unit destroys an enemy Unit with battle damage, deal 1 damage to all enemy Units that are Lv.3 or lower.",
+          "timings": [
+            "DURING_PAIR",
+            "WHEN_DESTROY_BY_BATTLE"
+          ],
+          "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "lvMax": 3
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": [
@@ -136,6 +213,7 @@
       "color": "Green",
       "keywords": [],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -150,6 +228,7 @@
       "color": "Green",
       "keywords": [],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -187,6 +266,31 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Activate･Main】【Once per Turn】④：Set this Unit as active.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "④",
+            "resourceCost": 4
+          },
+          "steps": [
+            {
+              "action": "SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -201,6 +305,7 @@
       "color": "Blue",
       "keywords": [],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -220,6 +325,7 @@
         }
       ],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -239,6 +345,7 @@
         }
       ],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -294,6 +401,50 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ]
+        },
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 1,
+          "raw": "【During Link】This Unit gets AP+1 and HP+1.",
+          "layer": 3,
+          "activeIn": "BATTLE_AREA",
+          "requiresLink": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Heero Yuy"
+            ],
+            "traits": [
+              "Operation Meteor"
+            ],
+            "raw": "[Heero Yuy]"
+          },
+          "duration": "CONTINUOUS",
+          "modifier": {
+            "type": "MODIFY_STAT",
+            "stat": "AP",
+            "delta": 1,
+            "target": {
+              "owner": "SELF",
+              "self": true,
+              "cardType": "UNIT"
+            }
+          }
         }
       ],
       "synergy": {
@@ -381,6 +532,64 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【During Link】During your turn, when this Unit destroys an enemy Unit with battle damage, draw 1.",
+          "timings": [
+            "DURING_LINK",
+            "WHEN_DESTROY_BY_BATTLE"
+          ],
+          "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Zechs Merquise"
+            ],
+            "traits": [
+              "OZ"
+            ],
+            "raw": "[Zechs Merquise]"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": [
@@ -449,6 +658,43 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Main】Choose 1 of your Units. It gains <Breach 3> during this turn.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 3
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ]
+        },
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 1,
+          "raw": "【Pilot】[Trowa Barton]",
+          "layer": 2,
+          "activeIn": "HAND",
+          "modifier": {
+            "type": "GRANT_PILOT_MODE",
+            "pilotName": "Trowa Barton"
+          }
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -492,6 +738,36 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Action】During this battle, your shield area cards can't receive damage from enemy Units that are Lv.4 or lower.",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "During this battle, your shield area cards can't receive damage from enemy Units that are Lv.4 or lower.",
+              "damageType": "ANY",
+              "duration": "THIS_BATTLE"
+            }
+          ]
+        },
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 1,
+          "raw": "【Pilot】[Quatre Raberba Winner]",
+          "layer": 2,
+          "activeIn": "HAND",
+          "modifier": {
+            "type": "GRANT_PILOT_MODE",
+            "pilotName": "Quatre Raberba Winner"
+          }
         }
       ],
       "synergy": {
@@ -542,6 +818,43 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Activate this card's 【Main】.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ACTIVATE_MAIN_EFFECT"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Main】/【Action】Choose 1 enemy Unit with 5 or less HP. Rest it.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 5
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": [
@@ -590,6 +903,43 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 2,
+              "revealSearch": false,
+              "trashRest": false
+            }
+          ]
         }
       ],
       "synergy": {
@@ -660,6 +1010,68 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, deploy 1 [Tallgeese]((OZ)･AP4･HP2) Unit token. If it is your turn and a card with \"Corsica Base\" in its card name is in your trash, deploy 2 [Leo]((OZ)･AP1･HP1) Unit tokens instead.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "IS_YOUR_TURN"
+              },
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_TOKEN",
+                  "count": 1,
+                  "ap": 4,
+                  "hp": 2,
+                  "name": "Tallgeese",
+                  "traits": [
+                    "(OZ"
+                  ]
+                }
+              ]
+            },
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 2,
+              "ap": 1,
+              "hp": 1,
+              "name": "Leo",
+              "traits": [
+                "(OZ"
+              ]
+            }
+          ],
+          "insteadUpgrade": {
+            "rawUpgrade": "deploy 1 [Tallgeese]((OZ)<DOT>AP4<DOT>HP2) Unit token. If it is your turn and a card with \"Corsica Base\" in its card name is in your trash, deploy 2 [Leo]((OZ)<DOT>AP1<DOT>HP1) Unit tokens instead"
+          }
         }
       ],
       "synergy": {

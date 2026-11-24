@@ -33,8 +33,16 @@ An optional multi-select set of card traits (matched with OR logic) used to anch
 _Avoid_: Series filter, Faction lock
 
 **Effect Clause**:
-A single ability unit on a card, scoped by a timing header or **Trigger Event** and composed of an optional **Link Requirement**, **Guard Condition**, activation cost, target selector, and ordered resolution steps.
+A single triggered or activated ability unit on a card, scoped by a timing header or **Trigger Event** and composed of an optional **Link Requirement**, **Guard Condition**, activation cost, target selector, and ordered resolution steps.
 _Avoid_: Effect line, card rule, effect tag
+
+**Replacement Effect**:
+A rule on a card that intercepts a specific game event before it resolves and substitutes an altered or alternative outcome (for example, an *"instead"* or *"would be destroyed"* clause), applying at most once per event instance.
+_Avoid_: Interrupt trigger, prevent step, continuous redirect
+
+**Continuous Modifier**:
+A passive, state-evaluated rule active while its source remains in scope and its **Guard Condition** holds—such as stat adjustments, keyword or trait grants, cost reductions, or `"can't"` prohibitions.
+_Avoid_: Static trigger, continuous clause, passive step
 
 **Trigger Event**:
 The explicit gameplay occurrence inside an **Effect Clause** (such as being attacked, destroying an enemy card with battle damage, or recovering HP) that fires the clause when that event happens, distinct from passive state prerequisites.
@@ -67,3 +75,11 @@ _Avoid_: Effect cache, parsed effect JSON, runtime IR
 **Effect Shard**:
 A set-prefix JSON file grouping **Compiled Card Effects** by card number prefix so reprints across multiple packages are stored once.
 _Avoid_: Effect dump, effect collection, parsed shard
+
+**Action Step**:
+A rule-defined combat or end-of-turn window during which players may activate `【Action】` abilities or `<Blocker>` one at a time without forming a response stack.
+_Avoid_: Response window, stack phase, priority pass
+
+**Chain Witness**:
+The explicit player choices, target selections, and top-of-deck card assumptions supplied to verify whether a multi-card play line is legally executable without nondeterministic branching.
+_Avoid_: Replay log, mock RNG, symbolic branch

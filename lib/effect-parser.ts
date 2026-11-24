@@ -1,4 +1,5 @@
 import type { CardColor, GundamCardPrint } from '@/types/gundam';
+import { parseCardAbilities, type AbilityAst } from './cfg-parser.ts';
 
 export type EffectTiming =
   | 'DEPLOY'
@@ -303,6 +304,7 @@ export interface CompiledCardEffect {
   color: CardColor;
   keywords: KeywordAbility[];
   clauses: EffectClause[];
+  abilities?: AbilityAst[];
   synergy: CardSynergyProfile;
   prerequisites: EffectPrerequisite[];
 }
@@ -2720,6 +2722,7 @@ export function compileCardEffect(
     Partial<Pick<GundamCardPrint, 'traits' | 'link'>>
 ): CompiledCardEffect {
   const parsed = parseCardEffects(card);
+  const cfg = parseCardAbilities(card, parsed.clauses);
   return {
     cardNo: card.cardNo,
     sourcePrintId: card.printId,
@@ -2728,6 +2731,7 @@ export function compileCardEffect(
     color: card.color,
     keywords: parsed.keywords,
     clauses: parsed.clauses,
+    abilities: cfg.abilities,
     synergy: extractSynergyProfile(card, parsed),
     prerequisites: extractEffectPrerequisites(card, parsed),
   };

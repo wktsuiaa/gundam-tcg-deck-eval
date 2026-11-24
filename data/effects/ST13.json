@@ -64,6 +64,62 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Once per Turn】During your turn, when you pair a Pilot with one of your Units, deploy 1 to 2 [Bit / Funnel] Unit tokens.",
+          "timings": [
+            "WHEN_UNIT_PAIRED"
+          ],
+          "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_PAIRED",
+            "actor": "FRIENDLY",
+            "raw": "when you pair a Pilot with one of your Units"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2,
+              "name": "Bit / Funnel"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Activate･Main】【Once per Turn】①：Choose 1 of your Unit tokens and 1 enemy Unit. Begin a battle between them and only perform the damage step.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "cost": {
+            "raw": "①",
+            "resourceCost": 1
+          },
+          "steps": [
+            {
+              "action": "FORCE_BATTLE_DAMAGE_STEP",
+              "attacker": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              },
+              "defender": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -96,6 +152,26 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Deploy】Deploy 1 [Bit / Funnel] Unit token.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2,
+              "name": "Bit / Funnel"
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -110,6 +186,7 @@
       "color": "Green",
       "keywords": [],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -149,6 +226,35 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Deploy】Look at the top card of your deck. Return it to the top or bottom of your deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "zone": "DECK",
+                "count": 1
+              }
+            }
+          ]
         }
       ],
       "synergy": {
@@ -199,6 +305,44 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Deploy】If 4 or more enemy Units are in play, look at the top 5 cards of your deck. You may reveal 1 Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "UNIT_COUNT_AT_LEAST",
+            "owner": "ENEMY",
+            "count": 4
+          },
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 5,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ]
         }
       ],
       "synergy": {
@@ -267,6 +411,61 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【During Pair】【Attack】If you are attacking the enemy player, choose 1 enemy Unit. Deal 2 damage to it.",
+          "timings": [
+            "DURING_PAIR",
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "SELF_STATE",
+            "attackingTarget": "ENEMY_PLAYER"
+          },
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 2,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Activate･Action】【Once per Turn】Rest 1 friendly Unit：Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it.",
+          "timings": [
+            "ACTIVATE_ACTION"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4
+              }
+            },
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ANY",
+                "count": 1
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": [
@@ -307,6 +506,31 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Activate･Main】<Support 1>",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Support",
+                "value": 1
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -321,6 +545,7 @@
       "color": "Red",
       "keywords": [],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -352,6 +577,27 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Attack】Choose 1 enemy player. That player chooses 2 Unit cards from their trash. Exile them from the game.",
+          "timings": [
+            "ATTACK"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "EXILE",
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 2
+              }
+            }
+          ]
         }
       ],
       "synergy": {
@@ -387,6 +633,29 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Activate･Main】【Once per Turn】Destroy 1 friendly Unit token：This Unit gains <Breach 3> during this turn.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "oncePerTurn": true,
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT_TOKEN",
+                "token": true,
+                "count": 1
+              }
+            }
+          ]
         }
       ],
       "synergy": {
@@ -447,6 +716,53 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【When Paired】Look at the top 5 cards of your deck. You may reveal 1 Pilot card whose Lv. is equal to or lower than this Unit among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 5,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": [
@@ -504,6 +820,50 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Once per Turn】When an enemy Unit is destroyed with effect damage while this Unit is attacking, draw 1.",
+          "timings": [
+            "WHEN_DESTROY_BY_BATTLE"
+          ],
+          "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "ENEMY",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ANY",
+              "count": 1
+            },
+            "damageType": "EFFECT",
+            "whileAttacking": true,
+            "raw": "When an enemy Unit is destroyed with effect damage"
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": [
@@ -550,6 +910,37 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Main】Deploy 1 to 2 [Bit / Funnel] Unit tokens.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2,
+              "name": "Bit / Funnel"
+            }
+          ]
+        },
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 1,
+          "raw": "【Pilot】[Carris Nautilus]",
+          "layer": 2,
+          "activeIn": "HAND",
+          "modifier": {
+            "type": "GRANT_PILOT_MODE",
+            "pilotName": "Carris Nautilus"
+          }
         }
       ],
       "synergy": {
@@ -614,6 +1005,56 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Main】Choose 1 of your Units. Destroy it. If you do, look at the top 4 cards of your deck. You may deploy 1 Unit card that is Lv.4 or lower among them. Return the remaining cards randomly to the bottom of your deck.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DESTROY",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 4,
+                  "revealSearch": false,
+                  "trashRest": false
+                }
+              ]
+            },
+            {
+              "action": "DEPLOY_FROM_TOP_DECK",
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4
+              }
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ANY",
+                "cardType": "CARD",
+                "count": 1
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -676,6 +1117,57 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Main】/【Action】Choose 3 Unit cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit. Deal 3 damage to it.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "EXILE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 3,
+                "zone": "TRASH"
+              }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 3,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": [
@@ -725,6 +1217,44 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, deploy 1 [Bit / Funnel] Unit token.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 2,
+              "hp": 2,
+              "name": "Bit / Funnel"
+            }
+          ]
         }
       ],
       "synergy": {

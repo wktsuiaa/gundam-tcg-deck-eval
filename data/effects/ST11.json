@@ -76,6 +76,67 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 0,
+          "raw": "【During Pair】While 2 or more other friendly (Marine) Units are in play, enemy Units can't choose this Unit as their attack target.",
+          "layer": 4,
+          "activeIn": "BATTLE_AREA",
+          "requiresPair": true,
+          "condition": {
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 2,
+            "other": true,
+            "traits": [
+              "Marine"
+            ]
+          },
+          "duration": "CONTINUOUS",
+          "modifier": {
+            "type": "PROHIBITION",
+            "rule": "CANT_DEPLOY",
+            "target": {
+              "owner": "SELF",
+              "self": true,
+              "cardType": "UNIT"
+            }
+          }
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Deploy】If another friendly (Marine) Unit is in play, choose 1 enemy Unit that is Lv.2 or lower. Return it to the bottom of its owner's deck.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "Marine"
+            ]
+          },
+          "steps": [
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 2
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -124,6 +185,36 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 0,
+          "raw": "During your opponent's turn, while this Unit is rested, friendly (Marine) Units with 2 or less HP can't receive enemy effect damage.",
+          "layer": 4,
+          "activeIn": "BATTLE_AREA",
+          "condition": {
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_OPPONENT_TURN"
+              },
+              {
+                "kind": "SELF_RESTED"
+              }
+            ]
+          },
+          "duration": "CONTINUOUS",
+          "modifier": {
+            "type": "PROHIBITION",
+            "rule": "CANT_DEPLOY",
+            "target": {
+              "owner": "SELF",
+              "self": true,
+              "cardType": "UNIT"
+            }
+          }
         }
       ],
       "synergy": {
@@ -182,6 +273,38 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 0,
+          "raw": "While another friendly (Marine) Unit is in play, this Unit gains <Blocker>.",
+          "layer": 2,
+          "activeIn": "BATTLE_AREA",
+          "condition": {
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "Marine"
+            ]
+          },
+          "duration": "CONTINUOUS",
+          "modifier": {
+            "type": "GRANT_KEYWORD",
+            "keyword": {
+              "name": "Blocker",
+              "value": null
+            },
+            "target": {
+              "owner": "SELF",
+              "self": true,
+              "cardType": "UNIT"
+            }
+          }
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -227,6 +350,30 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Deploy】Deploy 1 rested [GOOhN]((ZAFT) (Marine)･AP1･HP1) Unit token.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "ap": 1,
+              "hp": 1,
+              "name": "GOOhN",
+              "traits": [
+                "(ZAFT",
+                "Marine"
+              ]
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -246,6 +393,7 @@
         }
       ],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -341,6 +489,90 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "If another friendly (Marine) Unit is in play at the start of your opponent's turn, during this turn, when a friendly shield area card receives enemy effect damage, reduce it by 5.",
+          "timings": [
+            "START_OF_OPPONENT_TURN"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "PHASE_AT_START_OF_OPPONENT_TURN"
+              },
+              {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 1,
+                "other": true,
+                "traits": [
+                  "Marine"
+                ]
+              }
+            ]
+          },
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "clause": {
+                "raw": "when a friendly shield area card receives enemy effect damage, reduce it by 5.",
+                "timings": [
+                  "WHEN_RECEIVE_DAMAGE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_RECEIVE_DAMAGE",
+                  "actor": "FRIENDLY",
+                  "targetKind": "SHIELD",
+                  "damageType": "EFFECT",
+                  "raw": "when a friendly shield area card receives enemy effect damage"
+                },
+                "steps": [
+                  {
+                    "action": "DAMAGE_PROOF",
+                    "summary": "reduce it by 5.",
+                    "amount": 5,
+                    "damageType": "ANY"
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Deploy】Choose 1 (Marine) Unit card from your trash. Add it to your hand.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_FROM_TRASH_TO_HAND",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Marine",
+                "zone": "TRASH"
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -364,6 +596,7 @@
       "color": "Purple",
       "keywords": [],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -378,6 +611,7 @@
       "color": "Purple",
       "keywords": [],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -425,6 +659,41 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Destroyed】If it is your opponent's turn and a friendly (Marine) Unit is in play, draw 1.",
+          "timings": [
+            "DESTROYED"
+          ],
+          "oncePerTurn": false,
+          "condition": {
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_OPPONENT_TURN"
+              },
+              {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 1,
+                "traits": [
+                  "Marine"
+                ]
+              }
+            ]
+          },
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -453,6 +722,7 @@
         }
       ],
       "clauses": [],
+      "abilities": [],
       "synergy": {
         "requires": [],
         "enables": []
@@ -500,6 +770,44 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【When Paired】All friendly (Marine) Units get AP+1 during this turn.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "trait": "Marine"
+              }
+            }
+          ]
         }
       ],
       "synergy": {
@@ -584,6 +892,66 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Add this card to your hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SELF_TO_HAND"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【When Paired】Choose 1 friendly (Marine) Unit. During this turn, when it receives battle damage from an enemy Unit, reduce it by 2.",
+          "timings": [
+            "WHEN_PAIRED"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Marine"
+              },
+              "clause": {
+                "raw": "when it receives battle damage from an enemy Unit, reduce it by 2.",
+                "timings": [
+                  "WHEN_RECEIVE_DAMAGE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_RECEIVE_DAMAGE",
+                  "actor": "SELF",
+                  "targetKind": "UNIT",
+                  "damageType": "BATTLE",
+                  "raw": "when it receives battle damage from an enemy Unit"
+                },
+                "steps": [
+                  {
+                    "action": "DAMAGE_PROOF",
+                    "summary": "reduce it by 2.",
+                    "amount": 2,
+                    "damageType": "ANY"
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": [
@@ -661,6 +1029,61 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Choose 1 rested enemy Unit with 3 or less HP. Return it to its owner's hand.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED",
+                "hpMax": 3
+              }
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Main】/【Action】Choose 1 rested enemy Unit with 3 or less HP. Return it to its owner's hand. If you do, draw 1.",
+          "timings": [
+            "MAIN",
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "BOUNCE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED",
+                "hpMax": 3
+              }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
       "synergy": {
         "requires": [
           "RESTED_ENEMY_TARGET"
@@ -713,6 +1136,41 @@
           "unparsedResidual": ""
         }
       ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Action】Choose 1 friendly (Marine) Unit. Enemy Units can't choose it as their attack target this turn.",
+          "timings": [
+            "ACTION"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "REDIRECT_ATTACK_TARGET",
+              "rule": "CANT_CHOOSE_TARGET",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Marine"
+              },
+              "duration": "THIS_TURN"
+            }
+          ]
+        },
+        {
+          "kind": "CONTINUOUS_MODIFIER",
+          "clauseIndex": 1,
+          "raw": "【Pilot】[Marco Morassim]",
+          "layer": 2,
+          "activeIn": "HAND",
+          "modifier": {
+            "type": "GRANT_PILOT_MODE",
+            "pilotName": "Marco Morassim"
+          }
+        }
+      ],
       "synergy": {
         "requires": [],
         "enables": []
@@ -758,6 +1216,32 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Main】Choose 1 (Marine) Unit card that is Lv.4 or lower from your trash. Deploy it rested.",
+          "timings": [
+            "MAIN"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_FROM_TRASH",
+              "free": true,
+              "rested": true,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4,
+                "trait": "Marine",
+                "zone": "TRASH"
+              }
+            }
+          ]
         }
       ],
       "synergy": {
@@ -831,6 +1315,57 @@
             }
           ],
           "unparsedResidual": ""
+        }
+      ],
+      "abilities": [
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
+          "raw": "【Burst】Deploy this card.",
+          "timings": [
+            "BURST"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "DEPLOY_SELF"
+            }
+          ]
+        },
+        {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if 4 or more enemy Units are in play, choose 1 rested enemy Unit. Deal 2 damage to it.",
+          "timings": [
+            "DEPLOY"
+          ],
+          "oncePerTurn": false,
+          "steps": [
+            {
+              "action": "ADD_SHIELD_TO_HAND",
+              "count": 1
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "UNIT_COUNT_AT_LEAST",
+                "owner": "ENEMY",
+                "count": 4
+              },
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 2,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "state": "RESTED"
+                  }
+                }
+              ]
+            }
+          ]
         }
       ],
       "synergy": {
