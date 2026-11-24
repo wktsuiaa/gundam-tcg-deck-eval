@@ -23,12 +23,14 @@ import type {
   TurnOrderSetting,
   TurnWinChancePoint,
 } from '@/types/gundam';
-import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
-import type {
-  CardSynergyProfile,
-  EffectPrerequisite,
-  EffectStep,
-  SynergyNodeKey,
+import { doesPilotLinkUnit, extractPilotNamesForLink } from '@/lib/gundam-keywords';
+import {
+  flattenEffectSteps,
+  type CardSynergyProfile,
+  type EffectCondition,
+  type EffectPrerequisite,
+  type EffectStep,
+  type SynergyNodeKey,
 } from '@/lib/effect-parser';
 
 const EMPTY_SYNERGY: CardSynergyProfile = { requires: [], enables: [] };
@@ -356,19 +358,28 @@ export function validateDeck(
   };
 }
 
+function hasDensityGateCondition(cond: EffectCondition | undefined): boolean {
+  if (!cond) return false;
+  if (cond.kind === 'DEPLOYED_FROM_ZONE' || cond.kind === 'TRASH_COUNT_AT_LEAST' || cond.kind === 'DEVELOPMENT_EXILE') {
+    return true;
+  }
+  if (cond.kind === 'ALL_OF' || cond.kind === 'ANY_OF') {
+    return cond.conditions.some((c) => hasDensityGateCondition(c));
+  }
+  if (cond.kind === 'NOT') {
+    return hasDensityGateCondition(cond.condition);
+  }
+  return false;
+}
+
 function collectStepsAndResiduals(card: GundamCardPrint) {
   const parsed = card.compiledEffect ?? { keywords: [], clauses: [] };
   const steps: { step: EffectStep; gated: boolean }[] = [];
   const residuals: string[] = [];
 
   for (const clause of parsed.clauses) {
-    const gated = Boolean(
-      clause.condition &&
-        (clause.condition.kind === 'DEPLOYED_FROM_ZONE' ||
-          clause.condition.kind === 'TRASH_COUNT_AT_LEAST' ||
-          clause.condition.kind === 'DEVELOPMENT_EXILE')
-    );
-    for (const step of clause.steps) steps.push({ step, gated });
+    const gated = hasDensityGateCondition(clause.condition);
+    for (const step of flattenEffectSteps(clause.steps)) steps.push({ step, gated });
     if (clause.unparsedResidual) residuals.push(clause.unparsedResidual);
   }
   return { parsed, steps, residualText: residuals.join(' ') };
@@ -1780,10 +1791,46 @@ const AXIS_LABELS: Record<keyof HexagonAxes, string> = {
 };
 
 function matchesEffectPrerequisite(card: GundamCardPrint, prereq: EffectPrerequisite): boolean {
+  if (prereq.kind === 'LINK') {
+    if (prereq.cardType === 'PILOT') {
+      const pilotNames = extractPilotNamesForLink(card);
+      if (card.type !== 'PILOT' && pilotNames.length === 0) return false;
+      if (prereq.color && card.color !== prereq.color) return false;
+      const nameHit =
+        prereq.anyNames?.some((n) => {
+          const nl = n.toLowerCase();
+          return pilotNames.some((pn) => {
+            const pnl = pn.toLowerCase();
+            return pnl === nl || pnl.includes(nl) || nl.includes(pnl);
+          });
+        }) ?? false;
+      const traitHit =
+        prereq.anyTraits?.some((tr) => card.traits.some((ct) => ct.toLowerCase() === tr.toLowerCase())) ?? false;
+      return nameHit || traitHit;
+    }
+    if (prereq.cardType === 'UNIT') {
+      if (card.type !== 'UNIT' || !card.link) return false;
+      const linkLower = card.link.toLowerCase();
+      const nameHit = prereq.anyNames?.some((n) => linkLower.includes(`[${n.toLowerCase()}]`)) ?? false;
+      const traitHit = prereq.anyTraits?.some((tr) => linkLower.includes(`(${tr.toLowerCase()})`)) ?? false;
+      return nameHit || traitHit;
+    }
+  }
+
   if (prereq.cardType && prereq.cardType !== 'CARD' && card.type !== prereq.cardType) return false;
   if (prereq.color && card.color !== prereq.color) return false;
-  if (prereq.trait && !card.traits.some((t) => t.toLowerCase() === prereq.trait!.toLowerCase())) return false;
-  if (prereq.nameContains && !card.name.toLowerCase().includes(prereq.nameContains.toLowerCase())) return false;
+  if (prereq.anyTraits?.length) {
+    if (!prereq.anyTraits.some((tr) => card.traits.some((ct) => ct.toLowerCase() === tr.toLowerCase()))) return false;
+  } else if (prereq.trait && !card.traits.some((t) => t.toLowerCase() === prereq.trait!.toLowerCase())) {
+    return false;
+  }
+  if (prereq.anyNames?.length) {
+    const names = [card.name, ...extractPilotNamesForLink(card)];
+    if (!prereq.anyNames.some((n) => names.some((cn) => cn.toLowerCase().includes(n.toLowerCase())))) return false;
+  } else if (prereq.nameContains) {
+    const names = [card.name, ...extractPilotNamesForLink(card)];
+    if (!names.some((cn) => cn.toLowerCase().includes(prereq.nameContains!.toLowerCase()))) return false;
+  }
   return true;
 }
 

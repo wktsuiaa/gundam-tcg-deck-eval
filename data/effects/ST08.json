@@ -18,11 +18,27 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While you have no Units that are Lv.6 or higher in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 0,
+            "max": 0,
+            "lvMin": 6
           },
-          "steps": [],
-          "unparsedResidual": "this card in your hand gets Lv. -1 and cost -1 for each enemy Unit in play"
+          "steps": [
+            {
+              "action": "COST_REDUCTION",
+              "lvDelta": -1,
+              "amount": 1,
+              "zone": "HAND",
+              "perTarget": {
+                "metric": "ENEMY_UNIT_COUNT",
+                "owner": "ENEMY",
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【When Paired】Choose 1 enemy Unit with the highest Lv. Deal 3 damage to it.",
@@ -30,13 +46,25 @@
             "WHEN_PAIRED"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "Choose 1 enemy Unit with the highest Lv. Deal 3 damage to it"
+          "steps": [
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 3,
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
       },
       "prerequisites": []
     },
@@ -105,8 +133,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If this Unit is attacking an enemy Unit"
+            "kind": "SELF_STATE",
+            "attackingTarget": "ENEMY_UNIT"
           },
           "steps": [
             {
@@ -160,32 +188,58 @@
           ],
           "oncePerTurn": true,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If this Unit is attacking the enemy player"
+            "kind": "SELF_STATE",
+            "attackingTarget": "ENEMY_PLAYER"
           },
           "steps": [
+            {
+              "action": "REVEAL_FROM_HAND",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Earth Federation",
+                "zone": "HAND"
+              }
+            },
             {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
+                "cardType": "CARD",
+                "zone": "DECK",
                 "count": 1
               }
             },
             {
-              "action": "DRAW",
-              "count": 2,
-              "bothPlayers": false
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 2,
+                  "bothPlayers": false
+                }
+              ]
             }
           ],
-          "unparsedResidual": "reveal 1 (Earth Federation) Unit card from your hand"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Earth Federation",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Earth Federation) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "ST08-007": {
       "cardNo": "ST08-007",
@@ -257,12 +311,25 @@
             "DEPLOY"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "It won' t be set as active during the start phase of your opponent' s next turn"
+          "steps": [
+            {
+              "action": "FREEZE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED",
+                "lvMax": 2
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -353,9 +420,18 @@
         {
           "raw": "When you draw with an effect, if this is a blue Unit, it gains <High-Maneuver> during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DRAW"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DRAW",
+            "actor": "SELF",
+            "raw": "When you draw with an effect"
+          },
+          "condition": {
+            "kind": "SELF_STATE",
+            "color": "Blue"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -366,7 +442,6 @@
               "duration": "THIS_TURN",
               "target": {
                 "owner": "ANY",
-                "cardType": "UNIT",
                 "count": 1
               }
             }
@@ -407,7 +482,8 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "linked": true
               }
             }
           ],
@@ -419,8 +495,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Gawman Nobile]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Gawman Nobile"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -453,9 +534,34 @@
                 "cardType": "UNIT",
                 "count": 1
               }
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 1,
+                "linked": true,
+                "traits": [
+                  "Mafty"
+                ]
+              },
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 2,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ],
+              "replacesPrevious": true
             }
           ],
-          "unparsedResidual": "If a friendly (Mafty) Link Unit is in play, deal 2 damage instead"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {

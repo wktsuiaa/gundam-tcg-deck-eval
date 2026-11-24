@@ -28,7 +28,8 @@
                 "owner": "SELF",
                 "cardType": "BASE",
                 "count": "ALL",
-                "trait": "White Base Team"
+                "trait": "White Base Team",
+                "color": "White"
               }
             }
           ],
@@ -41,8 +42,11 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have 2 or more other Units in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 2,
+            "other": true
           },
           "steps": [
             {
@@ -83,6 +87,11 @@
             "WHEN_PLAYING"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_PLAYING",
+            "actor": "SELF",
+            "raw": "When playing this card from your hand"
+          },
           "steps": [
             {
               "action": "DESTROY",
@@ -90,13 +99,25 @@
                 "owner": "SELF",
                 "cardType": "UNIT",
                 "count": 1,
+                "linked": true,
                 "lvMin": 5,
                 "lvMax": 5,
                 "nameContains": "Unicorn Mode"
               }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "COST_REDUCTION",
+                  "amount": 0,
+                  "exactCost": 0,
+                  "exactLv": 0
+                }
+              ]
             }
           ],
-          "unparsedResidual": "If you do, play this card as if it has 0 Lv. and cost"
+          "unparsedResidual": ""
         },
         {
           "raw": "【Attack】Choose 1 enemy Unit. Rest it.",
@@ -149,14 +170,38 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Marida Cruz"
+            ],
+            "traits": [],
+            "raw": "[Marida Cruz]"
+          },
           "steps": [
             {
-              "action": "SET_ACTIVE",
+              "action": "RETURN_TO_DECK",
+              "position": "SHUFFLE",
+              "shuffle": true,
               "target": {
                 "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
+                "cardType": "CARD",
+                "count": 12,
+                "zone": "TRASH"
               }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "SET_ACTIVE",
+                  "target": {
+                    "owner": "SELF",
+                    "self": true,
+                    "cardType": "UNIT"
+                  }
+                }
+              ]
             },
             {
               "action": "GRANT_KEYWORD",
@@ -173,14 +218,25 @@
               }
             }
           ],
-          "unparsedResidual": "Return them to their owner's deck and shuffle it"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Marida Cruz"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Marida Cruz]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-004": {
       "cardNo": "GD01-004",
@@ -238,6 +294,14 @@
             "DESTROYED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Banagher Links"
+            ],
+            "traits": [],
+            "raw": "[Banagher Links]"
+          },
           "steps": [
             {
               "action": "BOUNCE",
@@ -262,7 +326,18 @@
           "TRASH_COUNT_FUEL"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Banagher Links"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Banagher Links]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-006": {
       "cardNo": "GD01-006",
@@ -283,15 +358,44 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "This Unit gets HP+1"
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Earth Federation"
+            ],
+            "raw": "(Earth Federation) Trait"
+          },
+          "steps": [
+            {
+              "action": "MODIFY_HP",
+              "delta": 1,
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Earth Federation"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Earth Federation) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-007": {
       "cardNo": "GD01-007",
@@ -308,8 +412,14 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have another (OZ) Unit in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "OZ"
+            ]
           },
           "steps": [
             {
@@ -401,7 +511,8 @@
                 "owner": "SELF",
                 "cardType": "BASE",
                 "count": 1,
-                "trait": "White Base Team"
+                "trait": "White Base Team",
+                "color": "White"
               }
             }
           ],
@@ -538,6 +649,14 @@
             "ACTIVATE_ACTION"
           ],
           "oncePerTurn": true,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "White Base Team"
+            ],
+            "raw": "(White Base Team) Trait"
+          },
           "steps": [
             {
               "action": "RECOVER_HP",
@@ -556,7 +675,18 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "White Base Team"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (White Base Team) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-015": {
       "cardNo": "GD01-015",
@@ -607,8 +737,13 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While you have 2 or more (Earth Federation) Units in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 2,
+            "traits": [
+              "Earth Federation"
+            ]
           },
           "steps": [
             {
@@ -627,6 +762,7 @@
         {
           "kind": "TRAIT",
           "trait": "Earth Federation",
+          "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (Earth Federation)",
           "primaryClause": true
@@ -794,11 +930,26 @@
             "discardCount": 1
           },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If a Pilot is not paired with this Unit"
+            "kind": "SELF_STATE",
+            "paired": false
           },
-          "steps": [],
-          "unparsedResidual": "Pair it with this Unit"
+          "steps": [
+            {
+              "action": "PAIR_FROM_HAND",
+              "pilotFilter": {
+                "owner": "SELF",
+                "cardType": "COMMAND",
+                "zone": "TRASH"
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -923,7 +1074,11 @@
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 3,
-              "hp": 1
+              "hp": 1,
+              "name": "Char's Zaku Ⅱ",
+              "traits": [
+                "(Zeon"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -955,8 +1110,13 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there are 10 or more (Zeon)/(Neo Zeon) Unit cards in your trash"
+            "kind": "TRASH_COUNT_AT_LEAST",
+            "count": 10,
+            "traits": [
+              "Zeon",
+              "Neo Zeon"
+            ],
+            "cardType": "UNIT"
           },
           "steps": [
             {
@@ -965,7 +1125,8 @@
               "target": {
                 "owner": "ANY",
                 "cardType": "UNIT",
-                "count": "ALL"
+                "count": "ALL",
+                "keyword": "Blocker"
               }
             }
           ],
@@ -973,16 +1134,22 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
         "enables": []
       },
       "prerequisites": [
         {
           "kind": "TRAIT",
           "trait": "Zeon",
+          "anyTraits": [
+            "Zeon",
+            "Neo Zeon"
+          ],
           "cardType": "UNIT",
-          "minCopies": 4,
-          "reason": "Requires (Zeon)",
+          "minCopies": 8,
+          "reason": "Requires 10+ (Zeon) UNIT cards in trash",
           "primaryClause": false
         }
       ]
@@ -1001,15 +1168,36 @@
             "DEPLOY"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "You may deploy 1 (Maganac Corps) Unit card from your hand"
+          "steps": [
+            {
+              "action": "DEPLOY_FROM_HAND",
+              "free": true,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Maganac Corps",
+                "zone": "HAND"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Maganac Corps",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Maganac Corps) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "GD01-029": {
       "cardNo": "GD01-029",
@@ -1037,7 +1225,8 @@
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
-                "lvMax": 3
+                "lvMax": 3,
+                "keyword": "Blocker"
               }
             }
           ],
@@ -1107,7 +1296,8 @@
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
-                "lvMax": 2
+                "lvMax": 2,
+                "keyword": "Blocker"
               }
             }
           ],
@@ -1284,15 +1474,23 @@
           "oncePerTurn": false,
           "steps": [
             {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
+                "cardType": "CARD",
+                "zone": "DECK",
                 "count": 1
               }
             }
           ],
-          "unparsedResidual": "Look at the top card of your deck"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -1390,7 +1588,8 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "color": "Green"
               }
             }
           ],
@@ -1474,6 +1673,16 @@
               "trashRest": false
             },
             {
+              "action": "DEPLOY_FROM_TOP_DECK",
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4,
+                "trait": "ZAFT"
+              }
+            },
+            {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
@@ -1483,7 +1692,7 @@
               }
             }
           ],
-          "unparsedResidual": "You may deploy 1 (ZAFT) Unit card that is Lv.4 or lower among them"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -1525,9 +1734,15 @@
         {
           "raw": "【During Pair･(Coordinator) Pilot】【Once per Turn】When you use this Unit's <Support> to increase a (ZAFT) Unit's AP, set this Unit as active.",
           "timings": [
-            "DURING_PAIR"
+            "DURING_PAIR",
+            "WHEN_ATTACKED"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_ATTACKED",
+            "actor": "SELF",
+            "raw": "When you use this Unit's <Support> to increase a (ZAFT) Unit's AP"
+          },
           "pairFilter": {
             "trait": "Coordinator"
           },
@@ -1574,8 +1789,12 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If 2 or more other rested friendly Units are in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 2,
+            "other": true,
+            "rested": true
           },
           "steps": [
             {
@@ -1637,16 +1856,51 @@
           "oncePerTurn": false,
           "steps": [
             {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "traits": [
+                  "Zeon",
+                  "Neo Zeon"
+                ],
+                "cardType": "UNIT",
+                "placedFromDeck": true
+              },
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 1,
+                  "revealSearch": true,
+                  "target": {
+                    "owner": "ANY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "trait": "Zeon",
+                    "traits": [
+                      "Zeon",
+                      "Neo Zeon"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
+                "zone": "DECK",
                 "count": 1
               }
             }
           ],
-          "unparsedResidual": "Look at the top card of your deck If it is a (Zeon)/(Neo Zeon) Unit card, you may reveal it and add it to your hand"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -1719,8 +1973,17 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "SELF_AP_AT_LEAST",
-            "minAp": 5
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "SELF_AP_AT_LEAST",
+                "minAp": 5
+              },
+              {
+                "kind": "SELF_STATE",
+                "attackingTarget": "ENEMY_UNIT"
+              }
+            ]
           },
           "steps": [
             {
@@ -2022,8 +2285,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you are attacking the enemy player"
+            "kind": "SELF_STATE",
+            "attackingTarget": "ENEMY_PLAYER"
           },
           "steps": [
             {
@@ -2128,8 +2391,18 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "while this Unit is battling an enemy Unit that is Lv.2 or lower"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_YOUR_TURN"
+              },
+              {
+                "kind": "SELF_STATE",
+                "battlingEnemy": {
+                  "lvMax": 2
+                }
+              }
+            ]
           },
           "steps": [
             {
@@ -2183,9 +2456,15 @@
         {
           "raw": "【During Pair】【Once per Turn】When you pair a Pilot with this Unit or one of your white Units, choose 1 enemy Unit. It gets AP-2 during this turn.",
           "timings": [
-            "DURING_PAIR"
+            "DURING_PAIR",
+            "WHEN_UNIT_PAIRED"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_PAIRED",
+            "actor": "FRIENDLY",
+            "raw": "When you pair a Pilot with this Unit or one of your white Units"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -2226,7 +2505,8 @@
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 2,
-              "hp": 2
+              "hp": 2,
+              "name": "Fatum-00"
             }
           ],
           "unparsedResidual": ""
@@ -2238,15 +2518,35 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "It may attack on the turn it is deployed"
+          "steps": [
+            {
+              "action": "RESTRICTION",
+              "rule": "CAN_ATTACK_TURN_DEPLOYED",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "summary": "It may attack on the turn it is deployed."
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Triple Ship Alliance",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Triple Ship Alliance) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-067": {
       "cardNo": "GD01-067",
@@ -2308,7 +2608,9 @@
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "hpMin": 1,
+                "hpMax": 1
               }
             }
           ],
@@ -2346,7 +2648,9 @@
                 "owner": "SELF",
                 "cardType": "UNIT",
                 "count": 1,
-                "state": "RESTED"
+                "state": "RESTED",
+                "color": "White",
+                "keyword": "Blocker"
               }
             },
             {
@@ -2356,7 +2660,9 @@
                 "owner": "SELF",
                 "cardType": "UNIT",
                 "count": 1,
-                "state": "RESTED"
+                "state": "RESTED",
+                "color": "White",
+                "keyword": "Blocker"
               }
             }
           ],
@@ -2428,6 +2734,14 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Academy"
+            ],
+            "raw": "(Academy) Trait"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -2447,7 +2761,18 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Academy"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Academy) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-072": {
       "cardNo": "GD01-072",
@@ -2483,6 +2808,14 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Earth Alliance"
+            ],
+            "raw": "(Earth Alliance) Trait"
+          },
           "steps": [
             {
               "action": "BOUNCE",
@@ -2501,7 +2834,18 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Earth Alliance"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Earth Alliance) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-074": {
       "cardNo": "GD01-074",
@@ -2559,7 +2903,9 @@
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "hpMin": 1,
+                "hpMax": 1
               }
             }
           ],
@@ -2735,8 +3081,14 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While you have another (Triple Ship Alliance) Unit in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "Triple Ship Alliance"
+            ]
           },
           "steps": [
             {
@@ -2898,8 +3250,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this Unit is blue"
+            "kind": "SELF_STATE",
+            "color": "Blue"
           },
           "steps": [
             {
@@ -2952,6 +3304,17 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Banagher Links"
+            ],
+            "traits": [
+              "Civilian",
+              "Newtype"
+            ],
+            "raw": "[Banagher Links]"
+          },
           "steps": [
             {
               "action": "DRAW",
@@ -2968,7 +3331,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Banagher Links"
+          ],
+          "anyTraits": [
+            "Civilian",
+            "Newtype"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Banagher Links]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-089": {
       "cardNo": "GD01-089",
@@ -2998,8 +3376,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this Unit has <Repair>"
+            "kind": "SELF_STATE",
+            "keyword": "Repair"
           },
           "steps": [
             {
@@ -3049,8 +3427,24 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "This Unit's AP can't be reduced by enemy effects"
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Duo Maxwell"
+            ],
+            "traits": [
+              "Operation Meteor"
+            ],
+            "raw": "[Duo Maxwell]"
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "This Unit's AP can't be reduced by enemy effects.",
+              "damageType": "ANY"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3059,7 +3453,21 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Duo Maxwell"
+          ],
+          "anyTraits": [
+            "Operation Meteor"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Duo Maxwell]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-091": {
       "cardNo": "GD01-091",
@@ -3089,13 +3497,22 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "while this Unit has <Breach>"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_YOUR_TURN"
+              },
+              {
+                "kind": "SELF_STATE",
+                "keyword": "Breach"
+              }
+            ]
           },
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "it can't receive battle damage from enemy Units with 3 or less AP"
+              "summary": "it can't receive battle damage from enemy Units with 3 or less AP.",
+              "damageType": "BATTLE"
             }
           ],
           "unparsedResidual": ""
@@ -3137,8 +3554,10 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this Unit is (Zeon)"
+            "kind": "SELF_STATE",
+            "traits": [
+              "Zeon"
+            ]
           },
           "steps": [
             {
@@ -3168,7 +3587,7 @@
           "trait": "Zeon",
           "cardType": "UNIT",
           "minCopies": 4,
-          "reason": "Requires (Zeon)",
+          "reason": "Requires (Zeon) Unit",
           "primaryClause": true
         }
       ]
@@ -3201,6 +3620,17 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Marida Cruz"
+            ],
+            "traits": [
+              "Neo Zeon",
+              "Cyber-Newtype"
+            ],
+            "raw": "[Marida Cruz]"
+          },
           "steps": [
             {
               "action": "DEAL_DAMAGE",
@@ -3209,7 +3639,8 @@
                 "owner": "SELF",
                 "self": true,
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "lvMaxRef": "SELF_LV"
               }
             }
           ],
@@ -3222,7 +3653,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Marida Cruz"
+          ],
+          "anyTraits": [
+            "Neo Zeon",
+            "Cyber-Newtype"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Marida Cruz]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-094": {
       "cardNo": "GD01-094",
@@ -3248,9 +3694,23 @@
         {
           "raw": "【Once per Turn】 When an enemy Link Unit is destroyed with damage while this Unit is attacking, draw 1.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "ENEMY",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1,
+              "linked": true
+            },
+            "damageType": "ANY",
+            "whileAttacking": true,
+            "raw": "When an enemy Link Unit is destroyed with damage"
+          },
           "steps": [
             {
               "action": "DRAW",
@@ -3296,15 +3756,31 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Dearka Elthman"
+            ],
+            "traits": [
+              "ZAFT",
+              "Coordinator"
+            ],
+            "raw": "[Dearka Elthman]"
+          },
           "steps": [
             {
               "action": "DISCARD",
               "count": 1
             },
             {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -3317,7 +3793,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Dearka Elthman"
+          ],
+          "anyTraits": [
+            "ZAFT",
+            "Coordinator"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Dearka Elthman]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-096": {
       "cardNo": "GD01-096",
@@ -3347,8 +3838,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this Unit is white"
+            "kind": "SELF_STATE",
+            "color": "White"
           },
           "steps": [
             {
@@ -3402,8 +3893,9 @@
           ],
           "oncePerTurn": true,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If your opponent has 8 or more cards in their hand"
+            "kind": "HAND_COUNT",
+            "owner": "ENEMY",
+            "min": 8
           },
           "steps": [
             {
@@ -3463,8 +3955,11 @@
           ],
           "oncePerTurn": true,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If an enemy Unit with 1 or less AP is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "ENEMY",
+            "cardType": "UNIT",
+            "min": 1,
+            "apMax": 1
           },
           "steps": [
             {
@@ -3597,7 +4092,8 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "linked": true
               }
             }
           ],
@@ -3609,8 +4105,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Lucrezia Noin]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Lucrezia Noin"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3688,8 +4189,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Daguza Mackle]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Daguza Mackle"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3832,7 +4338,11 @@
               "action": "DEPLOY_TOKEN",
               "count": 2,
               "ap": 1,
-              "hp": 1
+              "hp": 1,
+              "name": "Zaku Ⅱ",
+              "traits": [
+                "(Zeon"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -3843,8 +4353,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Dozle Zabi]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Dozle Zabi"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3921,7 +4436,8 @@
               "target": {
                 "owner": "ANY",
                 "cardType": "UNIT",
-                "count": "ALL"
+                "count": "ALL",
+                "keyword": "Blocker"
               }
             }
           ],
@@ -4023,8 +4539,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Rasid Kurama]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Rasid Kurama"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4117,13 +4638,18 @@
               }
             },
             {
-              "action": "DEAL_DAMAGE",
-              "amount": 3,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 3,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -4134,8 +4660,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Loni Garvey]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Loni Garvey"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4182,8 +4713,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Andrew Waldfeld]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Andrew Waldfeld"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4237,8 +4773,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Yonem Kirks]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Yonem Kirks"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4321,8 +4862,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Nicol Amarfi]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Nicol Amarfi"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4453,8 +4999,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Chuatury Panlunch]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Chuatury Panlunch"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4505,7 +5056,8 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "keyword": "Blocker"
               }
             }
           ],
@@ -4554,7 +5106,8 @@
                 "owner": "ANY",
                 "cardType": "UNIT",
                 "count": 1,
-                "state": "RESTED"
+                "state": "RESTED",
+                "keyword": "Blocker"
               }
             },
             {
@@ -4564,7 +5117,8 @@
                 "owner": "ANY",
                 "cardType": "UNIT",
                 "count": 1,
-                "state": "RESTED"
+                "state": "RESTED",
+                "keyword": "Blocker"
               }
             }
           ],
@@ -4600,9 +5154,31 @@
                 "count": 1,
                 "hpMax": 2
               }
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 1,
+                "linked": true
+              },
+              "thenSteps": [
+                {
+                  "action": "BOUNCE",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "hpMax": 4
+                  }
+                }
+              ],
+              "replacesPrevious": true
             }
           ],
-          "unparsedResidual": "If you have a Link Unit in play, choose 1 enemy Unit with 4 or less HP instead"
+          "unparsedResidual": ""
         },
         {
           "raw": "【Pilot】[Shaddiq Zenelli]",
@@ -4610,8 +5186,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Shaddiq Zenelli]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Shaddiq Zenelli"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4769,16 +5350,45 @@
             {
               "action": "ADD_SHIELD_TO_HAND",
               "count": 1
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "IS_YOUR_TURN"
+              },
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_FROM_HAND",
+                  "free": true,
+                  "target": {
+                    "owner": "SELF",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "lvMax": 4,
+                    "trait": "Zeon",
+                    "zone": "HAND"
+                  }
+                }
+              ]
             }
           ],
-          "unparsedResidual": "Then, if it is your turn, you may deploy 1 (Zeon) Unit card that is Lv.4 or lower from your hand"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Zeon",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Zeon) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "GD01-126": {
       "cardNo": "GD01-126",
@@ -5041,8 +5651,13 @@
             "restSelf": true
           },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If a friendly (Academy) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "traits": [
+              "Academy"
+            ]
           },
           "steps": [
             {

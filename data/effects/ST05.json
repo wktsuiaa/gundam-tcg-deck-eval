@@ -49,8 +49,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this is damaged"
+            "kind": "SELF_STATE",
+            "damaged": true
           },
           "steps": [
             {
@@ -91,8 +91,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this Unit is damaged"
+            "kind": "SELF_STATE",
+            "damaged": true
           },
           "steps": [
             {
@@ -375,9 +375,36 @@
         {
           "raw": "【During Link】During your turn, when this Unit destroys an enemy Unit with battle damage, choose 1 (Tekkadan) Unit card that is Lv.2 or lower from your trash. Add it to your hand.",
           "timings": [
-            "DURING_LINK"
+            "DURING_LINK",
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Akihiro Altland"
+            ],
+            "traits": [
+              "Tekkadan",
+              "Alaya-Vijnana"
+            ],
+            "raw": "[Akihiro Altland]"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "ADD_FROM_TRASH_TO_HAND",
@@ -401,6 +428,20 @@
         ]
       },
       "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Akihiro Altland"
+          ],
+          "anyTraits": [
+            "Tekkadan",
+            "Alaya-Vijnana"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Akihiro Altland]",
+          "primaryClause": false
+        },
         {
           "kind": "TRAIT",
           "trait": "Tekkadan",
@@ -439,8 +480,15 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have 2 or more other (Gjallarhorn)/(Tekkadan) Units in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 2,
+            "other": true,
+            "traits": [
+              "Gjallarhorn",
+              "Tekkadan"
+            ]
           },
           "steps": [
             {
@@ -467,6 +515,11 @@
         {
           "kind": "TRAIT",
           "trait": "Gjallarhorn",
+          "anyTraits": [
+            "Gjallarhorn",
+            "Tekkadan"
+          ],
+          "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (Gjallarhorn)",
           "primaryClause": true

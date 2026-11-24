@@ -20,7 +20,10 @@
           "condition": {
             "kind": "TRASH_COUNT_AT_LEAST",
             "count": 7,
-            "trait": "CB"
+            "trait": "CB",
+            "traits": [
+              "CB"
+            ]
           },
           "steps": [
             {
@@ -44,9 +47,25 @@
             {
               "action": "MILL",
               "count": 2
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "traits": [
+                  "CB"
+                ],
+                "drawAccepted": true
+              },
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
             }
           ],
-          "unparsedResidual": "If you place a (CB) card with this effect, draw 1"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -110,8 +129,13 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While you have a (CB) Pilot in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "PILOT",
+            "min": 1,
+            "traits": [
+              "CB"
+            ]
           },
           "steps": [
             {
@@ -156,9 +180,24 @@
         {
           "raw": "During your turn, when this Unit destroys an enemy Unit with battle damage, this Unit recovers 2 HP.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "RECOVER_HP",
@@ -178,6 +217,14 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Lockon Stratos"
+            ],
+            "traits": [],
+            "raw": "[Lockon Stratos]"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -198,7 +245,18 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Lockon Stratos"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Lockon Stratos]",
+          "primaryClause": false
+        }
+      ]
     },
     "ST07-006": {
       "cardNo": "ST07-006",
@@ -229,8 +287,21 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "while you have a (CB) Pilot in play"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_YOUR_TURN"
+              },
+              {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "PILOT",
+                "min": 1,
+                "traits": [
+                  "CB"
+                ]
+              }
+            ]
           },
           "steps": [
             {
@@ -316,21 +387,37 @@
               }
             },
             {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "ALL",
-                "trait": "CB"
-              }
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "TRASH_COUNT_AT_LEAST",
+                "count": 7,
+                "trait": "CB",
+                "traits": [
+                  "CB"
+                ]
+              },
+              "thenSteps": [
+                {
+                  "action": "MODIFY_AP",
+                  "delta": 1,
+                  "target": {
+                    "owner": "SELF",
+                    "cardType": "UNIT",
+                    "count": "ALL",
+                    "trait": "CB"
+                  }
+                }
+              ],
+              "replacesPrevious": true
             }
           ],
           "unparsedResidual": ""
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
         "enables": [
           "AP_THRESHOLD_5"
         ]
@@ -374,8 +461,16 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If it is your opponent's turn and this is a (CB) Unit"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_OPPONENT_TURN"
+              },
+              {
+                "kind": "UNIT_TRAIT_IS",
+                "trait": "CB"
+              }
+            ]
           },
           "steps": [
             {
@@ -399,7 +494,7 @@
           "trait": "CB",
           "cardType": "UNIT",
           "minCopies": 4,
-          "reason": "Requires (CB)",
+          "reason": "Requires (CB) Unit",
           "primaryClause": true
         }
       ]
@@ -443,7 +538,8 @@
                 "self": true,
                 "cardType": "UNIT",
                 "count": 1,
-                "state": "ACTIVE"
+                "state": "ACTIVE",
+                "lvMaxRef": "SELF_LV"
               }
             }
           ],
@@ -495,13 +591,28 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "while you have a (CB) Link Unit in play"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_YOUR_TURN"
+              },
+              {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 1,
+                "linked": true,
+                "traits": [
+                  "CB"
+                ]
+              }
+            ]
           },
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "this Unit can't receive battle damage from enemy Units with 3 or less AP"
+              "summary": "this Unit can't receive battle damage from enemy Units with 3 or less AP.",
+              "damageType": "BATTLE"
             }
           ],
           "unparsedResidual": ""
@@ -556,7 +667,8 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "Change the attack target of the battling enemy Unit to it",
+              "summary": "Change the attack target of the battling enemy Unit to it.",
+              "damageType": "ANY",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
@@ -680,13 +792,20 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While a rested friendly (CB) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "rested": true,
+            "traits": [
+              "CB"
+            ]
           },
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "this Base can't receive damage from enemy Units that are Lv.3 or lower, other than Unit tokens"
+              "summary": "this Base can't receive damage from enemy Units that are Lv.3 or lower, other than Unit tokens.",
+              "damageType": "ANY"
             }
           ],
           "unparsedResidual": ""

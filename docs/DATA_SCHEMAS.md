@@ -90,7 +90,7 @@ Single document synced by `scripts/sync_rules.py` containing official deck-const
 
 ## 4. Compiled Effect Shards (`data/effects/<SET>.json`)
 
-Pre-compiled, deterministic **Effect Shards** (`28` files, `1,290` unique `cardNo` entries) produced by `scripts/compile_effects.ts` from canonical non-parallel card prints (resolving `56` historical errata/wording diffs in favor of the canonical non-parallel print).
+Pre-compiled, deterministic **Effect Shards** (`28` files, `1,290` unique `cardNo` entries, `1,392` **Effect Clauses**, `100.0%` full AST coverage with `0` `RAW_CONDITION` and `0` `unparsedResidual` across the synced corpus) produced by `scripts/compile_effects.ts` from canonical non-parallel card prints (resolving historical errata/wording diffs in favor of the canonical non-parallel print).
 
 Shards omit volatile timestamps so repeated compiler runs are byte-for-byte idempotent.
 
@@ -115,17 +115,19 @@ Shards omit volatile timestamps so repeated compiler runs are byte-for-byte idem
 | `keywords` | `KeywordAbility[]` | Innate **Keyword Abilities** outside timing headers: `{ name: KeywordName, value: integer \| null }`. |
 | `clauses` | `EffectClause[]` | Ordered compiled **Effect Clauses** (see below). |
 | `synergy` | `CardSynergyProfile` | `{ requires: SynergyNodeKey[], enables: SynergyNodeKey[] }` for Knowledge Map edges. |
-| `prerequisites` | `EffectPrerequisite[]` | Deck-composition requirements (`{ kind, trait?, color?, cardType?, nameContains?, minCopies: 4 \| 8, primaryClause, reason }`). |
+| `prerequisites` | `EffectPrerequisite[]` | Deck-composition requirements (`{ kind: "TRAIT" \| "COLOR" \| "CARD_TYPE" \| "NAME" \| "LINK", trait?, color?, cardType?, nameContains?, anyNames?, anyTraits?, minCopies: 4 \| 8, primaryClause, reason }`). |
 
 ### `EffectClause` & Union Discriminators
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
-| `raw` | `string` | Single clause line after parenthetical reminder-text stripping and `■` Development merging. |
-| `timings` | `EffectTiming[]` | Non-empty array of trigger/state timings (`DEPLOY`, `ATTACK`, `DESTROYED`, `WHEN_PAIRED`, `WHEN_LINKED`, `DURING_PAIR`, `DURING_LINK`, `BURST`, `ACTIVATE_MAIN`, `ACTIVATE_ACTION`, `MAIN`, `ACTION`, `END_OF_TURN`, `WHEN_PLAYING`, `CONTINUOUS`). |
+| `raw` | `string` | Single clause line after parenthetical reminder-text stripping, modal header propagation, and `■` Development merging. |
+| `timings` | `EffectTiming[]` | Non-empty array across 34 trigger/state timings: bracketed headers (`DEPLOY`, `ATTACK`, `DESTROYED`, `WHEN_PAIRED`, `WHEN_LINKED`, `DURING_PAIR`, `DURING_LINK`, `BURST`, `ACTIVATE_MAIN`, `ACTIVATE_ACTION`, `MAIN`, `ACTION`), turn/play headers (`END_OF_TURN`, `START_OF_OPPONENT_TURN`, `WHEN_PLAYING`), reactive **Trigger Events** (`WHEN_ATTACKED`, `WHEN_DESTROY_BY_BATTLE`, `WHEN_DEAL_DAMAGE`, `WHEN_RECEIVE_DAMAGE`, `WHEN_RECOVER_HP`, `WHEN_UNIT_DEPLOYED`, `WHEN_UNIT_PAIRED`, `WHEN_UNIT_LINKED`, `WHEN_UNIT_DESTROYED`, `WHEN_RESTED`, `WHEN_BLOCKED`, `WHEN_PLACE_EX_RESOURCE`, `WHEN_EXILE_EX_RESOURCE`, `WHEN_ACTIVATE_COMMAND`, `WHEN_PAY_EFFECT_COST`, `WHEN_DRAW`, `WHEN_AP_REDUCED`, `WHEN_PLAY_CARD_WITH_EX_RESOURCE`), or `CONTINUOUS`. |
 | `oncePerTurn` | `boolean` | `true` when tagged `【Once per Turn】`. |
+| `triggerEvent` | `TriggerEvent` (optional) | Structured reactive trigger metadata `{ kind, actor?, actorFilter?, targetKind?, targetFilter?, damageType?, whileAttacking?, raw? }` extracted when a clause is fired by an inline `When ...` / `Whenever ...` event (e.g., `WHEN_ATTACKED`, `WHEN_DESTROY_BY_BATTLE`) rather than a static aura. |
 | `pairFilter` | `PairFilter` (optional) | `{ trait?, color?, lvMin?, lvMax? }` parsed from `【... Pilot】` headers. |
-| `cost` | `ActivationCost` (optional) | `{ resourceCost?, restSelf?, returnSelfToDeckBottom?, destroySelf?, discardCount?, exileFromTrashCount?, raw? }`. |
-| `condition` | `EffectCondition` (optional) | Discriminated union on `kind`: `DEPLOYED_FROM_ZONE`, `TRASH_COUNT_AT_LEAST`, `FRIENDLY_BASE_IN_PLAY`, `SELF_AP_AT_LEAST`, `UNIT_TRAIT_IS`, `IS_YOUR_TURN`, `SELF_RESTED`, `DESTROYED_BY_BATTLE`, `UNIT_COUNT_AT_LEAST`, `DEVELOPMENT_EXILE`, `RAW_CONDITION`. |
-| `steps` | `EffectStep[]` | Ordered typed actions discriminated by `action` (30 variants including `DRAW`, `DESTROY`, `DEAL_DAMAGE`, `MODIFY_AP`, `MODIFY_HP`, `REST`, `SET_ACTIVE`, `FREEZE`, `BOUNCE`, `RETURN_TO_DECK`, `LOOK_TOP`, `REVEAL_TOP`, `ADD_SHIELD_TO_HAND`, `ADD_FROM_TRASH_TO_HAND`, `DEPLOY_FROM_TRASH`, `PAIR_SELF_FROM_TRASH`, `DEPLOY_TOKEN`, `RECOVER_HP`, `GRANT_KEYWORD`, `DAMAGE_PROOF`, `ADD_RESOURCE`, `COST_REDUCTION`, `CANT_ATTACK`, `ALLOW_ATTACK_ACTIVE`, `MILL`, `EXILE`, `ADD_SELF_TO_HAND`, `DEPLOY_SELF`, `ACTIVATE_MAIN_EFFECT`, `DISCARD`), each carrying typed fields and `TargetSelector` where applicable. |
-| `unparsedResidual` | `string` | Fail-closed remainder string for unmatched prose (`""` when fully compiled; triggers `"Manual resolution required"` in `lib/sandbox-engine.ts` when non-empty). |
+| `linkRequirement` | `LinkRequirement` (optional) | `{ role: "UNIT_REQUIRES_PILOT" \| "PILOT_MATCHING_UNIT", names: string[], traits: string[], raw: string }` attached to every `WHEN_LINKED` / `DURING_LINK` clause (`125` clauses across the catalog). |
+| `cost` | `ActivationCost` (optional) | `{ resourceCost?, restSelf?, returnSelfToDeckBottom?, destroySelf?, discardCount?, exileFromTrashCount?, exileFilter?, raw? }`. |
+| `condition` | `EffectCondition` (optional) | Recursive **Guard Condition** union discriminated by `kind`: `ALL_OF`, `ANY_OF`, `NOT`, `DEPLOYED_FROM_ZONE`, `TRASH_COUNT_AT_LEAST`, `FRIENDLY_BASE_IN_PLAY`, `SELF_AP_AT_LEAST`, `UNIT_TRAIT_IS`, `IS_YOUR_TURN`, `IS_OPPONENT_TURN`, `SELF_RESTED`, `DESTROYED_BY_BATTLE`, `UNIT_COUNT_AT_LEAST`, `DEVELOPMENT_EXILE`, `BOARD_CARD_COUNT`, `SELF_STATE`, `HAND_COUNT`, `SHIELD_COUNT`, `RESOURCE_COUNT`, `PLAYER_LV_AT_LEAST`, `ENEMY_PLAYER_COUNT_AT_LEAST`, `TURN_HISTORY`, `EX_RESOURCE_USED_TO_PLAY`, `PHASE_AT_START_OF_OPPONENT_TURN`, and future-sync escape hatch `RAW_CONDITION` (asserted `0` across committed shards). |
+| `steps` | `EffectStep[]` | Ordered typed actions discriminated by `action` (47 variants, including scaling via `ScaleMetric`, exact `TargetSelector` bounds `hpMin` / `hpMax` / `hpRank` / `lvRank` / `linked` / `paired`, identity actions `GRANT_PILOT_MODE` / `NAME_ALIAS`, rule overrides `REDIRECT_ATTACK_TARGET` / `REDIRECT_BATTLE_DAMAGE` / `FORCE_BATTLE_DAMAGE_STEP` / `MODIFY_DAMAGE_DEALT` / `COUNT_UNITS` / `RESTRICTION`, and recursive control-flow steps `IF_CONDITION`, `IF_PREVIOUS_SUCCEEDED`, `GRANT_CLAUSE`). |
+| `unparsedResidual` | `string` | Fail-closed future-sync escape hatch (`""` across all `1,392` committed clauses; logs `"Manual resolution required: ..."` in `lib/sandbox-engine.ts` if ever non-empty after a new card sync). |

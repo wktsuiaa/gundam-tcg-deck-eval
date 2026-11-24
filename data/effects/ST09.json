@@ -121,6 +121,14 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Athrun Zala"
+            ],
+            "traits": [],
+            "raw": "[Athrun Zala]"
+          },
           "condition": {
             "kind": "TRASH_COUNT_AT_LEAST",
             "count": 5,
@@ -148,6 +156,16 @@
         "enables": []
       },
       "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Athrun Zala"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Athrun Zala]",
+          "primaryClause": false
+        },
         {
           "kind": "COLOR",
           "color": "Purple",
@@ -405,10 +423,18 @@
               "count": 1
             },
             {
-              "action": "LOOK_TOP",
-              "count": 2,
-              "revealSearch": false,
-              "trashRest": false
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "IS_YOUR_TURN"
+              },
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 2,
+                  "revealSearch": false,
+                  "trashRest": false
+                }
+              ]
             },
             {
               "action": "MILL",

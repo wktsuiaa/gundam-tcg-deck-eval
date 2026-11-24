@@ -180,16 +180,144 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
     expect(prereq4116.some((p) => p.trait === 'Minerva Squad' && p.minCopies === 8)).toBe(true);
   });
 
-  it('audits all 1,278 unique cards with zero crashes, zero reminder leaks, and >=80% full clause coverage', () => {
+  it('parses GD06-001, GD06-002, GD06-003, and GD06-009 with exact triggers, conditions, and 1 HP selector', () => {
+    const gd001 = parseCardEffects(corpus.get('GD06-001')!);
+    expect(gd001.clauses[0]).toMatchObject({
+      timings: ['WHEN_ATTACKED'],
+      oncePerTurn: true,
+      triggerEvent: { kind: 'WHEN_ATTACKED', actor: 'SELF' },
+      steps: [{ action: 'DRAW', count: 1 }],
+      unparsedResidual: '',
+    });
+
+    const gd002 = parseCardEffects(corpus.get('GD06-002')!);
+    expect(gd002.clauses[0]).toMatchObject({
+      timings: ['WHEN_DESTROY_BY_BATTLE'],
+      oncePerTurn: true,
+      triggerEvent: {
+        kind: 'WHEN_DESTROY_BY_BATTLE',
+        actor: 'SELF',
+        targetKind: 'ANY_ENEMY_CARD',
+        damageType: 'BATTLE',
+      },
+      condition: { kind: 'IS_YOUR_TURN' },
+      steps: [
+        {
+          action: 'RECOVER_HP',
+          amount: 3,
+          target: { owner: 'SELF', cardType: 'UNIT', count: 1, trait: 'Orb' },
+        },
+      ],
+      unparsedResidual: '',
+    });
+    expect(gd002.clauses[1].steps).toEqual([
+      { action: 'EXILE', target: { owner: 'SELF', cardType: 'UNIT', count: 3, zone: 'TRASH' } },
+      {
+        action: 'IF_PREVIOUS_SUCCEEDED',
+        thenSteps: [
+          { action: 'BOUNCE', target: { owner: 'ENEMY', cardType: 'UNIT', count: 1, state: 'ACTIVE' } },
+        ],
+      },
+    ]);
+
+    const gd003 = parseCardEffects(corpus.get('GD06-003')!);
+    expect(gd003.clauses[0]).toMatchObject({
+      timings: ['CONTINUOUS'],
+      steps: [
+        {
+          action: 'MODIFY_AP',
+          delta: 1,
+          scaleBy: { metric: 'HAND_COUNT', owner: 'SELF' },
+          target: { owner: 'SELF', self: true, cardType: 'UNIT' },
+        },
+      ],
+      unparsedResidual: '',
+    });
+    expect(gd003.clauses[1]).toMatchObject({
+      timings: ['ATTACK'],
+      condition: {
+        kind: 'ALL_OF',
+        conditions: [
+          { kind: 'BOARD_CARD_COUNT', owner: 'SELF', cardType: 'UNIT', min: 1, other: true, traits: ['Alphacide'] },
+          { kind: 'HAND_COUNT', owner: 'SELF', max: 5 },
+        ],
+      },
+      steps: [{ action: 'DRAW', count: 1 }],
+      unparsedResidual: '',
+    });
+
+    const gd009 = parseCardEffects(corpus.get('GD06-009')!);
+    expect(gd009.clauses[0]).toMatchObject({
+      timings: ['DEPLOY'],
+      steps: [
+        {
+          action: 'BOUNCE',
+          target: { owner: 'ENEMY', cardType: 'UNIT', count: 1, hpMin: 1, hpMax: 1 },
+        },
+      ],
+      unparsedResidual: '',
+    });
+  });
+
+  it('extracts structured linkRequirement, GRANT_PILOT_MODE, NAME_ALIAS, and secondary LINK prerequisites', () => {
+    const st09003 = compileCardEffect(corpus.get('ST09-003')!);
+    expect(st09003.clauses[0].linkRequirement).toEqual({
+      role: 'UNIT_REQUIRES_PILOT',
+      names: ['Athrun Zala'],
+      traits: [],
+      raw: '[Athrun Zala]',
+    });
+    expect(
+      st09003.prerequisites.some((p) => p.kind === 'LINK' && p.cardType === 'PILOT' && p.anyNames?.includes('Athrun Zala') && !p.primaryClause)
+    ).toBe(true);
+
+    const gd01088 = compileCardEffect(corpus.get('GD01-088')!);
+    const linkClause = gd01088.clauses.find((c) => c.timings.includes('WHEN_LINKED'))!;
+    expect(linkClause.linkRequirement).toMatchObject({
+      role: 'PILOT_MATCHING_UNIT',
+      names: ['Banagher Links'],
+    });
+    expect(
+      gd01088.prerequisites.some((p) => p.kind === 'LINK' && p.cardType === 'UNIT' && p.anyNames?.includes('Banagher Links') && !p.primaryClause)
+    ).toBe(true);
+
+    const eb01076 = parseCardEffects(corpus.get('EB01-076')!);
+    expect(eb01076.clauses.some((c) => c.steps.some((s) => s.action === 'GRANT_PILOT_MODE' && s.pilotName === 'Lowe Guele'))).toBe(true);
+
+    const gd02098 = parseCardEffects(corpus.get('GD02-098')!);
+    expect(gd02098.clauses.some((c) => c.steps.some((s) => s.action === 'NAME_ALIAS' && s.alias === 'Char Aznable'))).toBe(true);
+  });
+
+  it('audits all unique cards with zero crashes, zero reminder leaks, zero RAW_CONDITIONs, zero residuals, and 100% link coverage', () => {
     let totalClauses = 0;
     let fullyParsedClauses = 0;
+    let rawConditions = 0;
+    let missingLinkReq = 0;
+    let missingHpExact = 0;
     let reminderLeaks = 0;
+
+    const countRaw = (cond: ReturnType<typeof parseCardEffects>['clauses'][number]['condition']): number => {
+      if (!cond) return 0;
+      if (cond.kind === 'RAW_CONDITION') return 1;
+      if (cond.kind === 'ALL_OF' || cond.kind === 'ANY_OF') {
+        return cond.conditions.reduce((s, c) => s + countRaw(c), 0);
+      }
+      if (cond.kind === 'NOT') return countRaw(cond.condition);
+      return 0;
+    };
 
     for (const card of corpus.values()) {
       const parsed = parseCardEffects(card);
       for (const clause of parsed.clauses) {
         totalClauses++;
         if (clause.unparsedResidual === '') fullyParsedClauses++;
+        rawConditions += countRaw(clause.condition);
+        if ((clause.timings.includes('WHEN_LINKED') || clause.timings.includes('DURING_LINK')) && !clause.linkRequirement) {
+          missingLinkReq++;
+        }
+        if (/with \d+ HP\b(?!\s+or)/i.test(clause.raw) && !JSON.stringify(clause).includes('hpMin')) {
+          missingHpExact++;
+        }
         const stepsText = JSON.stringify(clause.steps);
         if (stepsText.includes('change the attack target') || stepsText.includes('first card in that opponent')) {
           reminderLeaks++;
@@ -197,10 +325,12 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
       }
     }
 
-    const coverage = fullyParsedClauses / Math.max(1, totalClauses);
     expect(reminderLeaks).toBe(0);
     expect(totalClauses).toBeGreaterThan(1000);
-    expect(coverage).toBeGreaterThanOrEqual(0.8);
+    expect(rawConditions).toBe(0);
+    expect(fullyParsedClauses).toBe(totalClauses);
+    expect(missingLinkReq).toBe(0);
+    expect(missingHpExact).toBe(0);
   });
 
   it('keeps pre-compiled Effect Shards under data/effects/ complete and in sync with data/collections/', () => {

@@ -48,4 +48,6 @@ Open `http://localhost:3000`.
 - [Repository Architecture](docs/ARCHITECTURE.md)
 - [Features & User Flows](docs/FEATURES_AND_USER_FLOW.md)
 - [Calculations & Algorithms](docs/ALGORITHMS.md)
+- [Data JSON Schemas](docs/DATA_SCHEMAS.md)
+- [Effect Parsing & Triggers](docs/EFFECT_PARSING_AND_TRIGGERS.md)
 - [Testing Flow & Verification](docs/TESTING.md)

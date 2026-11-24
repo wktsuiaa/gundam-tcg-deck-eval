@@ -219,8 +219,29 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "This Unit can't be set as active or paired with a Pilot"
+          "steps": [
+            {
+              "action": "RESTRICTION",
+              "rule": "CANT_SET_ACTIVE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "summary": "This Unit can't be set as active or paired with a Pilot."
+            },
+            {
+              "action": "RESTRICTION",
+              "rule": "CANT_BE_PAIRED",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "summary": "This Unit can't be set as active or paired with a Pilot."
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -360,8 +381,19 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "This Unit can't be paired with a Pilot"
+          "steps": [
+            {
+              "action": "RESTRICTION",
+              "rule": "CANT_BE_PAIRED",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "summary": "This Unit can't be paired with a Pilot."
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -473,8 +505,27 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "This Unit can't be paired with a Pilot or attack"
+          "steps": [
+            {
+              "action": "RESTRICTION",
+              "rule": "CANT_BE_PAIRED",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "summary": "This Unit can't be paired with a Pilot or attack."
+            },
+            {
+              "action": "CANT_ATTACK",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {

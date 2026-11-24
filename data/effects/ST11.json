@@ -18,11 +18,32 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While 2 or more other friendly (Marine) Units are in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 2,
+            "other": true,
+            "traits": [
+              "Marine"
+            ]
           },
-          "steps": [],
-          "unparsedResidual": "enemy Units can't choose this Unit as their attack target"
+          "steps": [
+            {
+              "action": "REDIRECT_ATTACK_TARGET",
+              "rule": "MUST_ATTACK_TARGET",
+              "attackerFilter": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【Deploy】If another friendly (Marine) Unit is in play, choose 1 enemy Unit that is Lv.2 or lower. Return it to the bottom of its owner's deck.",
@@ -31,8 +52,14 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If another friendly (Marine) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "Marine"
+            ]
           },
           "steps": [
             {
@@ -57,13 +84,6 @@
         {
           "kind": "TRAIT",
           "trait": "Marine",
-          "minCopies": 4,
-          "reason": "Requires (Marine)",
-          "primaryClause": true
-        },
-        {
-          "kind": "TRAIT",
-          "trait": "Marine",
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (Marine)",
@@ -85,15 +105,41 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "During your opponent's turn, while this Unit is rested, friendly (Marine) Units with 2 or less HP can't receive enemy effect damage"
+          "condition": {
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_OPPONENT_TURN"
+              },
+              {
+                "kind": "SELF_RESTED"
+              }
+            ]
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "friendly (Marine) Units with 2 or less HP can't receive enemy effect damage.",
+              "damageType": "EFFECT"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Marine) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "ST11-003": {
       "cardNo": "ST11-003",
@@ -110,8 +156,14 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While another friendly (Marine) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "Marine"
+            ]
           },
           "steps": [
             {
@@ -164,7 +216,12 @@
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 1,
-              "hp": 1
+              "hp": 1,
+              "name": "GOOhN",
+              "traits": [
+                "(ZAFT",
+                "Marine"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -206,15 +263,62 @@
         {
           "raw": "If another friendly (Marine) Unit is in play at the start of your opponent's turn, during this turn, when a friendly shield area card receives enemy effect damage, reduce it by 5.",
           "timings": [
-            "CONTINUOUS"
+            "START_OF_OPPONENT_TURN"
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If another friendly (Marine) Unit is in play at the start of your opponent's turn"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "PHASE_AT_START_OF_OPPONENT_TURN"
+              },
+              {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 1,
+                "other": true,
+                "traits": [
+                  "Marine"
+                ]
+              }
+            ]
           },
-          "steps": [],
-          "unparsedResidual": "during this turn, when a friendly shield area card receives enemy effect damage, reduce it by 5"
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "clause": {
+                "raw": "when a friendly shield area card receives enemy effect damage, reduce it by 5.",
+                "timings": [
+                  "WHEN_RECEIVE_DAMAGE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_RECEIVE_DAMAGE",
+                  "actor": "FRIENDLY",
+                  "targetKind": "SHIELD",
+                  "damageType": "EFFECT",
+                  "raw": "when a friendly shield area card receives enemy effect damage"
+                },
+                "steps": [
+                  {
+                    "action": "DAMAGE_PROOF",
+                    "summary": "reduce it by 5.",
+                    "amount": 5,
+                    "damageType": "ANY"
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【Deploy】Choose 1 (Marine) Unit card from your trash. Add it to your hand.",
@@ -295,8 +399,21 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If it is your opponent's turn and a friendly (Marine) Unit is in play"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_OPPONENT_TURN"
+              },
+              {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 1,
+                "traits": [
+                  "Marine"
+                ]
+              }
+            ]
           },
           "steps": [
             {
@@ -429,8 +546,42 @@
             "WHEN_PAIRED"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "During this turn, when it receives battle damage from an enemy Unit, reduce it by 2"
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Marine"
+              },
+              "clause": {
+                "raw": "when it receives battle damage from an enemy Unit, reduce it by 2.",
+                "timings": [
+                  "WHEN_RECEIVE_DAMAGE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_RECEIVE_DAMAGE",
+                  "actor": "SELF",
+                  "targetKind": "UNIT",
+                  "damageType": "BATTLE",
+                  "raw": "when it receives battle damage from an enemy Unit"
+                },
+                "steps": [
+                  {
+                    "action": "DAMAGE_PROOF",
+                    "summary": "reduce it by 2.",
+                    "amount": 2,
+                    "damageType": "ANY"
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -439,7 +590,16 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Marine) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "ST11-013": {
       "cardNo": "ST11-013",
@@ -488,9 +648,14 @@
               }
             },
             {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -518,8 +683,20 @@
             "ACTION"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "Enemy Units can't choose it as their attack target this turn"
+          "steps": [
+            {
+              "action": "REDIRECT_ATTACK_TARGET",
+              "rule": "CANT_CHOOSE_TARGET",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Marine"
+              },
+              "duration": "THIS_TURN"
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【Pilot】[Marco Morassim]",
@@ -527,15 +704,29 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Marco Morassim]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Marco Morassim"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Marine",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Marine) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "ST11-015": {
       "cardNo": "ST11-015",
@@ -619,20 +810,36 @@
               "count": 1
             },
             {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "UNIT_COUNT_AT_LEAST",
+                "owner": "ENEMY",
+                "count": 4
+              },
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 2,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "state": "RESTED"
+                  }
+                }
+              ]
             }
           ],
-          "unparsedResidual": "Then, if 4 or more enemy Units are in play, choose 1 rested enemy Unit"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
-        "requires": [],
-        "enables": []
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
+        "enables": [
+          "DAMAGED_ENEMY_TARGET"
+        ]
       },
       "prerequisites": []
     }

@@ -33,15 +33,31 @@ An optional multi-select set of card traits (matched with OR logic) used to anch
 _Avoid_: Series filter, Faction lock
 
 **Effect Clause**:
-A single ability unit on a card, scoped by a trigger timing or continuous state and composed of an optional activation cost or condition, a target selector, and a resolution action.
+A single ability unit on a card, scoped by a timing header or **Trigger Event** and composed of an optional **Link Requirement**, **Guard Condition**, activation cost, target selector, and ordered resolution steps.
 _Avoid_: Effect line, card rule, effect tag
+
+**Trigger Event**:
+The explicit gameplay occurrence inside an **Effect Clause** (such as being attacked, destroying an enemy card with battle damage, or recovering HP) that fires the clause when that event happens, distinct from passive state prerequisites.
+_Avoid_: Inline when condition, continuous trigger, raw condition
+
+**Guard Condition**:
+The state prerequisite checked before an **Effect Clause** or conditional sub-step resolves (such as turn ownership, friendly Trait presence, hand size, or Trash count), evaluated independently of what **Trigger Event** fires the clause.
+_Avoid_: Trigger text, raw condition, inline prefix
+
+**Link Requirement**:
+The explicit Pilot-to-Unit pairing criteria attached to a Link-gated **Effect Clause**, identifying the Pilot names or Traits a Unit requires or that a Pilot satisfies when linked.
+_Avoid_: Link label, raw link text, pair filter
+
+**Command Pilot**:
+A Command card carrying a Pilot mode declaration that allows it to pair with a Unit in the Battle Area and satisfy matching **Link Requirements** as a Pilot.
+_Avoid_: Hybrid command, pilot command card
 
 **Keyword Ability**:
 A standardized, angle-bracketed gameplay rule on a card (such as `<Blocker>`, `<Breach X>`, or `<Repair X>`) that carries fixed engine semantics independent of prose effect clauses.
 _Avoid_: Effect Style, mechanic tag
 
 **Effect Prerequisite**:
-A condition or friendly card requirement inside an **Effect Clause**—such as a required friendly `(Trait)` Unit, Pilot, color, card type, or minimum card density in play or in the Trash—that must be supported by the deck or board state for the clause to resolve.
+A condition or friendly card requirement inside an **Effect Clause**—such as a required friendly `(Trait)` Unit, matching **Link Requirement**, color, card type, or minimum card density in play or in the Trash—that must be supported by the deck or board state for the clause to resolve.
 _Avoid_: Generation Constraint, Trait Focus
 
 **Compiled Card Effect**:

@@ -78,12 +78,13 @@
             {
               "action": "EXILE",
               "target": {
-                "owner": "ENEMY",
-                "count": 1
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 2
               }
             }
           ],
-          "unparsedResidual": "That player chooses 2 Unit cards from their trash"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -155,21 +156,33 @@
               }
             },
             {
-              "action": "MODIFY_AP",
-              "delta": -2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "TRASH_COUNT_AT_LEAST",
                 "count": 7
-              }
+              },
+              "thenSteps": [
+                {
+                  "action": "MODIFY_AP",
+                  "delta": -2,
+                  "duration": "THIS_TURN",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "lvMax": 6
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
         "enables": [
           "RESTED_ENEMY_TARGET"
         ]
@@ -217,11 +230,25 @@
         {
           "raw": "【During Pair】【Once per Turn】When this Unit would receive battle damage from an enemy Unit with AP equal to or less than it, it doesn't receive that damage.",
           "timings": [
-            "DURING_PAIR"
+            "DURING_PAIR",
+            "WHEN_RECEIVE_DAMAGE"
           ],
           "oncePerTurn": true,
-          "steps": [],
-          "unparsedResidual": "When this Unit would receive battle damage from an enemy Unit with AP equal to or less than it, it doesn't receive that damage"
+          "triggerEvent": {
+            "kind": "WHEN_RECEIVE_DAMAGE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "damageType": "BATTLE",
+            "raw": "When this Unit would receive battle damage from an enemy Unit with AP equal to or less than it"
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "it doesn't receive that damage.",
+              "damageType": "ANY"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -335,8 +362,25 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "Reduce its AP during this battle by an amount equal to the number of rested enemy Units"
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -1,
+              "scaleBy": {
+                "metric": "RESTED_ENEMY_UNIT_COUNT",
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "rested": true
+              },
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -425,22 +469,10 @@
           "unparsedResidual": ""
         },
         {
-          "raw": "【Main】/【Action】When playing this card, choose 1 of the following effects and activate it：",
+          "raw": "【Main】/【Action】 Choose 1 to 2 enemy Units with 3 or less HP. Rest them.",
           "timings": [
             "MAIN",
             "ACTION"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "When playing this card, choose 1 of the following effects and activate it"
-          },
-          "steps": [],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "Choose 1 to 2 enemy Units with 3 or less HP. Rest them.",
-          "timings": [
-            "CONTINUOUS"
           ],
           "oncePerTurn": false,
           "steps": [
@@ -458,9 +490,10 @@
           "unparsedResidual": ""
         },
         {
-          "raw": "Choose 1 enemy Unit. It gets AP-3 during this turn.",
+          "raw": "【Main】/【Action】 Choose 1 enemy Unit. It gets AP-3 during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "MAIN",
+            "ACTION"
           ],
           "oncePerTurn": false,
           "steps": [
@@ -512,9 +545,30 @@
                 "count": 1,
                 "lvMax": 5
               }
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "TRASH_COUNT_AT_LEAST",
+                "count": 4,
+                "cardType": "COMMAND"
+              },
+              "thenSteps": [
+                {
+                  "action": "MODIFY_AP",
+                  "delta": -3,
+                  "duration": "THIS_TURN",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ],
+              "replacesPrevious": true
             }
           ],
-          "unparsedResidual": "If there are 4 or more Command cards in your trash, choose 1 enemy Unit instead"
+          "unparsedResidual": ""
         },
         {
           "raw": "【Pilot】[Garrod Ran & Tiffa Adill]",
@@ -522,12 +576,19 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Garrod Ran & Tiffa Adill]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Garrod Ran & Tiffa Adill"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -570,14 +631,37 @@
               "rested": true
             },
             {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "NOT",
+                "condition": {
+                  "kind": "TURN_HISTORY",
+                  "event": "SET_RESOURCE_ACTIVE_BY_EFFECT"
+                }
+              },
+              "thenSteps": [
+                {
+                  "action": "DESTROY",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "RESOURCE",
+                    "countRef": "ENEMY_PLAYERS",
+                    "count": "UP_TO"
+                  }
+                }
+              ]
+            },
+            {
               "action": "SET_ACTIVE",
               "target": {
-                "owner": "ANY",
-                "count": 1
+                "owner": "ENEMY",
+                "cardType": "RESOURCE",
+                "countRef": "ENEMY_PLAYERS",
+                "count": "UP_TO"
               }
             }
           ],
-          "unparsedResidual": "Then, if you have not set one of your Resources as active with an effect this turn, choose a number of your Resources equal to the number of enemy players"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -624,9 +708,22 @@
         {
           "raw": "【Once per Turn】During your turn, when a friendly Unit links, choose 1 enemy Unit that is Lv.5 or lower. It gets AP-1 during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_UNIT_LINKED"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_LINKED",
+            "actor": "FRIENDLY",
+            "actorFilter": {
+              "owner": "SELF",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "raw": "when a friendly Unit links"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",

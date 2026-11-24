@@ -22,6 +22,9 @@
             "DURING_PAIR"
           ],
           "oncePerTurn": false,
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -391,8 +394,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Hayato Kobayashi]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Hayato Kobayashi"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -438,8 +446,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Kai Shiden]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Kai Shiden"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -547,7 +560,13 @@
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 3,
-              "hp": 3
+              "hp": 3,
+              "name": "Gundam",
+              "traits": [
+                "(White Base Team",
+                "(White Base Team",
+                "(White Base Team"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -612,7 +631,8 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": "ALL"
+                "count": "ALL",
+                "linked": true
               }
             }
           ],

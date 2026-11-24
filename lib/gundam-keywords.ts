@@ -128,20 +128,50 @@ export function groupPrintsByCardNo(cards: GundamCardPrint[]): GundamCardGroup[]
 }
 
 /**
- * Checks whether a Pilot card satisfies a Unit's [Link] condition.
+ * Extracts effective pilot names for Link matching (Pilot name, 【Pilot】[Name] modes, and Name Aliases).
+ */
+export function extractPilotNamesForLink(card: GundamCardPrint): string[] {
+  const names: string[] = [];
+  if (card.type === 'PILOT' && card.name) names.push(card.name);
+
+  if (card.compiledEffect?.clauses) {
+    for (const clause of card.compiledEffect.clauses) {
+      for (const step of clause.steps) {
+        if (step.action === 'GRANT_PILOT_MODE') names.push(step.pilotName);
+        else if (step.action === 'NAME_ALIAS') names.push(step.alias);
+      }
+    }
+  } else if (card.effect) {
+    for (const m of card.effect.matchAll(/【Pilot】\s*\[([^\]]+)\]/gi)) {
+      names.push(m[1].trim());
+    }
+    for (const m of card.effect.matchAll(/This card'?s name is also treated as \[([^\]]+)\]/gi)) {
+      names.push(m[1].trim());
+    }
+  }
+  return [...new Set(names)];
+}
+
+/**
+ * Checks whether a Pilot or Command-Pilot card satisfies a Unit's [Link] condition.
  * Link strings on official cards look like:
  * "[Amuro Ray]", "(White Base Team) Trait", "(Zeon) Trait", "[Kira Yamato] / [Athrun Zala]"
  */
 export function doesPilotLinkUnit(pilot: GundamCardPrint, unit: GundamCardPrint): boolean {
-  if (pilot.type !== 'PILOT' || unit.type !== 'UNIT' || !unit.link) return false;
+  if (unit.type !== 'UNIT' || !unit.link) return false;
+  const pilotNames = extractPilotNamesForLink(pilot);
+  if (pilot.type !== 'PILOT' && pilotNames.length === 0) return false;
+
   const linkStr = unit.link;
 
   // Match bracketed character names e.g. [Amuro Ray]
   const nameTokens = [...linkStr.matchAll(/\[([^\]]+)\]/g)].map((m) => m[1].trim().toLowerCase());
-  const pilotNameLower = pilot.name.toLowerCase();
-  for (const token of nameTokens) {
-    if (pilotNameLower === token || pilotNameLower.includes(token) || token.includes(pilotNameLower)) {
-      return true;
+  for (const pn of pilotNames) {
+    const pilotNameLower = pn.toLowerCase();
+    for (const token of nameTokens) {
+      if (pilotNameLower === token || pilotNameLower.includes(token) || token.includes(pilotNameLower)) {
+        return true;
+      }
     }
   }
 

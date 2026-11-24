@@ -71,14 +71,21 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If another friendly (G Generation) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "G Generation"
+            ]
           },
           "steps": [
             {
               "action": "REST",
               "target": {
                 "owner": "ENEMY",
+                "countRef": "ENEMY_PLAYERS",
                 "cardType": "UNIT",
                 "count": 1
               }
@@ -93,9 +100,21 @@
             "ATTACK"
           ],
           "oncePerTurn": true,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "G Generation"
+            ],
+            "raw": "(G Generation) Trait"
+          },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If 3 or more other rested Units are in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "ANY",
+            "cardType": "UNIT",
+            "min": 3,
+            "other": true,
+            "rested": true
           },
           "steps": [
             {
@@ -123,6 +142,16 @@
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (G Generation)",
+          "primaryClause": false
+        },
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "G Generation"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (G Generation) Trait",
           "primaryClause": false
         }
       ]
@@ -189,9 +218,17 @@
         {
           "raw": "【Once per Turn】During your turn, when this Unit recovers HP, choose 1 rested enemy Unit. Deal 1 damage to it.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_RECOVER_HP"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_RECOVER_HP",
+            "actor": "SELF",
+            "raw": "when this Unit recovers HP"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "DEAL_DAMAGE",
@@ -473,8 +510,9 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If an enemy player has 6 or more cards in their hand"
+            "kind": "HAND_COUNT",
+            "owner": "ENEMY",
+            "min": 6
           },
           "steps": [
             {
@@ -513,10 +551,14 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
+          "condition": {
+            "kind": "IS_OPPONENT_TURN"
+          },
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "this Unit can't receive effect damage from enemy Units that are Lv.5 or lower"
+              "summary": "this Unit can't receive effect damage from enemy Units that are Lv.5 or lower.",
+              "damageType": "EFFECT"
             }
           ],
           "unparsedResidual": ""
@@ -543,8 +585,12 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there are 2 or more other rested Units in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "ANY",
+            "cardType": "UNIT",
+            "min": 2,
+            "other": true,
+            "rested": true
           },
           "steps": [
             {
@@ -667,8 +713,12 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there are 2 or more other rested Units in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "ANY",
+            "cardType": "UNIT",
+            "min": 2,
+            "other": true,
+            "rested": true
           },
           "steps": [
             {
@@ -709,6 +759,14 @@
             "ACTIVATE_ACTION"
           ],
           "oncePerTurn": true,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Durability"
+            ],
+            "raw": "(Durability) Trait"
+          },
           "steps": [
             {
               "action": "RECOVER_HP",
@@ -727,7 +785,18 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Durability"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Durability) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "EB01-021": {
       "cardNo": "EB01-021",
@@ -755,6 +824,9 @@
             "kind": "TRASH_COUNT_AT_LEAST",
             "count": 2,
             "trait": "G Generation",
+            "traits": [
+              "G Generation"
+            ],
             "cardType": "UNIT"
           },
           "steps": [
@@ -826,10 +898,19 @@
               }
             },
             {
-              "action": "DEPLOY_TOKEN",
-              "count": 3,
-              "ap": 2,
-              "hp": 2
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_TOKEN",
+                  "count": 3,
+                  "ap": 2,
+                  "hp": 2,
+                  "name": "Gundam Exia",
+                  "traits": [
+                    "(G Generation"
+                  ]
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -864,8 +945,45 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "All players each look at the top card of their deck If it is a card that is Lv.5 or higher, they may reveal it and add it to their hand They return any remaining card to the top or bottom of their deck"
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "lvMin": 5,
+                "placedFromDeck": true
+              },
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 1,
+                  "revealSearch": true,
+                  "target": {
+                    "owner": "ANY",
+                    "cardType": "CARD",
+                    "count": 1,
+                    "lvMin": 5
+                  }
+                }
+              ]
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "zone": "DECK",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -901,7 +1019,8 @@
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
-                "lvMax": 5
+                "lvMax": 5,
+                "keyword": "Blocker"
               }
             }
           ],
@@ -951,13 +1070,16 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While your opponent has an EX Resource"
+            "kind": "RESOURCE_COUNT",
+            "owner": "ENEMY",
+            "ex": true,
+            "min": 1
           },
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "this Unit can't receive battle damage from enemy Units that are Lv.5 or lower"
+              "summary": "this Unit can't receive battle damage from enemy Units that are Lv.5 or lower.",
+              "damageType": "BATTLE"
             }
           ],
           "unparsedResidual": ""
@@ -1046,9 +1168,22 @@
         {
           "raw": "【Once per Turn】When another Unit attacks an enemy Unit, if this Unit is rested, the attacking Unit gains <Breach 2> during this battle.",
           "timings": [
-            "CONTINUOUS"
+            "ATTACK"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "ATTACK",
+            "actor": "ANY",
+            "actorFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "raw": "When another Unit attacks an enemy Unit"
+          },
+          "condition": {
+            "kind": "SELF_RESTED"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -1058,11 +1193,9 @@
               },
               "duration": "THIS_BATTLE",
               "target": {
-                "owner": "SELF",
-                "self": true,
+                "owner": "ANY",
                 "cardType": "UNIT",
-                "count": 1,
-                "state": "RESTED"
+                "count": 1
               }
             }
           ],
@@ -1102,7 +1235,8 @@
                 "owner": "ANY",
                 "cardType": "UNIT",
                 "count": "ALL",
-                "lvMax": 4
+                "lvMax": 4,
+                "keyword": "Blocker"
               }
             }
           ],
@@ -1273,6 +1407,14 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "G Generation"
+            ],
+            "raw": "(G Generation) Trait"
+          },
           "steps": [
             {
               "action": "LOOK_TOP",
@@ -1305,6 +1447,16 @@
       },
       "prerequisites": [
         {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "G Generation"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (G Generation) Trait",
+          "primaryClause": false
+        },
+        {
           "kind": "TRAIT",
           "trait": "G Generation",
           "minCopies": 8,
@@ -1324,9 +1476,22 @@
         {
           "raw": "When another friendly (G Generation) Unit that is Lv.3 is deployed, this Unit gains <Breach 1> during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_UNIT_DEPLOYED"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_DEPLOYED",
+            "actor": "FRIENDLY",
+            "actorFilter": {
+              "owner": "SELF",
+              "cardType": "UNIT",
+              "count": 1,
+              "lvMin": 3,
+              "lvMax": 3,
+              "trait": "G Generation"
+            },
+            "raw": "When another friendly (G Generation) Unit that is Lv.3 is deployed"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -1374,6 +1539,9 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -1411,13 +1579,24 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "while this Unit is battling an enemy Unit with <Blocker>"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "IS_YOUR_TURN"
+              },
+              {
+                "kind": "SELF_STATE",
+                "battlingEnemy": {
+                  "keyword": "Blocker"
+                }
+              }
+            ]
           },
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "this Unit can't receive battle damage"
+              "summary": "this Unit can't receive battle damage.",
+              "damageType": "BATTLE"
             }
           ],
           "unparsedResidual": ""
@@ -1474,6 +1653,11 @@
             "WHEN_PLAYING"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_PLAYING",
+            "actor": "SELF",
+            "raw": "When playing this card from your hand"
+          },
           "condition": {
             "kind": "UNIT_COUNT_AT_LEAST",
             "owner": "ENEMY",
@@ -1482,7 +1666,9 @@
           "steps": [
             {
               "action": "COST_REDUCTION",
-              "amount": 1
+              "amount": 0,
+              "exactCost": 3,
+              "exactLv": 3
             }
           ],
           "unparsedResidual": ""
@@ -1509,8 +1695,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there are 2 or more enemy players"
+            "kind": "ENEMY_PLAYER_COUNT_AT_LEAST",
+            "count": 2
           },
           "steps": [
             {
@@ -1561,6 +1747,7 @@
               "action": "BOUNCE",
               "target": {
                 "owner": "ENEMY",
+                "countRef": "ENEMY_PLAYERS",
                 "cardType": "UNIT",
                 "count": 1,
                 "hpMax": 4
@@ -1618,7 +1805,9 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "Units that are Lv.7 or lower can't activate <Blocker> during this battle"
+              "summary": "Units that are Lv.7 or lower can't activate <Blocker> during this battle.",
+              "damageType": "ANY",
+              "duration": "THIS_BATTLE"
             }
           ],
           "unparsedResidual": ""
@@ -1645,8 +1834,11 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If a friendly Unit with <Blocker> is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "keyword": "Blocker"
           },
           "steps": [
             {
@@ -1690,8 +1882,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there are 2 or more enemy players"
+            "kind": "ENEMY_PLAYER_COUNT_AT_LEAST",
+            "count": 2
           },
           "steps": [
             {
@@ -1737,7 +1929,8 @@
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "keyword": "Repair"
               }
             }
           ],
@@ -1863,8 +2056,14 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While a friendly (G Generation) Unit with <Blocker> is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "traits": [
+              "G Generation"
+            ],
+            "keyword": "Blocker"
           },
           "steps": [
             {
@@ -1918,16 +2117,25 @@
               "count": 1
             },
             {
-              "action": "MODIFY_AP",
-              "delta": -2,
-              "duration": "THIS_BATTLE",
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "lvMin": 3
+              },
+              "thenSteps": [
+                {
+                  "action": "MODIFY_AP",
+                  "delta": -2,
+                  "duration": "THIS_BATTLE",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
             }
           ],
-          "unparsedResidual": "If you placed a card that is Lv.3 or higher with this effect, choose 1 enemy Unit"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -2039,12 +2247,22 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "SELF_RESTED"
+            "kind": "ALL_OF",
+            "conditions": [
+              {
+                "kind": "ENEMY_PLAYER_COUNT_AT_LEAST",
+                "count": 2
+              },
+              {
+                "kind": "SELF_RESTED"
+              }
+            ]
           },
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "friendly Shields can't receive battle damage from enemy Units"
+              "summary": "friendly Shields can't receive battle damage from enemy Units.",
+              "damageType": "BATTLE"
             }
           ],
           "unparsedResidual": ""
@@ -2097,13 +2315,18 @@
               }
             },
             {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 2
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "BOUNCE",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "lvMax": 2
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -2130,8 +2353,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there are 2 or more enemy players"
+            "kind": "ENEMY_PLAYER_COUNT_AT_LEAST",
+            "count": 2
           },
           "steps": [
             {
@@ -2171,6 +2394,14 @@
             "ATTACK"
           ],
           "oncePerTurn": true,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Daryl Lorenz"
+            ],
+            "traits": [],
+            "raw": "[Daryl Lorenz]"
+          },
           "steps": [
             {
               "action": "SET_ACTIVE",
@@ -2188,7 +2419,18 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Daryl Lorenz"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Daryl Lorenz]",
+          "primaryClause": false
+        }
+      ]
     },
     "EB01-060": {
       "cardNo": "EB01-060",
@@ -2256,8 +2498,13 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If a friendly (G Generation) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "traits": [
+              "G Generation"
+            ]
           },
           "steps": [
             {
@@ -2318,8 +2565,28 @@
             "ATTACK"
           ],
           "oncePerTurn": true,
-          "steps": [],
-          "unparsedResidual": "They may draw 1 If they draw with this effect, draw 1"
+          "steps": [
+            {
+              "action": "DRAW",
+              "count": 1,
+              "bothPlayers": false,
+              "optional": true
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "drawAccepted": true
+              },
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -2358,8 +2625,12 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there are 2 or more other rested Units in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "ANY",
+            "cardType": "UNIT",
+            "min": 2,
+            "other": true,
+            "rested": true
           },
           "steps": [
             {
@@ -2414,8 +2685,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this Unit has <Repair>"
+            "kind": "SELF_STATE",
+            "keyword": "Repair"
           },
           "steps": [
             {
@@ -2468,6 +2739,17 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Meir Siva"
+            ],
+            "traits": [
+              "G Generation",
+              "Attack"
+            ],
+            "raw": "[Meir Siva]"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -2494,6 +2776,20 @@
         ]
       },
       "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Meir Siva"
+          ],
+          "anyTraits": [
+            "G Generation",
+            "Attack"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Meir Siva]",
+          "primaryClause": false
+        },
         {
           "kind": "TRAIT",
           "trait": "G Generation",
@@ -2597,6 +2893,13 @@
               "trashRest": false
             },
             {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true,
+              "trait": "G Generation",
+              "remainderPosition": "TOP"
+            },
+            {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
@@ -2606,7 +2909,7 @@
               }
             }
           ],
-          "unparsedResidual": "You may reveal 1 (G Generation) Unit card among them and return it to the top of your deck"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -2615,7 +2918,15 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 8,
+          "reason": "Searches (G Generation) cards",
+          "primaryClause": false
+        }
+      ]
     },
     "EB01-068": {
       "cardNo": "EB01-068",
@@ -2645,6 +2956,17 @@
             "DESTROYED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Chall Acustica"
+            ],
+            "traits": [
+              "G Generation",
+              "Attack"
+            ],
+            "raw": "[Chall Acustica]"
+          },
           "steps": [
             {
               "action": "RETURN_TO_DECK",
@@ -2652,7 +2974,7 @@
               "target": {
                 "owner": "SELF",
                 "self": true,
-                "cardType": "UNIT",
+                "cardType": "PILOT",
                 "count": 1
               }
             }
@@ -2666,7 +2988,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Chall Acustica"
+          ],
+          "anyTraits": [
+            "G Generation",
+            "Attack"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Chall Acustica]",
+          "primaryClause": false
+        }
+      ]
     },
     "EB01-069": {
       "cardNo": "EB01-069",
@@ -2703,7 +3040,8 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "keyword": "Blocker"
               }
             }
           ],
@@ -2746,13 +3084,23 @@
             "ACTIVATE_ACTION"
           ],
           "oncePerTurn": true,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Daryl Lorenz"
+            ],
+            "traits": [
+              "G Generation",
+              "Support"
+            ],
+            "raw": "[Daryl Lorenz]"
+          },
           "cost": {
             "raw": "①",
             "resourceCost": 1
           },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If it is your opponent's turn"
+            "kind": "IS_OPPONENT_TURN"
           },
           "steps": [
             {
@@ -2775,7 +3123,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Daryl Lorenz"
+          ],
+          "anyTraits": [
+            "G Generation",
+            "Support"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Daryl Lorenz]",
+          "primaryClause": false
+        }
+      ]
     },
     "EB01-071": {
       "cardNo": "EB01-071",
@@ -2804,6 +3167,17 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Ittou Tsurugi"
+            ],
+            "traits": [
+              "G Generation",
+              "Attack"
+            ],
+            "raw": "[Ittou Tsurugi]"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -2824,7 +3198,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Ittou Tsurugi"
+          ],
+          "anyTraits": [
+            "G Generation",
+            "Attack"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Ittou Tsurugi]",
+          "primaryClause": false
+        }
+      ]
     },
     "EB01-072": {
       "cardNo": "EB01-072",
@@ -2861,7 +3250,8 @@
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
-                "lvMax": 4
+                "lvMax": 4,
+                "keyword": "Blocker"
               }
             }
           ],
@@ -2907,8 +3297,11 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there are 6 or more rested Units in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "ANY",
+            "cardType": "UNIT",
+            "min": 6,
+            "rested": true
           },
           "steps": [
             {
@@ -2972,13 +3365,18 @@
               }
             },
             {
-              "action": "REST",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "ACTIVE"
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "REST",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "state": "ACTIVE"
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -3074,8 +3472,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Lowe Guele]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Lowe Guele"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3123,7 +3526,8 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "Change a battling enemy Unit's attack target to it",
+              "summary": "Change a battling enemy Unit's attack target to it.",
+              "damageType": "ANY",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
@@ -3165,8 +3569,44 @@
             "MAIN"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "All players each look at the top card of their deck If it is a Unit card, they may reveal it and add it to their hand They return any remaining card to the top or bottom of their deck"
+          "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "cardType": "UNIT",
+                "placedFromDeck": true
+              },
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 1,
+                  "revealSearch": true,
+                  "target": {
+                    "owner": "ANY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
+            },
+            {
+              "action": "RETURN_TO_DECK",
+              "position": "BOTTOM",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "zone": "DECK",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3192,7 +3632,9 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "It can't receive battle damage from enemy Units that are Lv.3 or lower during this turn",
+              "summary": "It can't receive battle damage from enemy Units that are Lv.3 or lower during this turn.",
+              "damageType": "BATTLE",
+              "duration": "THIS_TURN",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
@@ -3253,8 +3695,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Jean Luc Duvall]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Jean Luc Duvall"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3344,6 +3791,7 @@
               "action": "BOUNCE",
               "target": {
                 "owner": "ENEMY",
+                "countRef": "ENEMY_PLAYERS",
                 "cardType": "UNIT",
                 "count": 1,
                 "lvMax": 3
@@ -3374,8 +3822,7 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If it is your opponent's turn"
+            "kind": "IS_OPPONENT_TURN"
           },
           "steps": [
             {
@@ -3419,7 +3866,8 @@
               "target": {
                 "owner": "ANY",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "keyword": "Blocker"
               }
             },
             {
@@ -3428,7 +3876,8 @@
               "target": {
                 "owner": "ANY",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "keyword": "Blocker"
               }
             }
           ],
@@ -3440,8 +3889,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Demeziere Sonnen]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Demeziere Sonnen"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3489,7 +3943,8 @@
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
-                "trait": "G Generation"
+                "trait": "G Generation",
+                "color": "Blue"
               }
             }
           ],
@@ -3542,9 +3997,20 @@
         {
           "raw": "【Once per Turn】When a friendly (G Generation) Unit links, it gains <Repair 2> during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_UNIT_LINKED"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_LINKED",
+            "actor": "FRIENDLY",
+            "actorFilter": {
+              "owner": "SELF",
+              "cardType": "UNIT",
+              "count": 1,
+              "trait": "G Generation"
+            },
+            "raw": "When a friendly (G Generation) Unit links"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -3615,9 +4081,31 @@
         {
           "raw": "【Once per Turn】During your turn, when a friendly green (G Generation) Unit destroys an enemy Unit with battle damage, choose 1 friendly Unit. It recovers 2 HP.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "FRIENDLY",
+            "actorFilter": {
+              "owner": "SELF",
+              "cardType": "UNIT",
+              "count": 1,
+              "trait": "G Generation",
+              "color": "Green"
+            },
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when a friendly green (G Generation) Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "RECOVER_HP",
@@ -3750,7 +4238,8 @@
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "RESTED",
-                "trait": "G Generation"
+                "trait": "G Generation",
+                "color": "White"
               }
             },
             {
@@ -3761,7 +4250,8 @@
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "RESTED",
-                "trait": "G Generation"
+                "trait": "G Generation",
+                "color": "White"
               }
             }
           ],
@@ -3816,14 +4306,25 @@
               "count": 1
             },
             {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "IS_YOUR_TURN"
+              },
+              "thenSteps": [
+                {
+                  "action": "BOUNCE",
+                  "target": {
+                    "owner": "ENEMY",
+                    "countRef": "ENEMY_PLAYERS",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "hpMax": 2
+                  }
+                }
+              ]
             }
           ],
-          "unparsedResidual": "Then, if it is your turn, choose 1 Unit with 2 or less HP belonging to each enemy player"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {

@@ -14,11 +14,27 @@
         {
           "raw": "【During Pair･Lv.5 or Higher Pilot】During your turn, when this Unit destroys an enemy Unit with damage, deal 2 damage to all enemy Units with 5 or less AP.",
           "timings": [
-            "DURING_PAIR"
+            "DURING_PAIR",
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "ANY",
+            "raw": "when this Unit destroys an enemy Unit with damage"
+          },
           "pairFilter": {
             "lvMin": 5
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
           },
           "steps": [
             {
@@ -112,9 +128,24 @@
         {
           "raw": "【Once per Turn】During your turn, when this Unit destroys an enemy Unit with damage, deal 1 damage to all enemy Units with 3 or less AP.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "ANY",
+            "raw": "when this Unit destroys an enemy Unit with damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "DEAL_DAMAGE",
@@ -174,12 +205,18 @@
           "steps": [
             {
               "action": "DISCARD",
-              "count": 1
+              "count": 1,
+              "optional": true
             },
             {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -277,6 +314,14 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "M'Quve"
+            ],
+            "traits": [],
+            "raw": "[M'Quve]"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -299,7 +344,18 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "M'Quve"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [M'Quve]",
+          "primaryClause": false
+        }
+      ]
     },
     "ST12-008": {
       "cardNo": "ST12-008",
@@ -330,8 +386,9 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If there is a player with 3 or less Shields"
+            "kind": "SHIELD_COUNT",
+            "owner": "ANY",
+            "max": 3
           },
           "steps": [
             {
@@ -345,8 +402,13 @@
               }
             },
             {
-              "action": "DISCARD",
-              "count": 1
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DISCARD",
+                  "count": 1
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -388,8 +450,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "This card's name is also treated as [Zechs Merquise]"
+          "steps": [
+            {
+              "action": "NAME_ALIAS",
+              "alias": "Zechs Merquise"
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【Burst】Add this card to your hand.",
@@ -448,8 +515,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "This card's name is also treated as [Marida Cruz]"
+          "steps": [
+            {
+              "action": "NAME_ALIAS",
+              "alias": "Marida Cruz"
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【Burst】Add this card to your hand.",
@@ -470,6 +542,18 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Ple-Twelve",
+              "Marida Cruz"
+            ],
+            "traits": [
+              "Earth Federation",
+              "Cyber-Newtype"
+            ],
+            "raw": "[Ple-Twelve] / [Marida Cruz]"
+          },
           "steps": [
             {
               "action": "LOOK_TOP",
@@ -480,9 +564,25 @@
             {
               "action": "MILL",
               "count": 1
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "SHIELD_COUNT",
+                "owner": "ANY",
+                "max": 3
+              },
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 1,
+                  "revealSearch": true
+                }
+              ],
+              "replacesPrevious": true
             }
           ],
-          "unparsedResidual": "If there is a player with 3 or less Shields, add the card to your hand instead of returning it to your deck"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -492,7 +592,23 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Ple-Twelve",
+            "Marida Cruz"
+          ],
+          "anyTraits": [
+            "Earth Federation",
+            "Cyber-Newtype"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Ple-Twelve] / [Marida Cruz]",
+          "primaryClause": false
+        }
+      ]
     },
     "ST12-013": {
       "cardNo": "ST12-013",
@@ -527,8 +643,22 @@
             "MAIN"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "You that player each choose 1 of your own Units Begin a battle between them and only perform the damage step"
+          "steps": [
+            {
+              "action": "FORCE_BATTLE_DAMAGE_STEP",
+              "attacker": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              },
+              "defender": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -548,31 +678,50 @@
       "keywords": [],
       "clauses": [
         {
-          "raw": "【Action】Choose 1 friendly Unit. It gains the following effect during this battle：",
+          "raw": "【Action】Choose 1 friendly Unit. It gains the following effect during this battle： When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
           "timings": [
             "ACTION"
           ],
           "oncePerTurn": false,
-          "cost": {
-            "raw": "Choose 1 friendly Unit. It gains the following effect during this battle"
-          },
-          "steps": [],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
           "steps": [
             {
-              "action": "DESTROY",
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_BATTLE",
               "target": {
-                "owner": "ENEMY",
+                "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1,
-                "apMax": 2
+                "count": 1
+              },
+              "clause": {
+                "raw": "When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
+                "timings": [
+                  "WHEN_DESTROY_BY_BATTLE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_DESTROY_BY_BATTLE",
+                  "actor": "SELF",
+                  "targetKind": "UNIT",
+                  "targetFilter": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  },
+                  "damageType": "BATTLE",
+                  "raw": "When this Unit destroys an enemy Unit with battle damage"
+                },
+                "steps": [
+                  {
+                    "action": "DESTROY",
+                    "target": {
+                      "owner": "ENEMY",
+                      "cardType": "UNIT",
+                      "count": 1,
+                      "apMax": 2
+                    }
+                  }
+                ],
+                "unparsedResidual": ""
               }
             }
           ],
@@ -584,8 +733,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[M'Quve]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "M'Quve"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -603,21 +757,9 @@
       "keywords": [],
       "clauses": [
         {
-          "raw": "【Action】When playing this card, choose 1 of the following effects and activate it：",
+          "raw": "【Action】 Choose 1 enemy Unit that is Lv.2 or lower. Destroy it.",
           "timings": [
             "ACTION"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "When playing this card, choose 1 of the following effects and activate it"
-          },
-          "steps": [],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "Choose 1 enemy Unit that is Lv.2 or lower. Destroy it.",
-          "timings": [
-            "CONTINUOUS"
           ],
           "oncePerTurn": false,
           "steps": [
@@ -634,9 +776,9 @@
           "unparsedResidual": ""
         },
         {
-          "raw": "Choose 1 friendly Unit and 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to them.",
+          "raw": "【Action】 Choose 1 friendly Unit and 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to them.",
           "timings": [
-            "CONTINUOUS"
+            "ACTION"
           ],
           "oncePerTurn": false,
           "steps": [
@@ -708,8 +850,8 @@
             "restSelf": true
           },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If a friendly Unit paired with a Pilot has destroyed an enemy Unit with battle damage this turn"
+            "kind": "TURN_HISTORY",
+            "event": "PAIRED_UNIT_DESTROYED_ENEMY_BY_BATTLE"
           },
           "steps": [
             {

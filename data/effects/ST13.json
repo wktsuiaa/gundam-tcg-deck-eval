@@ -14,15 +14,24 @@
         {
           "raw": "【Once per Turn】During your turn, when you pair a Pilot with one of your Units, deploy 1 to 2 [Bit / Funnel] Unit tokens.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_UNIT_PAIRED"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_PAIRED",
+            "actor": "FRIENDLY",
+            "raw": "when you pair a Pilot with one of your Units"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 2,
-              "hp": 2
+              "hp": 2,
+              "name": "Bit / Funnel"
             }
           ],
           "unparsedResidual": ""
@@ -37,8 +46,22 @@
             "raw": "①",
             "resourceCost": 1
           },
-          "steps": [],
-          "unparsedResidual": "Begin a battle between them and only perform the damage step"
+          "steps": [
+            {
+              "action": "FORCE_BATTLE_DAMAGE_STEP",
+              "attacker": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              },
+              "defender": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -66,7 +89,8 @@
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 2,
-              "hp": 2
+              "hp": 2,
+              "name": "Bit / Funnel"
             }
           ],
           "unparsedResidual": ""
@@ -108,15 +132,23 @@
           "oncePerTurn": false,
           "steps": [
             {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
+                "cardType": "CARD",
+                "zone": "DECK",
                 "count": 1
               }
             }
           ],
-          "unparsedResidual": "Look at the top card of your deck"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -191,8 +223,8 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you are attacking the enemy player"
+            "kind": "SELF_STATE",
+            "attackingTarget": "ENEMY_PLAYER"
           },
           "steps": [
             {
@@ -213,18 +245,22 @@
             "ACTIVATE_ACTION"
           ],
           "oncePerTurn": true,
-          "cost": {
-            "raw": "Rest 1 friendly Unit"
-          },
           "steps": [
             {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
+              "action": "REST",
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "lvMax": 4
+              }
+            },
+            {
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
+              "target": {
+                "owner": "ANY",
+                "count": 1
               }
             }
           ],
@@ -234,7 +270,8 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "DAMAGED_ENEMY_TARGET"
+          "DAMAGED_ENEMY_TARGET",
+          "RESTED_ENEMY_TARGET"
         ]
       },
       "prerequisites": []
@@ -308,12 +345,13 @@
             {
               "action": "EXILE",
               "target": {
-                "owner": "ENEMY",
-                "count": 1
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 2
               }
             }
           ],
-          "unparsedResidual": "That player chooses 2 Unit cards from their trash"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -336,21 +374,15 @@
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": true,
-          "cost": {
-            "raw": "Destroy 1 friendly Unit token"
-          },
           "steps": [
             {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Breach",
-                "value": 3
-              },
-              "duration": "THIS_TURN",
+              "action": "DESTROY",
               "target": {
                 "owner": "SELF",
                 "self": true,
-                "cardType": "UNIT"
+                "cardType": "UNIT_TOKEN",
+                "token": true,
+                "count": 1
               }
             }
           ],
@@ -447,9 +479,21 @@
         {
           "raw": "【Once per Turn】When an enemy Unit is destroyed with effect damage while this Unit is attacking, draw 1.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "ENEMY",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ANY",
+              "count": 1
+            },
+            "damageType": "EFFECT",
+            "whileAttacking": true,
+            "raw": "When an enemy Unit is destroyed with effect damage"
+          },
           "steps": [
             {
               "action": "DRAW",
@@ -487,7 +531,8 @@
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 2,
-              "hp": 2
+              "hp": 2,
+              "name": "Bit / Funnel"
             }
           ],
           "unparsedResidual": ""
@@ -498,8 +543,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Carris Nautilus]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Carris Nautilus"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -532,10 +582,24 @@
               }
             },
             {
-              "action": "LOOK_TOP",
-              "count": 4,
-              "revealSearch": false,
-              "trashRest": false
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 4,
+                  "revealSearch": false,
+                  "trashRest": false
+                }
+              ]
+            },
+            {
+              "action": "DEPLOY_FROM_TOP_DECK",
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4
+              }
             },
             {
               "action": "RETURN_TO_DECK",
@@ -547,7 +611,7 @@
               }
             }
           ],
-          "unparsedResidual": "You may deploy 1 Unit card that is Lv.4 or lower among them"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -595,13 +659,18 @@
               }
             },
             {
-              "action": "DEAL_DAMAGE",
-              "amount": 3,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 3,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -651,7 +720,8 @@
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 2,
-              "hp": 2
+              "hp": 2,
+              "name": "Bit / Funnel"
             }
           ],
           "unparsedResidual": ""

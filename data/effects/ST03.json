@@ -36,9 +36,19 @@
         {
           "raw": "During your turn, when this Unit destroys an enemy shield area card with battle damage, choose 1 enemy Unit. Deal 2 damage to it.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "SHIELD",
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy shield area card with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "DEAL_DAMAGE",
@@ -287,7 +297,11 @@
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 1,
-              "hp": 1
+              "hp": 1,
+              "name": "Zaku Ⅱ",
+              "traits": [
+                "(Zeon"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -326,8 +340,25 @@
             "WHEN_PAIRED"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "You may deploy 1 (Neo Zeon)/(Zeon) Unit card that is Lv.4 or lower from your hand"
+          "steps": [
+            {
+              "action": "DEPLOY_FROM_HAND",
+              "free": true,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4,
+                "trait": "Neo Zeon",
+                "traits": [
+                  "Neo Zeon",
+                  "Zeon"
+                ],
+                "zone": "HAND"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -336,7 +367,20 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Neo Zeon",
+          "anyTraits": [
+            "Neo Zeon",
+            "Zeon"
+          ],
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Neo Zeon) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "ST03-011": {
       "cardNo": "ST03-011",
@@ -372,7 +416,8 @@
               "target": {
                 "owner": "SELF",
                 "self": true,
-                "cardType": "UNIT"
+                "cardType": "UNIT",
+                "count": 1
               }
             }
           ],
@@ -422,8 +467,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Angelo Sauper]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Angelo Sauper"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -501,7 +551,9 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "It can't receive battle damage from enemy Units with 2 or less AP during this battle",
+              "summary": "It can't receive battle damage from enemy Units with 2 or less AP during this battle.",
+              "damageType": "BATTLE",
+              "duration": "THIS_BATTLE",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
@@ -517,8 +569,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Ramba Ral]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Ramba Ral"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -614,10 +671,22 @@
               "count": 1
             },
             {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 3,
-              "hp": 1
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "IS_YOUR_TURN"
+              },
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_TOKEN",
+                  "count": 1,
+                  "ap": 3,
+                  "hp": 1,
+                  "name": "Char's Zaku Ⅱ",
+                  "traits": [
+                    "(Zeon"
+                  ]
+                }
+              ]
             }
           ],
           "unparsedResidual": ""

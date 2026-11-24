@@ -22,16 +22,15 @@
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": true,
-          "cost": {
-            "raw": "Rest 2 of your Units"
-          },
           "steps": [
             {
-              "action": "SET_ACTIVE",
+              "action": "REST",
               "target": {
                 "owner": "SELF",
                 "self": true,
-                "cardType": "UNIT"
+                "cardType": "UNIT",
+                "count": 2,
+                "state": "ACTIVE"
               }
             }
           ],
@@ -58,8 +57,41 @@
             "DEPLOY"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "During this turn, when they destroy an enemy card with battle damage, draw 1"
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": "UP_TO",
+                "maxCount": 2
+              },
+              "clause": {
+                "raw": "when they destroy an enemy card with battle damage, draw 1.",
+                "timings": [
+                  "WHEN_DESTROY_BY_BATTLE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_DESTROY_BY_BATTLE",
+                  "actor": "SELF",
+                  "targetKind": "ANY_ENEMY_CARD",
+                  "damageType": "BATTLE",
+                  "raw": "when they destroy an enemy card with battle damage"
+                },
+                "steps": [
+                  {
+                    "action": "DRAW",
+                    "count": 1,
+                    "bothPlayers": false
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【During Pair】【Attack】You may discard 2. If you do, choose 1 enemy Unit with the lowest Lv. Return it to the bottom of its owner's deck.",
@@ -71,10 +103,25 @@
           "steps": [
             {
               "action": "DISCARD",
-              "count": 2
+              "count": 2,
+              "optional": true
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "RETURN_TO_DECK",
+                  "position": "BOTTOM",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
             }
           ],
-          "unparsedResidual": "If you do, choose 1 enemy Unit with the lowest Lv. Return it to the bottom of its owner's deck"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -100,8 +147,13 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have an (Orb) Pilot in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "PILOT",
+            "min": 1,
+            "traits": [
+              "Orb"
+            ]
           },
           "steps": [
             {
@@ -143,11 +195,30 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While you have no Units that are Lv.6 or higher in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 0,
+            "max": 0,
+            "lvMin": 6
           },
-          "steps": [],
-          "unparsedResidual": "this card in your hand gets Lv. -1 and cost -1 for each of your (Orb) Units in play"
+          "steps": [
+            {
+              "action": "COST_REDUCTION",
+              "lvDelta": -1,
+              "amount": 1,
+              "zone": "HAND",
+              "perTarget": {
+                "metric": "BOARD_UNIT_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "traits": [
+                  "Orb"
+                ]
+              }
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【When Linked】Choose 1 enemy Unit that is Lv.4 or lower. Return it to its owner's hand.",
@@ -155,6 +226,14 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Orb"
+            ],
+            "raw": "(Orb) Trait"
+          },
           "steps": [
             {
               "action": "BOUNCE",
@@ -180,6 +259,16 @@
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (Orb) UNIT target",
+          "primaryClause": false
+        },
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Orb"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Orb) Trait",
           "primaryClause": false
         }
       ]
@@ -214,15 +303,29 @@
         {
           "raw": "【Once per Turn】During your turn, when this Unit destroys an enemy card with battle damage, deploy 1 [Pluma]((Calamity War)･AP2･HP1) Unit token.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "ANY_ENEMY_CARD",
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy card with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 2,
-              "hp": 1
+              "hp": 1,
+              "name": "Pluma",
+              "traits": [
+                "(Calamity War"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -233,8 +336,29 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "This Unit gains the same number of <Repair 1> as the number of (Calamity War) Unit tokens you have in play"
+          "steps": [
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Repair",
+                "value": 1
+              },
+              "scaleBy": {
+                "metric": "BOARD_UNIT_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT_TOKEN",
+                "traits": [
+                  "Calamity War"
+                ]
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -257,6 +381,14 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Titans"
+            ],
+            "raw": "(Titans) Trait"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -277,7 +409,18 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Titans"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Titans) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-008": {
       "cardNo": "GD05-008",
@@ -294,8 +437,14 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While you have a non-blue (Newtype) Pilot in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "PILOT",
+            "min": 1,
+            "notColor": "Blue",
+            "traits": [
+              "Newtype"
+            ]
           },
           "steps": [
             {
@@ -376,14 +525,19 @@
               }
             },
             {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "RESTED"
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 2,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "state": "RESTED"
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -422,6 +576,14 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Biological CPU"
+            ],
+            "raw": "(Biological CPU) Trait"
+          },
           "steps": [
             {
               "action": "BOUNCE",
@@ -443,7 +605,18 @@
         ],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Biological CPU"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Biological CPU) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-013": {
       "cardNo": "GD05-013",
@@ -528,9 +701,20 @@
         {
           "raw": "When one of your (Orb) Units is deployed, this Unit gains <High-Maneuver> during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_UNIT_DEPLOYED"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_DEPLOYED",
+            "actor": "FRIENDLY",
+            "actorFilter": {
+              "owner": "SELF",
+              "cardType": "UNIT",
+              "count": 1,
+              "trait": "Orb"
+            },
+            "raw": "When one of your (Orb) Units is deployed"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -593,9 +777,27 @@
                 "trait": "Londo Bell",
                 "zone": "TRASH"
               }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "FORCE_BATTLE_DAMAGE_STEP",
+                  "attacker": {
+                    "owner": "SELF",
+                    "self": true,
+                    "cardType": "UNIT"
+                  },
+                  "defender": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
             }
           ],
-          "unparsedResidual": "Begin a battle between this Unit and it and only perform the damage step"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -623,11 +825,49 @@
         {
           "raw": "When one of your EX Resources is exiled from the game, you may choose 1 of your Units. During this turn, when it receives enemy damage, reduce it by 3.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_ATTACKED"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "During this turn, when it receives enemy damage, reduce it by 3"
+          "triggerEvent": {
+            "kind": "WHEN_ATTACKED",
+            "actor": "SELF",
+            "raw": "When one of your EX Resources is exiled from the game"
+          },
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              },
+              "clause": {
+                "raw": "when it receives enemy damage, reduce it by 3.",
+                "timings": [
+                  "WHEN_RECEIVE_DAMAGE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_RECEIVE_DAMAGE",
+                  "actor": "SELF",
+                  "targetKind": "UNIT",
+                  "damageType": "ANY",
+                  "raw": "when it receives enemy damage"
+                },
+                "steps": [
+                  {
+                    "action": "DAMAGE_PROOF",
+                    "summary": "reduce it by 3.",
+                    "amount": 3,
+                    "damageType": "ANY"
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【Deploy】Place 3 EX Resources.",
@@ -745,7 +985,10 @@
           "condition": {
             "kind": "TRASH_COUNT_AT_LEAST",
             "count": 2,
-            "trait": "Londo Bell"
+            "trait": "Londo Bell",
+            "traits": [
+              "Londo Bell"
+            ]
           },
           "steps": [
             {
@@ -809,11 +1052,34 @@
         {
           "raw": "【Once per Turn】When this Unit receives enemy damage, if you have an (Earth Federation) Pilot in play, reduce it by 2.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_RECEIVE_DAMAGE"
           ],
           "oncePerTurn": true,
-          "steps": [],
-          "unparsedResidual": "When this Unit receives enemy damage, if you have an (Earth Federation) Pilot in play, reduce it by 2"
+          "triggerEvent": {
+            "kind": "WHEN_RECEIVE_DAMAGE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "damageType": "ANY",
+            "raw": "When this Unit receives enemy damage"
+          },
+          "condition": {
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "PILOT",
+            "min": 1,
+            "traits": [
+              "Earth Federation"
+            ]
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "reduce it by 2.",
+              "amount": 2,
+              "damageType": "ANY"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -822,7 +1088,16 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Earth Federation",
+          "cardType": "PILOT",
+          "minCopies": 4,
+          "reason": "Requires (Earth Federation)",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-022": {
       "cardNo": "GD05-022",
@@ -847,8 +1122,41 @@
             "raw": "Exile 2 Command cards in your trash from the game",
             "exileFromTrashCount": 2
           },
-          "steps": [],
-          "unparsedResidual": "During this battle, when this Unit receives enemy damage, reduce it by 2"
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "clause": {
+                "raw": "when this Unit receives enemy damage, reduce it by 2.",
+                "timings": [
+                  "WHEN_RECEIVE_DAMAGE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_RECEIVE_DAMAGE",
+                  "actor": "SELF",
+                  "targetKind": "UNIT",
+                  "damageType": "ANY",
+                  "raw": "when this Unit receives enemy damage"
+                },
+                "steps": [
+                  {
+                    "action": "DAMAGE_PROOF",
+                    "summary": "reduce it by 2.",
+                    "amount": 2,
+                    "damageType": "ANY"
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -910,12 +1218,18 @@
                 "cardType": "PILOT",
                 "count": 1,
                 "trait": "Earth Federation",
+                "color": "Green",
                 "zone": "TRASH"
               }
             },
             {
-              "action": "DISCARD",
-              "count": 1
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DISCARD",
+                  "count": 1
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -997,15 +1311,49 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "Count up the number of your Units with \"Gundam Lfrith\"/\"Gundnode\" in their card name, plus this Unit All enemy Units whose Lv. is equal to or lower than that number are deployed rested"
+          "steps": [
+            {
+              "action": "COUNT_UNITS",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "nameContains": "Gundam Lfrith"
+              },
+              "plusSelf": true
+            },
+            {
+              "action": "RESTRICTION",
+              "rule": "DEPLOYED_RESTED",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": "ALL",
+                "state": "RESTED",
+                "lvMaxRef": "COUNTED_VALUE"
+              },
+              "summary": "All enemy Units whose Lv. is equal to or lower than that number are deployed rested."
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "NAME",
+          "nameContains": "Gundam Lfrith",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires \"Gundam Lfrith\" UNIT",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-027": {
       "cardNo": "GD05-027",
@@ -1080,15 +1428,23 @@
           "oncePerTurn": false,
           "steps": [
             {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
+                "cardType": "CARD",
+                "zone": "DECK",
                 "count": 1
               }
             }
           ],
-          "unparsedResidual": "Look at the top card of your deck"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -1115,7 +1471,8 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
-                "owner": "ENEMY",
+                "owner": "SELF",
+                "self": true,
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "RESTED"
@@ -1126,9 +1483,7 @@
         }
       ],
       "synergy": {
-        "requires": [
-          "RESTED_ENEMY_TARGET"
-        ],
+        "requires": [],
         "enables": []
       },
       "prerequisites": []
@@ -1187,14 +1542,19 @@
               }
             },
             {
-              "action": "DEAL_DAMAGE",
-              "amount": 5,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "SHIELD",
-                "count": 1,
-                "zone": "SHIELD"
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 5,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "SHIELD",
+                    "count": 1,
+                    "zone": "SHIELD"
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -1228,18 +1588,63 @@
         {
           "raw": "【During Pair】【Once per Turn】When this Unit destroys an enemy shield area card with battle damage, that enemy player may discard 1. If they don't discard with this effect, you may deploy 1 (Phantom Pain) Unit card that is Lv.4 or lower from your hand.",
           "timings": [
-            "DURING_PAIR"
+            "DURING_PAIR",
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": true,
-          "steps": [],
-          "unparsedResidual": "When this Unit destroys an enemy shield area card with battle damage, that enemy player may discard 1 If they don't discard with this effect, you may deploy 1 (Phantom Pain) Unit card that is Lv.4 or lower from your hand"
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "SHIELD",
+            "damageType": "BATTLE",
+            "raw": "When this Unit destroys an enemy shield area card with battle damage"
+          },
+          "steps": [
+            {
+              "action": "DISCARD",
+              "count": 1,
+              "targetOwner": "ENEMY",
+              "optional": true
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "negated": true,
+              "filter": {},
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_FROM_HAND",
+                  "free": true,
+                  "target": {
+                    "owner": "SELF",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "lvMax": 4,
+                    "trait": "Phantom Pain",
+                    "zone": "HAND"
+                  }
+                }
+              ]
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Phantom Pain",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Phantom Pain) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-035": {
       "cardNo": "GD05-035",
@@ -1252,9 +1657,16 @@
         {
           "raw": "【Once per Turn】When this Unit destroys an enemy shield area card with damage, choose 1 enemy Unit with 3 or less AP. Deal 2 damage to it.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "SHIELD",
+            "damageType": "ANY",
+            "raw": "When this Unit destroys an enemy shield area card with damage"
+          },
           "steps": [
             {
               "action": "DEAL_DAMAGE",
@@ -1276,6 +1688,14 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Sai Saici"
+            ],
+            "traits": [],
+            "raw": "[Sai Saici]"
+          },
           "steps": [
             {
               "action": "ACTIVATE_MAIN_EFFECT"
@@ -1290,7 +1710,18 @@
           "DAMAGED_ENEMY_TARGET"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Sai Saici"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Sai Saici]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-036": {
       "cardNo": "GD05-036",
@@ -1319,13 +1750,18 @@
               }
             },
             {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": "ALL"
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DEAL_DAMAGE",
+                  "amount": 2,
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": "ALL"
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -1363,11 +1799,19 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While an enemy player has 7 or more cards in their trash"
+            "kind": "TRASH_COUNT_AT_LEAST",
+            "count": 7,
+            "owner": "ENEMY"
           },
-          "steps": [],
-          "unparsedResidual": "this card in your hand gets Lv. -3 and cost -3"
+          "steps": [
+            {
+              "action": "COST_REDUCTION",
+              "lvDelta": -3,
+              "amount": 3,
+              "zone": "HAND"
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【During Link】This Unit gains <Breach 3>.",
@@ -1375,6 +1819,14 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Biological CPU"
+            ],
+            "raw": "(Biological CPU) Trait"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -1393,10 +1845,23 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Biological CPU"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Biological CPU) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-038": {
       "cardNo": "GD05-038",
@@ -1412,6 +1877,14 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Trinity"
+            ],
+            "raw": "(Trinity) Trait"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -1434,16 +1907,21 @@
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": true,
-          "cost": {
-            "raw": "Rest 3 of your (CB) Units"
-          },
           "steps": [
+            {
+              "action": "REST",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 3,
+                "trait": "CB"
+              }
+            },
             {
               "action": "DEAL_DAMAGE",
               "amount": 4,
               "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
+                "owner": "ANY",
                 "count": 1
               }
             }
@@ -1454,10 +1932,20 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "DAMAGED_ENEMY_TARGET"
+          "RESTED_ENEMY_TARGET"
         ]
       },
       "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Trinity"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Trinity) Trait",
+          "primaryClause": false
+        },
         {
           "kind": "TRAIT",
           "trait": "CB",
@@ -1625,6 +2113,14 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "George de Sand"
+            ],
+            "traits": [],
+            "raw": "[George de Sand]"
+          },
           "steps": [
             {
               "action": "ACTIVATE_MAIN_EFFECT"
@@ -1637,7 +2133,18 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "George de Sand"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [George de Sand]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-045": {
       "cardNo": "GD05-045",
@@ -1675,13 +2182,21 @@
           "pairFilter": {
             "trait": "Phantom Pain"
           },
-          "steps": [],
-          "unparsedResidual": "They discard 1"
+          "steps": [
+            {
+              "action": "DISCARD",
+              "count": 1,
+              "targetOwner": "ENEMY"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
       },
       "prerequisites": [
         {
@@ -1726,7 +2241,8 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
-                "owner": "ENEMY",
+                "owner": "SELF",
+                "self": true,
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "RESTED"
@@ -1737,9 +2253,7 @@
         }
       ],
       "synergy": {
-        "requires": [
-          "RESTED_ENEMY_TARGET"
-        ],
+        "requires": [],
         "enables": []
       },
       "prerequisites": []
@@ -1773,12 +2287,17 @@
               }
             },
             {
-              "action": "DESTROY",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DESTROY",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -1801,9 +2320,22 @@
         {
           "raw": "When this Unit deals battle damage to an enemy Unit that is Lv.4 or lower that has no paired Pilot, destroy that enemy Unit.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DEAL_DAMAGE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DEAL_DAMAGE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "PILOT",
+              "count": 1,
+              "lvMax": 4
+            },
+            "damageType": "BATTLE",
+            "raw": "When this Unit deals battle damage to an enemy Unit that is Lv.4 or lower that has no paired Pilot"
+          },
           "steps": [
             {
               "action": "DESTROY",
@@ -1853,8 +2385,22 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "Increase this Unit's AP by an amount equal to the amount of damage it has received"
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "scaleBy": {
+                "metric": "SELF_DAMAGE",
+                "owner": "SELF"
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "At the end of your turn, you may choose 1 of your (Tekkadan) Units. Deal 1 damage to it. Set it as active.",
@@ -1888,7 +2434,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_THRESHOLD_5"
+        ]
       },
       "prerequisites": [
         {
@@ -1897,7 +2445,7 @@
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (Tekkadan) UNIT target",
-          "primaryClause": true
+          "primaryClause": false
         }
       ]
     },
@@ -1926,11 +2474,27 @@
               }
             },
             {
-              "action": "MILL",
-              "count": 3
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "MILL",
+                  "count": 3
+                }
+              ]
+            },
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": true,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Neo Zeon"
+              }
             }
           ],
-          "unparsedResidual": "Add 1 (Neo Zeon) Unit card you placed from your deck with this effect to your hand"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -1939,7 +2503,16 @@
           "TRASH_COUNT_FUEL"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Neo Zeon",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Neo Zeon) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-053": {
       "cardNo": "GD05-053",
@@ -1956,11 +2529,26 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If this Unit is destroyed by one of your (Neo Zeon) card's effects"
+            "kind": "SELF_STATE",
+            "destroyedBy": {
+              "owner": "SELF",
+              "traits": [
+                "Neo Zeon"
+              ],
+              "cardEffect": true
+            }
           },
-          "steps": [],
-          "unparsedResidual": "add it from your trash to your hand"
+          "steps": [
+            {
+              "action": "ADD_FROM_TRASH_TO_HAND",
+              "target": {
+                "owner": "SELF",
+                "count": 1,
+                "zone": "TRASH"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -1971,10 +2559,9 @@
         {
           "kind": "TRAIT",
           "trait": "Neo Zeon",
-          "cardType": "UNIT",
           "minCopies": 4,
-          "reason": "Requires (Neo Zeon)",
-          "primaryClause": true
+          "reason": "Requires (Neo Zeon) target",
+          "primaryClause": false
         }
       ]
     },
@@ -1994,9 +2581,14 @@
         {
           "raw": "【Once per Turn】When one of your Units is destroyed by an effect, draw 1.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_UNIT_DESTROYED"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_DESTROYED",
+            "actor": "FRIENDLY",
+            "raw": "When one of your Units is destroyed by an effect"
+          },
           "steps": [
             {
               "action": "DRAW",
@@ -2029,11 +2621,25 @@
         {
           "raw": "【Once per Turn】When this Unit receives enemy battle damage, reduce it by 2.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_RECEIVE_DAMAGE"
           ],
           "oncePerTurn": true,
-          "steps": [],
-          "unparsedResidual": "When this Unit receives enemy battle damage, reduce it by 2"
+          "triggerEvent": {
+            "kind": "WHEN_RECEIVE_DAMAGE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "damageType": "BATTLE",
+            "raw": "When this Unit receives enemy battle damage"
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "reduce it by 2.",
+              "amount": 2,
+              "damageType": "ANY"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -2081,12 +2687,17 @@
               }
             },
             {
-              "action": "SET_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "SET_ACTIVE",
+                  "target": {
+                    "owner": "SELF",
+                    "self": true,
+                    "cardType": "UNIT"
+                  }
+                }
+              ]
             },
             {
               "action": "CANT_ATTACK",
@@ -2153,9 +2764,14 @@
               }
             },
             {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
             },
             {
               "action": "GRANT_KEYWORD",
@@ -2239,8 +2855,14 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While you have another (Neo Zeon) Unit in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "Neo Zeon"
+            ]
           },
           "steps": [
             {
@@ -2366,6 +2988,14 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Tekkadan"
+            ],
+            "raw": "(Tekkadan) Trait"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -2386,7 +3016,18 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Tekkadan"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Tekkadan) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-066": {
       "cardNo": "GD05-066",
@@ -2414,14 +3055,19 @@
               }
             },
             {
-              "action": "ADD_FROM_TRASH_TO_HAND",
-              "target": {
-                "owner": "SELF",
-                "cardType": "COMMAND",
-                "count": 1,
-                "trait": "Special Move",
-                "zone": "TRASH"
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "ADD_FROM_TRASH_TO_HAND",
+                  "target": {
+                    "owner": "SELF",
+                    "cardType": "COMMAND",
+                    "count": 1,
+                    "trait": "Special Move",
+                    "zone": "TRASH"
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -2484,8 +3130,11 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While a rested enemy Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "ENEMY",
+            "cardType": "UNIT",
+            "min": 1,
+            "rested": true
           },
           "steps": [
             {
@@ -2541,9 +3190,20 @@
         {
           "raw": "When you activate a (Special Move) Command's 【Main】/【Action】, this Unit gains <Suppression> during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_ACTIVATE_COMMAND"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_ACTIVATE_COMMAND",
+            "actor": "SELF",
+            "targetFilter": {
+              "owner": "ANY",
+              "cardType": "COMMAND",
+              "count": 1,
+              "trait": "Special Move"
+            },
+            "raw": "When you activate a (Special Move) Command's 【Main】/【Action】"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -2568,6 +3228,14 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Domon Kasshu"
+            ],
+            "traits": [],
+            "raw": "[Domon Kasshu]"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -2589,7 +3257,18 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Domon Kasshu"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Domon Kasshu]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-069": {
       "cardNo": "GD05-069",
@@ -2602,9 +3281,24 @@
         {
           "raw": "During your turn, when this Unit destroys an enemy Unit with battle damage, look at the top 4 cards of your deck. You may reveal 1 (Special Move) Command card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "LOOK_TOP",
@@ -2637,6 +3331,14 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Chibodee Crocket"
+            ],
+            "traits": [],
+            "raw": "[Chibodee Crocket]"
+          },
           "steps": [
             {
               "action": "ACTIVATE_MAIN_EFFECT"
@@ -2656,6 +3358,16 @@
           "minCopies": 8,
           "reason": "Searches (Special Move) cards",
           "primaryClause": false
+        },
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Chibodee Crocket"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Chibodee Crocket]",
+          "primaryClause": false
         }
       ]
     },
@@ -2670,9 +3382,24 @@
         {
           "raw": "【Once per Turn】During your turn, when this Unit destroys an enemy Unit with battle damage, choose 1 of your rested (Preventer)/(G Team) Link Units. Set it as active. It can't attack during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "SET_ACTIVE",
@@ -2681,7 +3408,12 @@
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "RESTED",
-                "trait": "Preventer"
+                "linked": true,
+                "trait": "Preventer",
+                "traits": [
+                  "Preventer",
+                  "G Team"
+                ]
               }
             },
             {
@@ -2692,7 +3424,12 @@
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "RESTED",
-                "trait": "Preventer"
+                "linked": true,
+                "trait": "Preventer",
+                "traits": [
+                  "Preventer",
+                  "G Team"
+                ]
               }
             }
           ],
@@ -2707,6 +3444,10 @@
         {
           "kind": "TRAIT",
           "trait": "Preventer",
+          "anyTraits": [
+            "Preventer",
+            "G Team"
+          ],
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (Preventer) UNIT target",
@@ -2729,8 +3470,15 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have another (G Team)/(Preventer) Unit in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "G Team",
+              "Preventer"
+            ]
           },
           "steps": [
             {
@@ -2755,6 +3503,10 @@
         {
           "kind": "TRAIT",
           "trait": "G Team",
+          "anyTraits": [
+            "G Team",
+            "Preventer"
+          ],
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (G Team)",
@@ -2776,6 +3528,14 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Gundam Fighter"
+            ],
+            "raw": "(Gundam Fighter) Trait"
+          },
           "steps": [
             {
               "action": "REST",
@@ -2796,7 +3556,18 @@
           "RESTED_ENEMY_TARGET"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "Gundam Fighter"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires (Gundam Fighter) Trait",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-073": {
       "cardNo": "GD05-073",
@@ -2923,6 +3694,14 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Argo Gulskii"
+            ],
+            "traits": [],
+            "raw": "[Argo Gulskii]"
+          },
           "steps": [
             {
               "action": "ACTIVATE_MAIN_EFFECT"
@@ -2935,7 +3714,18 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Argo Gulskii"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Argo Gulskii]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-077": {
       "cardNo": "GD05-077",
@@ -2969,7 +3759,8 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
-                "owner": "ENEMY",
+                "owner": "SELF",
+                "self": true,
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "RESTED"
@@ -2980,9 +3771,7 @@
         }
       ],
       "synergy": {
-        "requires": [
-          "RESTED_ENEMY_TARGET"
-        ],
+        "requires": [],
         "enables": []
       },
       "prerequisites": []
@@ -3002,8 +3791,15 @@
           ],
           "oncePerTurn": true,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have another (G Team)/(Preventer) Unit in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "G Team",
+              "Preventer"
+            ]
           },
           "steps": [
             {
@@ -3029,6 +3825,10 @@
         {
           "kind": "TRAIT",
           "trait": "G Team",
+          "anyTraits": [
+            "G Team",
+            "Preventer"
+          ],
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (G Team)",
@@ -3077,9 +3877,23 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Kira Yamato"
+            ],
+            "traits": [
+              "Orb",
+              "Coordinator"
+            ],
+            "raw": "[Kira Yamato]"
+          },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If this is an (Orb)/(Triple Ship Alliance) Unit"
+            "kind": "SELF_STATE",
+            "traits": [
+              "Orb",
+              "Triple Ship Alliance"
+            ]
           },
           "steps": [
             {
@@ -3099,11 +3913,29 @@
       },
       "prerequisites": [
         {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Kira Yamato"
+          ],
+          "anyTraits": [
+            "Orb",
+            "Coordinator"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Kira Yamato]",
+          "primaryClause": false
+        },
+        {
           "kind": "TRAIT",
           "trait": "Orb",
+          "anyTraits": [
+            "Orb",
+            "Triple Ship Alliance"
+          ],
           "cardType": "UNIT",
           "minCopies": 4,
-          "reason": "Requires (Orb)",
+          "reason": "Requires (Orb) Unit",
           "primaryClause": true
         }
       ]
@@ -3135,6 +3967,17 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Andrew Waldfeld"
+            ],
+            "traits": [
+              "Orb",
+              "Coordinator"
+            ],
+            "raw": "[Andrew Waldfeld]"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",
@@ -3158,7 +4001,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Andrew Waldfeld"
+          ],
+          "anyTraits": [
+            "Orb",
+            "Coordinator"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Andrew Waldfeld]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-083": {
       "cardNo": "GD05-083",
@@ -3193,7 +4051,9 @@
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "hpMin": 1,
+                "hpMax": 1
               }
             }
           ],
@@ -3232,11 +4092,25 @@
         {
           "raw": "When one of your (League Militaire) Unit tokens receives enemy effect damage, reduce it by 1.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_RECEIVE_DAMAGE"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "When one of your (League Militaire) Unit tokens receives enemy effect damage, reduce it by 1"
+          "triggerEvent": {
+            "kind": "WHEN_RECEIVE_DAMAGE",
+            "actor": "FRIENDLY",
+            "targetKind": "UNIT",
+            "damageType": "EFFECT",
+            "raw": "When one of your (League Militaire) Unit tokens receives enemy effect damage"
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "reduce it by 1.",
+              "amount": 1,
+              "damageType": "ANY"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3245,7 +4119,16 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "League Militaire",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (League Militaire) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-085": {
       "cardNo": "GD05-085",
@@ -3271,9 +4154,24 @@
         {
           "raw": "During your turn, when this Unit destroys an enemy Unit with battle damage, this Unit recovers 2 HP.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "RECOVER_HP",
@@ -3323,8 +4221,38 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "Enemy Units other than Link Units choose this rested Unit as their attack target if possible when attacking"
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Kayra Su"
+            ],
+            "traits": [
+              "Earth Federation",
+              "Londo Bell"
+            ],
+            "raw": "[Kayra Su]"
+          },
+          "steps": [
+            {
+              "action": "REDIRECT_ATTACK_TARGET",
+              "rule": "MUST_ATTACK_TARGET",
+              "attackerFilter": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "other": true,
+                "linked": true
+              },
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "RESTED"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3333,7 +4261,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Kayra Su"
+          ],
+          "anyTraits": [
+            "Earth Federation",
+            "Londo Bell"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Kayra Su]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-087": {
       "cardNo": "GD05-087",
@@ -3363,8 +4306,10 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this Unit is (Academy)"
+            "kind": "SELF_STATE",
+            "traits": [
+              "Academy"
+            ]
           },
           "steps": [
             {
@@ -3394,7 +4339,7 @@
           "trait": "Academy",
           "cardType": "UNIT",
           "minCopies": 4,
-          "reason": "Requires (Academy)",
+          "reason": "Requires (Academy) Unit",
           "primaryClause": true
         }
       ]
@@ -3466,9 +4411,29 @@
           "steps": [
             {
               "action": "ADD_SELF_TO_HAND"
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "TRASH_COUNT_AT_LEAST",
+                "count": 3,
+                "trait": "MF",
+                "traits": [
+                  "MF"
+                ]
+              },
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_TOKEN",
+                  "count": 1,
+                  "ap": 3,
+                  "hp": 3
+                }
+              ],
+              "replacesPrevious": true
             }
           ],
-          "unparsedResidual": "If there are 3 or more (MF) cards in your trash, you may deploy it as an (AP3・HP3) Unit instead"
+          "unparsedResidual": ""
         },
         {
           "raw": "【During Link】【Attack】If you have activated a (Special Move) Command card's 【Main】/【Action】 during this turn, choose 1 enemy Unit. Deal 2 damage to it.",
@@ -3477,9 +4442,22 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Master Asia"
+            ],
+            "traits": [
+              "Gundam Fighter"
+            ],
+            "raw": "[Master Asia]"
+          },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have activated a (Special Move) Command card's 【Main】/【Action】 during this turn"
+            "kind": "TURN_HISTORY",
+            "event": "ACTIVATED_COMMAND",
+            "traits": [
+              "Special Move"
+            ]
           },
           "steps": [
             {
@@ -3496,13 +4474,28 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
         "enables": [
           "DAMAGED_ENEMY_TARGET",
           "AP_THRESHOLD_5"
         ]
       },
       "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Master Asia"
+          ],
+          "anyTraits": [
+            "Gundam Fighter"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Master Asia]",
+          "primaryClause": false
+        },
         {
           "kind": "TRAIT",
           "trait": "Special Move",
@@ -3541,16 +4534,45 @@
           "oncePerTurn": false,
           "steps": [
             {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "traits": [
+                  "Phantom Pain"
+                ],
+                "placedFromDeck": true
+              },
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 1,
+                  "revealSearch": true,
+                  "target": {
+                    "owner": "ANY",
+                    "cardType": "CARD",
+                    "count": 1,
+                    "trait": "Phantom Pain"
+                  }
+                }
+              ]
+            },
+            {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
+                "zone": "DECK",
                 "count": 1
               }
             }
           ],
-          "unparsedResidual": "Look at the top card of your deck If it is a (Phantom Pain) card, you may reveal it and add it to your hand"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3589,8 +4611,9 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While an enemy player has 7 or more cards in their trash"
+            "kind": "TRASH_COUNT_AT_LEAST",
+            "count": 7,
+            "owner": "ENEMY"
           },
           "steps": [
             {
@@ -3607,7 +4630,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "TRASH_COUNT_FUEL"
+        ],
         "enables": [
           "AP_THRESHOLD_5"
         ]
@@ -3642,9 +4667,21 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Auel Neider"
+            ],
+            "traits": [
+              "Earth Alliance",
+              "Phantom Pain",
+              "Biological CPU"
+            ],
+            "raw": "[Auel Neider]"
+          },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you are attacking the enemy player"
+            "kind": "SELF_STATE",
+            "attackingTarget": "ENEMY_PLAYER"
           },
           "steps": [
             {
@@ -3667,7 +4704,23 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Auel Neider"
+          ],
+          "anyTraits": [
+            "Earth Alliance",
+            "Phantom Pain",
+            "Biological CPU"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Auel Neider]",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-093": {
       "cardNo": "GD05-093",
@@ -3696,6 +4749,17 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Char Aznable"
+            ],
+            "traits": [
+              "Neo Zeon",
+              "Newtype"
+            ],
+            "raw": "[Char Aznable]"
+          },
           "steps": [
             {
               "action": "DEPLOY_FROM_TRASH",
@@ -3721,6 +4785,20 @@
         ]
       },
       "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Char Aznable"
+          ],
+          "anyTraits": [
+            "Neo Zeon",
+            "Newtype"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Char Aznable]",
+          "primaryClause": false
+        },
         {
           "kind": "TRAIT",
           "trait": "Neo Zeon",
@@ -3758,8 +4836,42 @@
             "DESTROYED"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "During this turn, when it receives enemy battle damage, reduce it by 2"
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Neo Zeon"
+              },
+              "clause": {
+                "raw": "when it receives enemy battle damage, reduce it by 2.",
+                "timings": [
+                  "WHEN_RECEIVE_DAMAGE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_RECEIVE_DAMAGE",
+                  "actor": "SELF",
+                  "targetKind": "UNIT",
+                  "damageType": "BATTLE",
+                  "raw": "when it receives enemy battle damage"
+                },
+                "steps": [
+                  {
+                    "action": "DAMAGE_PROOF",
+                    "summary": "reduce it by 2.",
+                    "amount": 2,
+                    "damageType": "ANY"
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3768,7 +4880,16 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Neo Zeon",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Neo Zeon) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-095": {
       "cardNo": "GD05-095",
@@ -3798,8 +4919,10 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "While this Unit is (Neo Zeon)"
+            "kind": "SELF_STATE",
+            "traits": [
+              "Neo Zeon"
+            ]
           },
           "steps": [
             {
@@ -3829,7 +4952,7 @@
           "trait": "Neo Zeon",
           "cardType": "UNIT",
           "minCopies": 4,
-          "reason": "Requires (Neo Zeon)",
+          "reason": "Requires (Neo Zeon) Unit",
           "primaryClause": true
         }
       ]
@@ -3872,15 +4995,20 @@
               }
             },
             {
-              "action": "RECOVER_HP",
-              "amount": 1,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "other": true,
-                "trait": "Tekkadan"
-              }
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "RECOVER_HP",
+                  "amount": 1,
+                  "target": {
+                    "owner": "SELF",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "other": true,
+                    "trait": "Tekkadan"
+                  }
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -3937,9 +5065,23 @@
             {
               "action": "DISCARD",
               "count": 1
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "traits": [
+                  "Special Move"
+                ],
+                "cardType": "COMMAND"
+              },
+              "thenSteps": [
+                {
+                  "action": "ACTIVATE_MAIN_EFFECT"
+                }
+              ]
             }
           ],
-          "unparsedResidual": "If you discard a (Special Move) Command card with this effect, you may activate its 【Main】"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -3975,9 +5117,16 @@
         {
           "raw": "When this Unit destroys an enemy shield area card with damage, choose 1 enemy Unit. It gets AP-2 during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "SHIELD",
+            "damageType": "ANY",
+            "raw": "When this Unit destroys an enemy shield area card with damage"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -4025,9 +5174,24 @@
         {
           "raw": "During your turn, when this Unit destroys an enemy Unit with battle damage, draw 1. Then, discard 1.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "DRAW",
@@ -4125,18 +5289,25 @@
         {
           "raw": "【Once per Turn】When you pay ① or more for one of your Unit's effects, if this is a (Militia) Unit, it may recover 2 HP.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_PAY_EFFECT_COST"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_PAY_EFFECT_COST",
+            "actor": "FRIENDLY",
+            "raw": "When you pay ① or more for one of your Unit's effects"
+          },
+          "condition": {
+            "kind": "UNIT_TRAIT_IS",
+            "trait": "Militia"
+          },
           "steps": [
             {
               "action": "RECOVER_HP",
               "amount": 2,
               "target": {
                 "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Militia"
+                "count": 1
               }
             }
           ],
@@ -4149,7 +5320,16 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Militia",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Militia) Unit",
+          "primaryClause": true
+        }
+      ]
     },
     "GD05-102": {
       "cardNo": "GD05-102",
@@ -4160,19 +5340,9 @@
       "keywords": [],
       "clauses": [
         {
-          "raw": "【Action】When playing this card, choose 1 of the following effects and activate it:",
+          "raw": "【Action】 Choose 1 enemy Unit with 5 or less HP. Return it to its owner's hand.",
           "timings": [
-            "ACTION",
-            "WHEN_PLAYING"
-          ],
-          "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "Choose 1 enemy Unit with 5 or less HP. Return it to its owner's hand.",
-          "timings": [
-            "CONTINUOUS"
+            "ACTION"
           ],
           "oncePerTurn": false,
           "steps": [
@@ -4189,9 +5359,9 @@
           "unparsedResidual": ""
         },
         {
-          "raw": "Choose 1 Unit. It recovers 3 HP.",
+          "raw": "【Action】 Choose 1 Unit. It recovers 3 HP.",
           "timings": [
-            "CONTINUOUS"
+            "ACTION"
           ],
           "oncePerTurn": false,
           "steps": [
@@ -4248,8 +5418,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Buran Blutarch]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Buran Blutarch"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4267,29 +5442,40 @@
       "keywords": [],
       "clauses": [
         {
-          "raw": "【Action】Choose 1 friendly (Shrike Team) Unit. It gains the following effect during this turn:",
+          "raw": "【Action】Choose 1 friendly (Shrike Team) Unit. It gains the following effect during this turn: 【During Link】【Destroyed】Choose 1 friendly (League Militaire) Unit. Set it as active.",
           "timings": [
             "ACTION"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "It gains the following effect during this turn:"
-        },
-        {
-          "raw": "【During Link】【Destroyed】Choose 1 friendly (League Militaire) Unit. Set it as active.",
-          "timings": [
-            "DURING_LINK",
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
           "steps": [
             {
-              "action": "SET_ACTIVE",
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
                 "count": 1,
-                "trait": "League Militaire"
+                "trait": "Shrike Team"
+              },
+              "clause": {
+                "raw": "【During Link】【Destroyed】Choose 1 friendly (League Militaire) Unit. Set it as active.",
+                "timings": [
+                  "DURING_LINK",
+                  "DESTROYED"
+                ],
+                "oncePerTurn": false,
+                "steps": [
+                  {
+                    "action": "SET_ACTIVE",
+                    "target": {
+                      "owner": "SELF",
+                      "cardType": "UNIT",
+                      "count": 1,
+                      "trait": "League Militaire"
+                    }
+                  }
+                ],
+                "unparsedResidual": ""
               }
             }
           ],
@@ -4301,8 +5487,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Helen Jackson]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Helen Jackson"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4310,6 +5501,14 @@
         "enables": []
       },
       "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Shrike Team",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Shrike Team) UNIT target",
+          "primaryClause": true
+        },
         {
           "kind": "TRAIT",
           "trait": "League Militaire",
@@ -4377,19 +5576,9 @@
       "keywords": [],
       "clauses": [
         {
-          "raw": "【Main】When playing this card, choose 1 of the following effects and activate it:",
+          "raw": "【Main】 Place 1 rested Resource.",
           "timings": [
-            "MAIN",
-            "WHEN_PLAYING"
-          ],
-          "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "Place 1 rested Resource.",
-          "timings": [
-            "CONTINUOUS"
+            "MAIN"
           ],
           "oncePerTurn": false,
           "steps": [
@@ -4403,9 +5592,9 @@
           "unparsedResidual": ""
         },
         {
-          "raw": "Choose 1 Pilot card that is Lv.5 or higher from your trash. Add it to your hand.",
+          "raw": "【Main】 Choose 1 Pilot card that is Lv.5 or higher from your trash. Add it to your hand.",
           "timings": [
-            "CONTINUOUS"
+            "MAIN"
           ],
           "oncePerTurn": false,
           "steps": [
@@ -4496,7 +5685,8 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "Change a battling enemy Unit's attack target to it",
+              "summary": "Change a battling enemy Unit's attack target to it.",
+              "damageType": "ANY",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
@@ -4514,8 +5704,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Guel Jeturk]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Guel Jeturk"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4557,9 +5752,24 @@
                 "count": 1,
                 "trait": "Academy"
               }
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "SELF_STATE",
+                "paired": true,
+                "pairedPilotLvMax": 3
+              },
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
             }
           ],
-          "unparsedResidual": "Then, if it is paired with a Pilot that is Lv.3 or lower, draw 1"
+          "unparsedResidual": ""
         },
         {
           "raw": "【Pilot】[Felsi Rollo]",
@@ -4567,8 +5777,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Felsi Rollo]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Felsi Rollo"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4582,7 +5797,7 @@
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (Academy) UNIT target",
-          "primaryClause": true
+          "primaryClause": false
         }
       ]
     },
@@ -4623,9 +5838,26 @@
                 "cardType": "UNIT",
                 "count": 1
               }
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 1,
+                "nameContains": "Master Gundam"
+              },
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "bothPlayers": false
+                }
+              ]
             }
           ],
-          "unparsedResidual": "Then, if you have a Unit with \"Master Gundam\" in its card name in play, draw 1"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4656,9 +5888,14 @@
               "count": 1
             },
             {
-              "action": "DRAW",
-              "count": 2,
-              "bothPlayers": false
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 2,
+                  "bothPlayers": false
+                }
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -4720,8 +5957,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Sai Saici]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Sai Saici"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4785,8 +6027,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[George de Sand]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "George de Sand"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4933,8 +6180,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Rezin Schnyder]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Rezin Schnyder"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -4977,8 +6229,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Ride Mass]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Ride Mass"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -5013,14 +6270,32 @@
                 "cardType": "UNIT",
                 "count": 1
               }
+            },
+            {
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "EX_RESOURCE_USED_TO_PLAY"
+              },
+              "thenSteps": [
+                {
+                  "action": "REST",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1
+                  }
+                }
+              ]
             }
           ],
-          "unparsedResidual": "If you use an EX Resource to play this card, rest the enemy Unit"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESTED_ENEMY_TARGET"
+        ]
       },
       "prerequisites": []
     },
@@ -5059,8 +6334,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Zechs Merquise]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Zechs Merquise"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -5106,9 +6386,23 @@
                 "count": 1,
                 "hpMax": 4
               }
+            },
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "First Strike",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "nameContains": "Shining Gundam"
+              }
             }
           ],
-          "unparsedResidual": "It gets <First Strike> during this turn"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -5117,7 +6411,16 @@
           "RESTED_ENEMY_TARGET"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "NAME",
+          "nameContains": "Shining Gundam",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires \"Shining Gundam\" UNIT",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-121": {
       "cardNo": "GD05-121",
@@ -5163,8 +6466,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Chibodee Crocket]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Chibodee Crocket"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -5225,8 +6533,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Argo Gulskii]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Argo Gulskii"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -5287,15 +6600,34 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "During your opponent's turn, friendly (Orb) Units can't receive 2 or less enemy effect damage"
+          "condition": {
+            "kind": "IS_OPPONENT_TURN"
+          },
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "summary": "friendly (Orb) Units can't receive 2 or less enemy effect damage.",
+              "maxDamage": 2,
+              "damageType": "EFFECT"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Orb",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Orb) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-124": {
       "cardNo": "GD05-124",
@@ -5335,9 +6667,17 @@
         {
           "raw": "During your turn, when you would rest a Unit with a friendly (League Militaire) Unit's effect, you may rest this Base instead.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_RESTED"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_RESTED",
+            "actor": "FRIENDLY",
+            "raw": "when you would rest a Unit with a friendly (League Militaire) Unit's effect"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "REST",
@@ -5411,15 +6751,58 @@
             "raw": "Rest this Base",
             "restSelf": true
           },
-          "steps": [],
-          "unparsedResidual": "During this turn, when it receives enemy damage, reduce it by 1"
+          "steps": [
+            {
+              "action": "GRANT_CLAUSE",
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Londo Bell"
+              },
+              "clause": {
+                "raw": "when it receives enemy damage, reduce it by 1.",
+                "timings": [
+                  "WHEN_RECEIVE_DAMAGE"
+                ],
+                "oncePerTurn": false,
+                "triggerEvent": {
+                  "kind": "WHEN_RECEIVE_DAMAGE",
+                  "actor": "SELF",
+                  "targetKind": "UNIT",
+                  "damageType": "ANY",
+                  "raw": "when it receives enemy damage"
+                },
+                "steps": [
+                  {
+                    "action": "DAMAGE_PROOF",
+                    "summary": "reduce it by 1.",
+                    "amount": 1,
+                    "damageType": "ANY"
+                  }
+                ],
+                "unparsedResidual": ""
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Londo Bell",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Londo Bell) UNIT target",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-126": {
       "cardNo": "GD05-126",
@@ -5467,15 +6850,23 @@
             "resourceCost": 2
           },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have a Unit with \"Gundam Aerial\" in its card name that is Lv.5 or higher in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "nameContains": "Gundam Aerial",
+            "lvMin": 5
           },
           "steps": [
             {
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 2,
-              "hp": 2
+              "hp": 2,
+              "name": "Gundnode",
+              "traits": [
+                "(Quiet Zero"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -5485,7 +6876,16 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "NAME",
+          "nameContains": "Gundam Aerial",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires \"Gundam Aerial\" UNIT",
+          "primaryClause": false
+        }
+      ]
     },
     "GD05-127": {
       "cardNo": "GD05-127",
@@ -5525,13 +6925,26 @@
         {
           "raw": "【Once per Turn】When a friendly (Phantom Pain) Unit links, choose 1 enemy Unit. It can't activate <Blocker> during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_UNIT_LINKED"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_LINKED",
+            "actor": "FRIENDLY",
+            "actorFilter": {
+              "owner": "SELF",
+              "cardType": "UNIT",
+              "count": 1,
+              "trait": "Phantom Pain"
+            },
+            "raw": "When a friendly (Phantom Pain) Unit links"
+          },
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "It can't activate <Blocker> during this turn",
+              "summary": "It can't activate <Blocker> during this turn.",
+              "damageType": "ANY",
+              "duration": "THIS_TURN",
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
@@ -5603,8 +7016,14 @@
             "restSelf": true
           },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If a friendly (MF) Link Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "linked": true,
+            "traits": [
+              "MF"
+            ]
           },
           "steps": [
             {
@@ -5684,11 +7103,27 @@
             "restSelf": true
           },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If one of your Units has been destroyed by one of your (Neo Zeon) card's effects during this turn"
+            "kind": "TURN_HISTORY",
+            "event": "UNIT_DESTROYED_BY_EFFECT",
+            "traits": [
+              "Neo Zeon"
+            ]
           },
-          "steps": [],
-          "unparsedResidual": "deploy 1 (Neo Zeon) Unit card that is Lv.3 or lower from your hand"
+          "steps": [
+            {
+              "action": "DEPLOY_FROM_HAND",
+              "free": true,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 3,
+                "trait": "Neo Zeon",
+                "zone": "HAND"
+              }
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -5701,6 +7136,14 @@
           "trait": "Neo Zeon",
           "minCopies": 4,
           "reason": "Requires (Neo Zeon)",
+          "primaryClause": false
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "Neo Zeon",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Neo Zeon) UNIT target",
           "primaryClause": false
         }
       ]
@@ -5752,18 +7195,44 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "CARD",
-                "count": 1
+                "count": 1,
+                "zone": "TRASH"
               }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_FROM_HAND",
+                  "free": true,
+                  "target": {
+                    "owner": "SELF",
+                    "cardType": "BASE",
+                    "count": 1,
+                    "nameContains": "Presidential Office",
+                    "zone": "HAND"
+                  }
+                }
+              ]
             }
           ],
-          "unparsedResidual": "If you do, you may deploy 1 Base card with \"Presidential Office\" in its card name from your hand"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "NAME",
+          "nameContains": "Presidential Office",
+          "cardType": "BASE",
+          "minCopies": 4,
+          "reason": "Requires \"Presidential Office\" BASE",
+          "primaryClause": false
+        }
+      ]
     }
   }
 }

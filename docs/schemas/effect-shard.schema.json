@@ -68,7 +68,26 @@
         "MAIN",
         "ACTION",
         "END_OF_TURN",
+        "START_OF_OPPONENT_TURN",
         "WHEN_PLAYING",
+        "WHEN_ATTACKED",
+        "WHEN_DESTROY_BY_BATTLE",
+        "WHEN_DEAL_DAMAGE",
+        "WHEN_RECEIVE_DAMAGE",
+        "WHEN_RECOVER_HP",
+        "WHEN_UNIT_DEPLOYED",
+        "WHEN_UNIT_PAIRED",
+        "WHEN_UNIT_LINKED",
+        "WHEN_UNIT_DESTROYED",
+        "WHEN_RESTED",
+        "WHEN_BLOCKED",
+        "WHEN_PLACE_EX_RESOURCE",
+        "WHEN_EXILE_EX_RESOURCE",
+        "WHEN_ACTIVATE_COMMAND",
+        "WHEN_PAY_EFFECT_COST",
+        "WHEN_DRAW",
+        "WHEN_AP_REDUCED",
+        "WHEN_PLAY_CARD_WITH_EX_RESOURCE",
         "CONTINUOUS"
       ]
     },
@@ -86,6 +105,35 @@
         "lvMax": { "type": "integer" }
       }
     },
+    "LinkRequirement": {
+      "type": "object",
+      "required": ["role", "names", "traits", "raw"],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "type": "string", "enum": ["UNIT_REQUIRES_PILOT", "PILOT_MATCHING_UNIT"] },
+        "names": { "type": "array", "items": { "type": "string" } },
+        "traits": { "type": "array", "items": { "type": "string" } },
+        "raw": { "type": "string" }
+      }
+    },
+    "TriggerEvent": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "$ref": "#/$defs/EffectTiming" },
+        "actor": { "type": "string", "enum": ["SELF", "FRIENDLY", "ENEMY", "ANY"] },
+        "actorFilter": { "$ref": "#/$defs/TargetSelector" },
+        "targetKind": {
+          "type": "string",
+          "enum": ["UNIT", "SHIELD", "BASE", "ANY_ENEMY_CARD", "EX_RESOURCE", "COMMAND", "CARD"]
+        },
+        "targetFilter": { "$ref": "#/$defs/TargetSelector" },
+        "damageType": { "type": "string", "enum": ["BATTLE", "EFFECT", "ANY"] },
+        "whileAttacking": { "type": "boolean" },
+        "raw": { "type": "string" }
+      }
+    },
     "ActivationCost": {
       "type": "object",
       "additionalProperties": false,
@@ -96,6 +144,7 @@
         "destroySelf": { "type": "boolean" },
         "discardCount": { "type": "integer" },
         "exileFromTrashCount": { "type": "integer" },
+        "exileFilter": { "$ref": "#/$defs/TargetSelector" },
         "raw": { "type": "string" }
       }
     },
@@ -108,7 +157,7 @@
         "self": { "type": "boolean" },
         "cardType": {
           "type": "string",
-          "enum": ["UNIT", "PILOT", "BASE", "COMMAND", "SHIELD", "RESOURCE", "CARD"]
+          "enum": ["UNIT", "PILOT", "BASE", "COMMAND", "SHIELD", "RESOURCE", "CARD", "EX_RESOURCE", "UNIT_TOKEN"]
         },
         "count": {
           "oneOf": [
@@ -117,13 +166,33 @@
           ]
         },
         "maxCount": { "type": "integer" },
+        "countRef": { "type": "string", "enum": ["ENEMY_PLAYERS", "COUNTED_VALUE"] },
         "lvMin": { "type": "integer" },
         "lvMax": { "type": "integer" },
+        "lvMaxRef": { "type": "string", "enum": ["SELF_LV", "COUNTED_VALUE"] },
+        "lvRank": { "type": "string", "enum": ["LOWEST", "HIGHEST"] },
         "apMin": { "type": "integer" },
         "apMax": { "type": "integer" },
+        "apMaxRef": { "type": "string", "enum": ["SELF_AP"] },
+        "hpMin": { "type": "integer" },
         "hpMax": { "type": "integer" },
+        "hpRank": { "type": "string", "enum": ["LOWEST", "HIGHEST"] },
         "state": { "type": "string", "enum": ["ACTIVE", "RESTED", "DAMAGED"] },
         "trait": { "type": "string" },
+        "traits": { "type": "array", "items": { "type": "string" } },
+        "color": { "$ref": "#/$defs/CardColor" },
+        "notColor": { "$ref": "#/$defs/CardColor" },
+        "token": { "type": "boolean" },
+        "excludeToken": { "type": "boolean" },
+        "linked": { "type": "boolean" },
+        "paired": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "const": "NONE" }
+          ]
+        },
+        "keyword": { "$ref": "#/$defs/KeywordName" },
+        "hasDestroyedEffect": { "type": "boolean" },
         "nameContains": { "type": "string" },
         "excludeName": { "type": "string" },
         "zone": {
@@ -131,6 +200,34 @@
           "enum": ["BATTLE_AREA", "TRASH", "HAND", "DECK", "SHIELD", "RESOURCE"]
         },
         "other": { "type": "boolean" }
+      }
+    },
+    "ScaleMetric": {
+      "type": "object",
+      "required": ["metric"],
+      "additionalProperties": false,
+      "properties": {
+        "metric": {
+          "type": "string",
+          "enum": [
+            "HAND_COUNT",
+            "TRASH_COUNT",
+            "BOARD_UNIT_COUNT",
+            "ENEMY_UNIT_COUNT",
+            "ENEMY_PLAYER_COUNT",
+            "RESTED_ENEMY_UNIT_COUNT",
+            "SELF_DAMAGE",
+            "PAID_COST",
+            "AFFECTED_COUNT",
+            "DRAWN_COUNT"
+          ]
+        },
+        "owner": { "type": "string", "enum": ["SELF", "ENEMY", "ANY"] },
+        "cardType": { "type": "string", "enum": ["UNIT", "PILOT", "BASE", "COMMAND", "CARD", "UNIT_TOKEN"] },
+        "traits": { "type": "array", "items": { "type": "string" } },
+        "nameContains": { "type": "string" },
+        "uniqueNames": { "type": "boolean" },
+        "rested": { "type": "boolean" }
       }
     },
     "EffectCondition": {
@@ -151,9 +248,12 @@
           "properties": {
             "kind": { "const": "TRASH_COUNT_AT_LEAST" },
             "count": { "type": "integer" },
+            "owner": { "type": "string", "enum": ["SELF", "ENEMY"] },
             "color": { "$ref": "#/$defs/CardColor" },
             "trait": { "type": "string" },
-            "cardType": { "type": "string" }
+            "traits": { "type": "array", "items": { "type": "string" } },
+            "cardType": { "type": "string" },
+            "nameContains": { "type": "string" }
           }
         },
         {
@@ -161,7 +261,9 @@
           "required": ["kind"],
           "additionalProperties": false,
           "properties": {
-            "kind": { "const": "FRIENDLY_BASE_IN_PLAY" }
+            "kind": { "const": "FRIENDLY_BASE_IN_PLAY" },
+            "color": { "$ref": "#/$defs/CardColor" },
+            "trait": { "type": "string" }
           }
         },
         {
@@ -179,32 +281,33 @@
           "additionalProperties": false,
           "properties": {
             "kind": { "const": "UNIT_TRAIT_IS" },
-            "trait": { "type": "string" }
+            "trait": { "type": "string" },
+            "traits": { "type": "array", "items": { "type": "string" } }
           }
         },
         {
           "type": "object",
           "required": ["kind"],
           "additionalProperties": false,
-          "properties": {
-            "kind": { "const": "IS_YOUR_TURN" }
-          }
+          "properties": { "kind": { "const": "IS_YOUR_TURN" } }
         },
         {
           "type": "object",
           "required": ["kind"],
           "additionalProperties": false,
-          "properties": {
-            "kind": { "const": "SELF_RESTED" }
-          }
+          "properties": { "kind": { "const": "IS_OPPONENT_TURN" } }
         },
         {
           "type": "object",
           "required": ["kind"],
           "additionalProperties": false,
-          "properties": {
-            "kind": { "const": "DESTROYED_BY_BATTLE" }
-          }
+          "properties": { "kind": { "const": "SELF_RESTED" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "DESTROYED_BY_BATTLE" } }
         },
         {
           "type": "object",
@@ -224,6 +327,199 @@
             "kind": { "const": "DEVELOPMENT_EXILE" },
             "count": { "type": "integer" }
           }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "conditions"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "ALL_OF" },
+            "conditions": { "type": "array", "items": { "$ref": "#/$defs/EffectCondition" } }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "conditions"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "ANY_OF" },
+            "conditions": { "type": "array", "items": { "$ref": "#/$defs/EffectCondition" } }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "condition"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "NOT" },
+            "condition": { "$ref": "#/$defs/EffectCondition" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "owner", "cardType"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "BOARD_CARD_COUNT" },
+            "owner": { "type": "string", "enum": ["SELF", "ENEMY", "ANY"] },
+            "cardType": { "type": "string", "enum": ["UNIT", "PILOT", "BASE", "UNIT_TOKEN"] },
+            "min": { "type": "integer" },
+            "max": { "type": "integer" },
+            "other": { "type": "boolean" },
+            "rested": { "type": "boolean" },
+            "linked": { "type": "boolean" },
+            "paired": { "type": "boolean" },
+            "pairedPilotLvMax": { "type": "integer" },
+            "color": { "$ref": "#/$defs/CardColor" },
+            "notColor": { "$ref": "#/$defs/CardColor" },
+            "traits": { "type": "array", "items": { "type": "string" } },
+            "keyword": { "$ref": "#/$defs/KeywordName" },
+            "nameContains": { "type": "string" },
+            "lvMin": { "type": "integer" },
+            "lvMax": { "type": "integer" },
+            "apMax": { "type": "integer" },
+            "hasDestroyedEffect": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "SELF_STATE" },
+            "color": { "$ref": "#/$defs/CardColor" },
+            "traits": { "type": "array", "items": { "type": "string" } },
+            "paired": { "type": "boolean" },
+            "pairedPilotLvMax": { "type": "integer" },
+            "damaged": { "type": "boolean" },
+            "hpMin": { "type": "integer" },
+            "hpMax": { "type": "integer" },
+            "lvMin": { "type": "integer" },
+            "lvMax": { "type": "integer" },
+            "keyword": { "$ref": "#/$defs/KeywordName" },
+            "destroyedBy": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "owner": { "type": "string", "enum": ["SELF", "ENEMY"] },
+                "traits": { "type": "array", "items": { "type": "string" } },
+                "cardEffect": { "type": "boolean" }
+              }
+            },
+            "attackingTarget": {
+              "type": "string",
+              "enum": ["ENEMY_UNIT", "ENEMY_PLAYER", "DAMAGED_ENEMY_UNIT"]
+            },
+            "battlingEnemy": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "keyword": { "$ref": "#/$defs/KeywordName" },
+                "lvMax": { "type": "integer" },
+                "damaged": { "type": "boolean" },
+                "hasDestroyedEffect": { "type": "boolean" },
+                "apMaxRef": { "type": "string", "enum": ["SELF_AP"] }
+              }
+            },
+            "pairedWithUnit": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "traits": { "type": "array", "items": { "type": "string" } },
+                "nameContains": { "type": "string" },
+                "linkNames": { "type": "array", "items": { "type": "string" } },
+                "lvMin": { "type": "integer" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "owner"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "HAND_COUNT" },
+            "owner": { "type": "string", "enum": ["SELF", "ENEMY"] },
+            "min": { "type": "integer" },
+            "max": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "owner"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "SHIELD_COUNT" },
+            "owner": { "type": "string", "enum": ["SELF", "ENEMY", "ANY"] },
+            "min": { "type": "integer" },
+            "max": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "owner"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "RESOURCE_COUNT" },
+            "owner": { "type": "string", "enum": ["SELF", "ENEMY"] },
+            "ex": { "type": "boolean" },
+            "min": { "type": "integer" },
+            "max": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "minLv"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "PLAYER_LV_AT_LEAST" },
+            "minLv": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "ENEMY_PLAYER_COUNT_AT_LEAST" },
+            "count": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "event"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "TURN_HISTORY" },
+            "event": {
+              "type": "string",
+              "enum": [
+                "ACTIVATED_COMMAND",
+                "UNIT_DESTROYED_BY_EFFECT",
+                "PAID_EFFECT_COST_AT_LEAST",
+                "DRAWN_BY_EFFECT",
+                "NO_ENEMY_ATTACKED",
+                "PAIRED_UNIT_DESTROYED_ENEMY_BY_BATTLE",
+                "FRIENDLY_UNIT_DEPLOYED",
+                "SET_RESOURCE_ACTIVE_BY_EFFECT"
+              ]
+            },
+            "traits": { "type": "array", "items": { "type": "string" } },
+            "minCost": { "type": "integer" },
+            "other": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "EX_RESOURCE_USED_TO_PLAY" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "PHASE_AT_START_OF_OPPONENT_TURN" } }
         },
         {
           "type": "object",
@@ -254,7 +550,11 @@
           "type": "object",
           "required": ["action"],
           "additionalProperties": false,
-          "properties": { "action": { "const": "ACTIVATE_MAIN_EFFECT" } }
+          "properties": {
+            "action": { "const": "ACTIVATE_MAIN_EFFECT" },
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "fromDiscard": { "type": "boolean" }
+          }
         },
         {
           "type": "object",
@@ -272,6 +572,7 @@
           "properties": {
             "action": { "const": "DEAL_DAMAGE" },
             "amount": { "type": "integer" },
+            "scaleBy": { "$ref": "#/$defs/ScaleMetric" },
             "target": { "$ref": "#/$defs/TargetSelector" }
           }
         },
@@ -282,6 +583,7 @@
           "properties": {
             "action": { "const": "MODIFY_AP" },
             "delta": { "type": "integer" },
+            "scaleBy": { "$ref": "#/$defs/ScaleMetric" },
             "duration": { "$ref": "#/$defs/EffectDuration" },
             "target": { "$ref": "#/$defs/TargetSelector" }
           }
@@ -293,6 +595,7 @@
           "properties": {
             "action": { "const": "MODIFY_HP" },
             "delta": { "type": "integer" },
+            "scaleBy": { "$ref": "#/$defs/ScaleMetric" },
             "duration": { "$ref": "#/$defs/EffectDuration" },
             "target": { "$ref": "#/$defs/TargetSelector" }
           }
@@ -340,6 +643,7 @@
           "properties": {
             "action": { "const": "RETURN_TO_DECK" },
             "position": { "type": "string", "enum": ["TOP", "BOTTOM", "SHUFFLE"] },
+            "shuffle": { "type": "boolean" },
             "target": { "$ref": "#/$defs/TargetSelector" }
           }
         },
@@ -350,7 +654,10 @@
           "properties": {
             "action": { "const": "DRAW" },
             "count": { "type": "integer" },
-            "bothPlayers": { "type": "boolean" }
+            "scaleBy": { "$ref": "#/$defs/ScaleMetric" },
+            "bothPlayers": { "type": "boolean" },
+            "optional": { "type": "boolean" },
+            "targetOwner": { "type": "string", "enum": ["SELF", "ENEMY", "ALL_PLAYERS"] }
           }
         },
         {
@@ -359,7 +666,11 @@
           "additionalProperties": false,
           "properties": {
             "action": { "const": "DISCARD" },
-            "count": { "type": "integer" }
+            "count": { "type": "integer" },
+            "scaleBy": { "$ref": "#/$defs/ScaleMetric" },
+            "targetOwner": { "type": "string", "enum": ["SELF", "ENEMY", "ALL_PLAYERS"] },
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "optional": { "type": "boolean" }
           }
         },
         {
@@ -371,7 +682,9 @@
             "count": { "type": "integer" },
             "revealSearch": { "type": "boolean" },
             "trashRest": { "type": "boolean" },
-            "trait": { "type": "string" }
+            "trait": { "type": "string" },
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "remainderPosition": { "type": "string", "enum": ["TOP", "BOTTOM", "TRASH"] }
           }
         },
         {
@@ -417,8 +730,38 @@
           "required": ["action", "target"],
           "additionalProperties": false,
           "properties": {
+            "action": { "const": "DEPLOY_FROM_HAND" },
+            "free": { "type": "boolean" },
+            "rested": { "type": "boolean" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "DEPLOY_FROM_TOP_DECK" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
             "action": { "const": "PAIR_SELF_FROM_TRASH" },
             "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "PAIR_FROM_HAND" },
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "pilotFilter": { "$ref": "#/$defs/TargetSelector" }
           }
         },
         {
@@ -430,7 +773,11 @@
             "count": { "type": "integer" },
             "ap": { "type": "integer" },
             "hp": { "type": "integer" },
-            "name": { "type": "string" }
+            "name": { "type": "string" },
+            "traits": { "type": "array", "items": { "type": "string" } },
+            "owner": { "type": "string", "enum": ["SELF", "ENEMY", "DESTROYED_OWNER"] },
+            "baseToken": { "type": "boolean" },
+            "exBase": { "type": "boolean" }
           }
         },
         {
@@ -450,8 +797,38 @@
           "properties": {
             "action": { "const": "GRANT_KEYWORD" },
             "keyword": { "$ref": "#/$defs/KeywordAbility" },
+            "scaleBy": { "$ref": "#/$defs/ScaleMetric" },
             "duration": { "$ref": "#/$defs/EffectDuration" },
             "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "traits", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "GRANT_TRAIT" },
+            "traits": { "type": "array", "items": { "type": "string" } },
+            "duration": { "$ref": "#/$defs/EffectDuration" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "pilotName"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "GRANT_PILOT_MODE" },
+            "pilotName": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "alias"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "NAME_ALIAS" },
+            "alias": { "type": "string" }
           }
         },
         {
@@ -461,6 +838,10 @@
           "properties": {
             "action": { "const": "DAMAGE_PROOF" },
             "summary": { "type": "string" },
+            "amount": { "type": "integer" },
+            "maxDamage": { "type": "integer" },
+            "damageType": { "type": "string", "enum": ["BATTLE", "EFFECT", "ANY"] },
+            "duration": { "$ref": "#/$defs/EffectDuration" },
             "target": { "$ref": "#/$defs/TargetSelector" }
           }
         },
@@ -480,9 +861,23 @@
           "required": ["action", "amount"],
           "additionalProperties": false,
           "properties": {
+            "action": { "const": "PAY_RESOURCE" },
+            "amount": { "type": "integer" },
+            "optional": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "amount"],
+          "additionalProperties": false,
+          "properties": {
             "action": { "const": "COST_REDUCTION" },
             "amount": { "type": "integer" },
-            "lvDelta": { "type": "integer" }
+            "lvDelta": { "type": "integer" },
+            "zone": { "type": "string", "enum": ["HAND", "TRASH"] },
+            "perTarget": { "$ref": "#/$defs/ScaleMetric" },
+            "exactCost": { "type": "integer" },
+            "exactLv": { "type": "integer" }
           }
         },
         {
@@ -521,6 +916,142 @@
             "action": { "const": "EXILE" },
             "target": { "$ref": "#/$defs/TargetSelector" }
           }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "REVEAL_FROM_HAND" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "rule", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "REDIRECT_ATTACK_TARGET" },
+            "rule": {
+              "type": "string",
+              "enum": ["MUST_ATTACK_TARGET", "CANT_CHOOSE_TARGET", "CANT_CHOOSE_SAME_PLAYER"]
+            },
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "attackerFilter": { "$ref": "#/$defs/TargetSelector" },
+            "duration": { "$ref": "#/$defs/EffectDuration" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "fromTarget", "toTarget"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "REDIRECT_BATTLE_DAMAGE" },
+            "fromTarget": { "$ref": "#/$defs/TargetSelector" },
+            "toTarget": { "$ref": "#/$defs/TargetSelector" },
+            "duration": { "$ref": "#/$defs/EffectDuration" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "attacker", "defender"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "FORCE_BATTLE_DAMAGE_STEP" },
+            "attacker": { "$ref": "#/$defs/TargetSelector" },
+            "defender": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "delta"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "MODIFY_DAMAGE_DEALT" },
+            "delta": { "type": "integer" },
+            "sourceFilter": { "$ref": "#/$defs/TargetSelector" },
+            "targetFilter": { "$ref": "#/$defs/TargetSelector" },
+            "duration": { "$ref": "#/$defs/EffectDuration" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "COUNT_UNITS" },
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "plusSelf": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "rule", "target", "summary"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "RESTRICTION" },
+            "rule": {
+              "type": "string",
+              "enum": [
+                "CANT_BE_PAIRED",
+                "CANT_SET_ACTIVE",
+                "CANT_BE_RESTED",
+                "CAN_ATTACK_TURN_DEPLOYED",
+                "ONLY_ATTACK_WHEN_DEPLOYED",
+                "DEPLOYED_RESTED",
+                "INSTEAD_REST_TARGET",
+                "CANT_ACTIVATE_BLOCKER"
+              ]
+            },
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "duration": { "$ref": "#/$defs/EffectDuration" },
+            "summary": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "condition", "thenSteps"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "IF_CONDITION" },
+            "condition": { "$ref": "#/$defs/EffectCondition" },
+            "thenSteps": { "type": "array", "items": { "$ref": "#/$defs/EffectStep" } },
+            "elseSteps": { "type": "array", "items": { "$ref": "#/$defs/EffectStep" } },
+            "replacesPrevious": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "thenSteps"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "IF_PREVIOUS_SUCCEEDED" },
+            "negated": { "type": "boolean" },
+            "filter": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "count": { "type": "integer" },
+                "lvMin": { "type": "integer" },
+                "cardType": { "type": "string" },
+                "traits": { "type": "array", "items": { "type": "string" } },
+                "drawAccepted": { "type": "boolean" },
+                "placedFromDeck": { "type": "boolean" }
+              }
+            },
+            "thenSteps": { "type": "array", "items": { "$ref": "#/$defs/EffectStep" } }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "clause", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "GRANT_CLAUSE" },
+            "clause": { "$ref": "#/$defs/EffectClause" },
+            "duration": { "$ref": "#/$defs/EffectDuration" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
         }
       ]
     },
@@ -536,7 +1067,9 @@
           "items": { "$ref": "#/$defs/EffectTiming" }
         },
         "oncePerTurn": { "type": "boolean" },
+        "triggerEvent": { "$ref": "#/$defs/TriggerEvent" },
         "pairFilter": { "$ref": "#/$defs/PairFilter" },
+        "linkRequirement": { "$ref": "#/$defs/LinkRequirement" },
         "cost": { "$ref": "#/$defs/ActivationCost" },
         "condition": { "$ref": "#/$defs/EffectCondition" },
         "steps": {
@@ -570,11 +1103,13 @@
       "required": ["kind", "minCopies", "primaryClause", "reason"],
       "additionalProperties": false,
       "properties": {
-        "kind": { "type": "string", "enum": ["TRAIT", "COLOR", "CARD_TYPE", "NAME"] },
+        "kind": { "type": "string", "enum": ["TRAIT", "COLOR", "CARD_TYPE", "NAME", "LINK"] },
         "trait": { "type": "string" },
         "color": { "$ref": "#/$defs/CardColor" },
         "cardType": { "type": "string", "enum": ["UNIT", "PILOT", "BASE", "COMMAND", "CARD"] },
         "nameContains": { "type": "string" },
+        "anyNames": { "type": "array", "items": { "type": "string" } },
+        "anyTraits": { "type": "array", "items": { "type": "string" } },
         "minCopies": { "type": "integer", "enum": [4, 8] },
         "primaryClause": { "type": "boolean" },
         "reason": { "type": "string" }

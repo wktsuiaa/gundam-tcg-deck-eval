@@ -14,9 +14,16 @@
         {
           "raw": "When this Unit destroys an enemy shield area card with battle damage, set it as active. It can't choose the same enemy player or enemy team as its attack target during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "SHIELD",
+            "damageType": "BATTLE",
+            "raw": "When this Unit destroys an enemy shield area card with battle damage"
+          },
           "steps": [
             {
               "action": "SET_ACTIVE",
@@ -24,9 +31,19 @@
                 "owner": "ANY",
                 "count": 1
               }
+            },
+            {
+              "action": "REDIRECT_ATTACK_TARGET",
+              "rule": "CANT_CHOOSE_SAME_PLAYER",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "CARD",
+                "count": 1
+              },
+              "duration": "THIS_TURN"
             }
           ],
-          "unparsedResidual": "It can't choose the same enemy player or enemy team as its attack target during this turn"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -44,30 +61,15 @@
       "keywords": [],
       "clauses": [
         {
-          "raw": "【Deploy・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect:",
+          "raw": "【Deploy・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect: Choose 1 enemy Unit with 4 or less HP. Rest it.",
           "timings": [
             "DEPLOY"
           ],
           "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "EXILE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "count": 1,
-                "trait": "G Generation"
-              }
-            }
-          ],
-          "unparsedResidual": "If you do, activate the following effect:"
-        },
-        {
-          "raw": "Choose 1 enemy Unit with 4 or less HP. Rest it.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
+          "condition": {
+            "kind": "DEVELOPMENT_EXILE",
+            "count": 2
+          },
           "steps": [
             {
               "action": "REST",
@@ -88,15 +90,7 @@
           "RESTED_ENEMY_TARGET"
         ]
       },
-      "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "G Generation",
-          "minCopies": 4,
-          "reason": "Requires (G Generation) target",
-          "primaryClause": false
-        }
-      ]
+      "prerequisites": []
     },
     "ST10-003": {
       "cardNo": "ST10-003",
@@ -156,9 +150,25 @@
         {
           "raw": "【During Pair】During your turn, when this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand.",
           "timings": [
-            "DURING_PAIR"
+            "DURING_PAIR",
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "BOUNCE",
@@ -188,30 +198,23 @@
       "keywords": [],
       "clauses": [
         {
-          "raw": "【When Linked・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect:",
+          "raw": "【When Linked・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect: Choose 1 Command card that is Lv.4 or lower from your trash. Add it to your hand.",
           "timings": [
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "EXILE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "count": 1,
-                "trait": "G Generation"
-              }
-            }
-          ],
-          "unparsedResidual": "If you do, activate the following effect:"
-        },
-        {
-          "raw": "Choose 1 Command card that is Lv.4 or lower from your trash. Add it to your hand.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "G Generation"
+            ],
+            "raw": "(G Generation) Trait"
+          },
+          "condition": {
+            "kind": "DEVELOPMENT_EXILE",
+            "count": 2
+          },
           "steps": [
             {
               "action": "ADD_FROM_TRASH_TO_HAND",
@@ -233,10 +236,13 @@
       },
       "prerequisites": [
         {
-          "kind": "TRAIT",
-          "trait": "G Generation",
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyTraits": [
+            "G Generation"
+          ],
           "minCopies": 4,
-          "reason": "Requires (G Generation) target",
+          "reason": "Link requires (G Generation) Trait",
           "primaryClause": false
         }
       ]
@@ -250,47 +256,42 @@
       "keywords": [],
       "clauses": [
         {
-          "raw": "【Deploy・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect:",
+          "raw": "【Deploy・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect: Draw a number of cards equal to the number of enemy players. Then, discard the same number of cards you drew with this effect.",
           "timings": [
             "DEPLOY"
           ],
           "oncePerTurn": false,
+          "condition": {
+            "kind": "DEVELOPMENT_EXILE",
+            "count": 2
+          },
           "steps": [
             {
-              "action": "EXILE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "count": 1,
-                "trait": "G Generation"
+              "action": "DRAW",
+              "count": 1,
+              "scaleBy": {
+                "metric": "ENEMY_PLAYER_COUNT",
+                "owner": "ENEMY"
+              }
+            },
+            {
+              "action": "DISCARD",
+              "count": 1,
+              "scaleBy": {
+                "metric": "DRAWN_COUNT"
               }
             }
           ],
-          "unparsedResidual": "If you do, activate the following effect:"
-        },
-        {
-          "raw": "Draw a number of cards equal to the number of enemy players. Then, discard the same number of cards you drew with this effect.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "Draw a number of cards equal to the number of enemy players Then, discard the same number of cards you drew with this effect"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
       },
-      "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "G Generation",
-          "minCopies": 4,
-          "reason": "Requires (G Generation) target",
-          "primaryClause": true
-        }
-      ]
+      "prerequisites": []
     },
     "ST10-009": {
       "cardNo": "ST10-009",
@@ -357,9 +358,23 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Kamille Bidan"
+            ],
+            "traits": [
+              "G Generation",
+              "Attack"
+            ],
+            "raw": "[Kamille Bidan]"
+          },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If 2 or more rested Units are in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "ANY",
+            "cardType": "UNIT",
+            "min": 2,
+            "rested": true
           },
           "steps": [
             {
@@ -368,7 +383,8 @@
                 "owner": "SELF",
                 "self": true,
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "lvMaxRef": "SELF_LV"
               }
             }
           ],
@@ -381,7 +397,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Kamille Bidan"
+          ],
+          "anyTraits": [
+            "G Generation",
+            "Attack"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Kamille Bidan]",
+          "primaryClause": false
+        }
+      ]
     },
     "ST10-012": {
       "cardNo": "ST10-012",
@@ -496,8 +527,36 @@
             "WHEN_PLAYING"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "you may discard 1 (G Generation) Unit card If you do, play this card as if it has 2 Lv. and cost"
+          "triggerEvent": {
+            "kind": "WHEN_PLAYING",
+            "actor": "SELF",
+            "raw": "When playing this card from your hand"
+          },
+          "steps": [
+            {
+              "action": "DISCARD",
+              "count": 1,
+              "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "G Generation"
+              },
+              "optional": true
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "COST_REDUCTION",
+                  "amount": 0,
+                  "exactCost": 2,
+                  "exactLv": 2
+                }
+              ]
+            }
+          ],
+          "unparsedResidual": ""
         },
         {
           "raw": "【Main】Draw 2.",
@@ -517,7 +576,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "TRASH_COUNT_FUEL"
+        ]
       },
       "prerequisites": []
     },
@@ -536,8 +597,13 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If a friendly (G Generation) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "traits": [
+              "G Generation"
+            ]
           },
           "steps": [
             {
@@ -559,8 +625,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Claire Heathrow]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Claire Heathrow"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { GundamCardPrint, StrategyBlueprint } from '@/types/gundam';
 import { compileCardEffect, type CompiledCardEffect, type EffectShardFile } from '@/lib/effect-parser';
+import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
 import {
   analyzeDeck,
   computeTurnWinChances,
@@ -616,6 +617,32 @@ describe('Seam 3: Effect Prerequisite Enforcement, Trait Cohesion & Multi-Pass D
       }
     }
     expect(zaftCopies).toBeGreaterThanOrEqual(24);
+  });
+
+  it('recognizes Command-Pilots and Name-Aliased Pilots in doesPilotLinkUnit and LINK prerequisites', () => {
+    const eb01076 = byCardNo.get('EB01-076')!;
+    const gd02098 = byCardNo.get('GD02-098')!;
+    const loweUnit = makeCard({
+      cardNo: 'TST-LOWE',
+      printId: 'TST-LOWE',
+      type: 'UNIT',
+      name: 'Gundam Astray Red Frame',
+      link: '[Lowe Guele]',
+    });
+    const charUnit = makeCard({
+      cardNo: 'TST-CHAR',
+      printId: 'TST-CHAR',
+      type: 'UNIT',
+      name: 'Char Zaku II',
+      link: '[Char Aznable]',
+    });
+
+    expect(doesPilotLinkUnit(eb01076, loweUnit)).toBe(true);
+    expect(doesPilotLinkUnit(gd02098, charUnit)).toBe(true);
+    expect(eb01076.compiledEffect?.clauses.some((c) => c.steps.some((s) => s.action === 'GRANT_PILOT_MODE'))).toBe(true);
+
+    const st09003 = byCardNo.get('ST09-003')!;
+    expect(st09003.compiledEffect?.prerequisites.some((p) => p.kind === 'LINK' && p.anyNames?.includes('Athrun Zala'))).toBe(true);
   });
 });
 

@@ -220,8 +220,12 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have another Link Unit in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "linked": true
           },
           "steps": [
             {
@@ -316,6 +320,17 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Athrun Zala"
+            ],
+            "traits": [
+              "ZAFT",
+              "Coordinator"
+            ],
+            "raw": "[Athrun Zala]"
+          },
           "steps": [
             {
               "action": "ALLOW_ATTACK_ACTIVE",
@@ -338,7 +353,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Athrun Zala"
+          ],
+          "anyTraits": [
+            "ZAFT",
+            "Coordinator"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Athrun Zala]",
+          "primaryClause": false
+        }
+      ]
     },
     "ST04-012": {
       "cardNo": "ST04-012",
@@ -355,15 +385,25 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have no (Earth Alliance) Unit tokens in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT_TOKEN",
+            "min": 0,
+            "max": 0,
+            "traits": [
+              "Earth Alliance"
+            ]
           },
           "steps": [
             {
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 3,
-              "hp": 3
+              "hp": 3,
+              "name": "Aile Strike Gundam",
+              "traits": [
+                "(Earth Alliance"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -375,15 +415,26 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have no (Earth Alliance) Unit tokens in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT_TOKEN",
+            "min": 0,
+            "max": 0,
+            "traits": [
+              "Earth Alliance"
+            ]
           },
           "steps": [
             {
               "action": "DEPLOY_TOKEN",
               "count": 1,
               "ap": 4,
-              "hp": 2
+              "hp": 2,
+              "name": "Sword Strike Gundam",
+              "traits": [
+                "(Earth Alliance",
+                "(Earth Alliance"
+              ]
             }
           ],
           "unparsedResidual": ""
@@ -438,8 +489,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Mu La Flaga]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Mu La Flaga"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -487,8 +543,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Miguel Ayman]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Miguel Ayman"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -548,7 +609,8 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "keyword": "Blocker"
               }
             },
             {
@@ -557,7 +619,8 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "keyword": "Blocker"
               }
             }
           ],

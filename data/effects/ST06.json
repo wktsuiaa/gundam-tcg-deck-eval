@@ -17,9 +17,25 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Amate Yuzuriha (Machu)"
+            ],
+            "traits": [
+              "Machu"
+            ],
+            "raw": "[Amate Yuzuriha (Machu)]"
+          },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If another friendly (Clan) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "Clan"
+            ]
           },
           "steps": [
             {
@@ -43,6 +59,19 @@
         "enables": []
       },
       "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "PILOT",
+          "anyNames": [
+            "Amate Yuzuriha (Machu)"
+          ],
+          "anyTraits": [
+            "Machu"
+          ],
+          "minCopies": 4,
+          "reason": "Link requires [Amate Yuzuriha (Machu)]",
+          "primaryClause": false
+        },
         {
           "kind": "TRAIT",
           "trait": "Clan",
@@ -68,8 +97,14 @@
           ],
           "oncePerTurn": false,
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If another friendly (Clan) Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "other": true,
+            "traits": [
+              "Clan"
+            ]
           },
           "steps": [
             {
@@ -305,18 +340,58 @@
             "WHEN_LINKED"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Amate Yuzuriha (Machu)"
+            ],
+            "traits": [
+              "Clan",
+              "Newtype"
+            ],
+            "raw": "[Amate Yuzuriha (Machu)]"
+          },
           "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "filter": {
+                "traits": [
+                  "Clan"
+                ],
+                "placedFromDeck": true
+              },
+              "thenSteps": [
+                {
+                  "action": "LOOK_TOP",
+                  "count": 1,
+                  "revealSearch": true,
+                  "target": {
+                    "owner": "ANY",
+                    "cardType": "CARD",
+                    "count": 1,
+                    "trait": "Clan"
+                  }
+                }
+              ]
+            },
             {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
+                "zone": "DECK",
                 "count": 1
               }
             }
           ],
-          "unparsedResidual": "Look at the top card of your deck If it is a (Clan) card, you may reveal it and add it to your hand"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -325,7 +400,22 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Amate Yuzuriha (Machu)"
+          ],
+          "anyTraits": [
+            "Clan",
+            "Newtype"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Amate Yuzuriha (Machu)]",
+          "primaryClause": false
+        }
+      ]
     },
     "ST06-010": {
       "cardNo": "ST06-010",
@@ -355,21 +445,45 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Shuji Itō"
+            ],
+            "traits": [
+              "Clan",
+              "Newtype"
+            ],
+            "raw": "[Shuji Itō]"
+          },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If you have a (Clan) Unit in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "traits": [
+              "Clan"
+            ]
           },
           "steps": [
+            {
+              "action": "LOOK_TOP",
+              "count": 1,
+              "revealSearch": false,
+              "trashRest": false
+            },
             {
               "action": "RETURN_TO_DECK",
               "position": "BOTTOM",
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
+                "cardType": "CARD",
+                "zone": "DECK",
                 "count": 1
               }
             }
           ],
-          "unparsedResidual": "look at the top card of your deck"
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -379,6 +493,20 @@
         ]
       },
       "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Shuji Itō"
+          ],
+          "anyTraits": [
+            "Clan",
+            "Newtype"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Shuji Itō]",
+          "primaryClause": false
+        },
         {
           "kind": "TRAIT",
           "trait": "Clan",
@@ -426,8 +554,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Gaia (GQ)]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Gaia (GQ)"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -518,7 +651,9 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "They can't receive battle damage from enemy Units that are Lv.2 or lower during this turn",
+              "summary": "They can't receive battle damage from enemy Units that are Lv.2 or lower during this turn.",
+              "damageType": "BATTLE",
+              "duration": "THIS_TURN",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
@@ -536,8 +671,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Ortega (GQ)]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Ortega (GQ)"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -601,8 +741,14 @@
             "restSelf": true
           },
           "condition": {
-            "kind": "RAW_CONDITION",
-            "text": "If a friendly (Clan) Link Unit is in play"
+            "kind": "BOARD_CARD_COUNT",
+            "owner": "SELF",
+            "cardType": "UNIT",
+            "min": 1,
+            "linked": true,
+            "traits": [
+              "Clan"
+            ]
           },
           "steps": [
             {
@@ -674,9 +820,20 @@
         {
           "raw": "【Once per Turn】When a friendly (Clan) Unit links, it gains <Breach 3> during this turn.",
           "timings": [
-            "CONTINUOUS"
+            "WHEN_UNIT_LINKED"
           ],
           "oncePerTurn": true,
+          "triggerEvent": {
+            "kind": "WHEN_UNIT_LINKED",
+            "actor": "FRIENDLY",
+            "actorFilter": {
+              "owner": "SELF",
+              "cardType": "UNIT",
+              "count": 1,
+              "trait": "Clan"
+            },
+            "raw": "When a friendly (Clan) Unit links"
+          },
           "steps": [
             {
               "action": "GRANT_KEYWORD",

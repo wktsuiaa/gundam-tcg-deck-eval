@@ -86,9 +86,25 @@
         {
           "raw": "【During Pair】During your turn, when this Unit destroys an enemy Unit with battle damage, deal 1 damage to all enemy Units that are Lv.3 or lower.",
           "timings": [
-            "DURING_PAIR"
+            "DURING_PAIR",
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "DEAL_DAMAGE",
@@ -256,6 +272,16 @@
             "DURING_LINK"
           ],
           "oncePerTurn": false,
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Heero Yuy"
+            ],
+            "traits": [
+              "Operation Meteor"
+            ],
+            "raw": "[Heero Yuy]"
+          },
           "steps": [
             {
               "action": "MODIFY_AP",
@@ -276,7 +302,21 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Heero Yuy"
+          ],
+          "anyTraits": [
+            "Operation Meteor"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Heero Yuy]",
+          "primaryClause": false
+        }
+      ]
     },
     "ST02-011": {
       "cardNo": "ST02-011",
@@ -302,9 +342,35 @@
         {
           "raw": "【During Link】During your turn, when this Unit destroys an enemy Unit with battle damage, draw 1.",
           "timings": [
-            "DURING_LINK"
+            "DURING_LINK",
+            "WHEN_DESTROY_BY_BATTLE"
           ],
           "oncePerTurn": false,
+          "triggerEvent": {
+            "kind": "WHEN_DESTROY_BY_BATTLE",
+            "actor": "SELF",
+            "targetKind": "UNIT",
+            "targetFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
+            },
+            "damageType": "BATTLE",
+            "raw": "when this Unit destroys an enemy Unit with battle damage"
+          },
+          "linkRequirement": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Zechs Merquise"
+            ],
+            "traits": [
+              "OZ"
+            ],
+            "raw": "[Zechs Merquise]"
+          },
+          "condition": {
+            "kind": "IS_YOUR_TURN"
+          },
           "steps": [
             {
               "action": "DRAW",
@@ -321,7 +387,21 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "LINK",
+          "cardType": "UNIT",
+          "anyNames": [
+            "Zechs Merquise"
+          ],
+          "anyTraits": [
+            "OZ"
+          ],
+          "minCopies": 4,
+          "reason": "Links with Unit matching [Zechs Merquise]",
+          "primaryClause": false
+        }
+      ]
     },
     "ST02-012": {
       "cardNo": "ST02-012",
@@ -360,8 +440,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Trowa Barton]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Trowa Barton"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -387,7 +472,9 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "your shield area cards can't receive damage from enemy Units that are Lv.4 or lower"
+              "summary": "During this battle, your shield area cards can't receive damage from enemy Units that are Lv.4 or lower.",
+              "damageType": "ANY",
+              "duration": "THIS_BATTLE"
             }
           ],
           "unparsedResidual": ""
@@ -398,8 +485,13 @@
             "CONTINUOUS"
           ],
           "oncePerTurn": false,
-          "steps": [],
-          "unparsedResidual": "[Quatre Raberba Winner]"
+          "steps": [
+            {
+              "action": "GRANT_PILOT_MODE",
+              "pilotName": "Quatre Raberba Winner"
+            }
+          ],
+          "unparsedResidual": ""
         }
       ],
       "synergy": {
@@ -539,16 +631,32 @@
               "count": 1
             },
             {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 4,
-              "hp": 2
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "IS_YOUR_TURN"
+              },
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_TOKEN",
+                  "count": 1,
+                  "ap": 4,
+                  "hp": 2,
+                  "name": "Tallgeese",
+                  "traits": [
+                    "(OZ"
+                  ]
+                }
+              ]
             },
             {
               "action": "DEPLOY_TOKEN",
               "count": 2,
               "ap": 1,
-              "hp": 1
+              "hp": 1,
+              "name": "Leo",
+              "traits": [
+                "(OZ"
+              ]
             }
           ],
           "unparsedResidual": ""

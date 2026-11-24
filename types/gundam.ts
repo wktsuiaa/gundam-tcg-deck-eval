@@ -308,6 +308,7 @@ export interface SandboxUnitInstance {
   summonedTurn: number;
   deployedFromZone?: 'hand' | 'trash';
   activatedMainTurn?: number;
+  triggeredClauseTurns?: Record<string, number>;
 }
 
 export interface SandboxPlayerState {
