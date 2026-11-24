@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gundam-card-atlas.local/schemas/packages.schema.json",
+  "title": "Gundam Packages Index",
+  "description": "Schema for data/packages.json produced by scripts/sync_catalog.py.",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "$ref": "#/$defs/GundamPackage"
+  },
+  "$defs": {
+    "GundamPackage": {
+      "type": "object",
+      "required": ["id", "name", "code", "category", "cardCount"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Booster Pack",
+            "Starter Deck",
+            "Special / Extra Set",
+            "Promotion",
+            "Basic Cards",
+            "Other Product"
+          ]
+        },
+        "cardCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

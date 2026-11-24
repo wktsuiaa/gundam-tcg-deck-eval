@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gundam-card-atlas.local/schemas/collection-shard.schema.json",
+  "title": "Gundam Collection Shard",
+  "description": "Schema for data/collections/<code>.json produced by scripts/sync_catalog.py and enriched with FAQs by scripts/sync_rules.py.",
+  "type": "object",
+  "required": ["syncedAt", "source", "package", "cards"],
+  "additionalProperties": false,
+  "properties": {
+    "syncedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "package": {
+      "$ref": "#/$defs/GundamPackage"
+    },
+    "cards": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RawCardPrint"
+      }
+    }
+  },
+  "$defs": {
+    "GundamPackage": {
+      "type": "object",
+      "required": ["id", "name", "code", "category", "cardCount"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[0-9]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "code": { "type": "string", "minLength": 1 },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Booster Pack",
+            "Starter Deck",
+            "Special / Extra Set",
+            "Promotion",
+            "Basic Cards",
+            "Other Product"
+          ]
+        },
+        "cardCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "CardFaq": {
+      "type": "object",
+      "required": ["q", "a"],
+      "additionalProperties": false,
+      "properties": {
+        "q": { "type": "string", "minLength": 1 },
+        "a": { "type": "string", "minLength": 1 }
+      }
+    },
+    "RawCardPrint": {
+      "type": "object",
+      "required": [
+        "printId",
+        "cardNo",
+        "name",
+        "rarity",
+        "blockIcon",
+        "lv",
+        "cost",
+        "color",
+        "type",
+        "effect",
+        "zones",
+        "traits",
+        "link",
+        "apRaw",
+        "hpRaw",
+        "ap",
+        "hp",
+        "sourceTitle",
+        "whereToGet",
+        "imagePath",
+        "isParallel",
+        "faqs",
+        "packageIds",
+        "packageNames",
+        "packageCodes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "printId": { "type": "string", "minLength": 1 },
+        "cardNo": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "rarity": { "type": "string", "minLength": 1 },
+        "blockIcon": { "type": "string", "minLength": 1 },
+        "lv": { "type": ["integer", "null"] },
+        "cost": { "type": ["integer", "null"] },
+        "color": {
+          "type": "string",
+          "enum": ["Blue", "Green", "Red", "Purple", "White", "Colorless"]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "UNIT",
+            "PILOT",
+            "COMMAND",
+            "BASE",
+            "RESOURCE",
+            "EX BASE",
+            "EX RESOURCE",
+            "UNIT TOKEN",
+            "UNIT・TOKEN"
+          ]
+        },
+        "effect": { "type": "string" },
+        "zones": { "type": "array", "items": { "type": "string" } },
+        "traits": { "type": "array", "items": { "type": "string" } },
+        "link": { "type": "string" },
+        "apRaw": { "type": "string" },
+        "hpRaw": { "type": "string" },
+        "ap": { "type": ["integer", "null"] },
+        "hp": { "type": ["integer", "null"] },
+        "sourceTitle": { "type": "string" },
+        "whereToGet": { "type": "string" },
+        "imagePath": { "type": "string", "minLength": 1 },
+        "isParallel": { "type": "boolean" },
+        "faqs": { "type": "array", "items": { "$ref": "#/$defs/CardFaq" } },
+        "packageIds": { "type": "array", "items": { "type": "string" } },
+        "packageNames": { "type": "array", "items": { "type": "string" } },
+        "packageCodes": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

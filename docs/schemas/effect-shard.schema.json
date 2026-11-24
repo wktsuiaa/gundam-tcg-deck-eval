@@ -1,0 +1,619 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gundam-card-atlas.local/schemas/effect-shard.schema.json",
+  "title": "Gundam Compiled Effect Shard",
+  "description": "Schema for data/effects/<SET>.json Effect Shards produced by scripts/compile_effects.ts.",
+  "type": "object",
+  "required": ["schemaVersion", "setPrefix", "cardCount", "effects"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "setPrefix": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "cardCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/CompiledCardEffect"
+      }
+    }
+  },
+  "$defs": {
+    "CardColor": {
+      "type": "string",
+      "enum": ["Blue", "Green", "Red", "Purple", "White", "Colorless"]
+    },
+    "KeywordName": {
+      "type": "string",
+      "enum": [
+        "Repair",
+        "Breach",
+        "Support",
+        "Blocker",
+        "First Strike",
+        "High-Maneuver",
+        "Suppression"
+      ]
+    },
+    "KeywordAbility": {
+      "type": "object",
+      "required": ["name", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/KeywordName" },
+        "value": { "type": ["integer", "null"] }
+      }
+    },
+    "EffectTiming": {
+      "type": "string",
+      "enum": [
+        "DEPLOY",
+        "ATTACK",
+        "DESTROYED",
+        "WHEN_PAIRED",
+        "WHEN_LINKED",
+        "DURING_PAIR",
+        "DURING_LINK",
+        "BURST",
+        "ACTIVATE_MAIN",
+        "ACTIVATE_ACTION",
+        "MAIN",
+        "ACTION",
+        "END_OF_TURN",
+        "WHEN_PLAYING",
+        "CONTINUOUS"
+      ]
+    },
+    "EffectDuration": {
+      "type": "string",
+      "enum": ["THIS_TURN", "THIS_BATTLE", "NEXT_TURN", "CONTINUOUS"]
+    },
+    "PairFilter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trait": { "type": "string" },
+        "color": { "$ref": "#/$defs/CardColor" },
+        "lvMin": { "type": "integer" },
+        "lvMax": { "type": "integer" }
+      }
+    },
+    "ActivationCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "resourceCost": { "type": "integer" },
+        "restSelf": { "type": "boolean" },
+        "returnSelfToDeckBottom": { "type": "boolean" },
+        "destroySelf": { "type": "boolean" },
+        "discardCount": { "type": "integer" },
+        "exileFromTrashCount": { "type": "integer" },
+        "raw": { "type": "string" }
+      }
+    },
+    "TargetSelector": {
+      "type": "object",
+      "required": ["owner"],
+      "additionalProperties": false,
+      "properties": {
+        "owner": { "type": "string", "enum": ["ENEMY", "SELF", "ANY", "ALL_PLAYERS"] },
+        "self": { "type": "boolean" },
+        "cardType": {
+          "type": "string",
+          "enum": ["UNIT", "PILOT", "BASE", "COMMAND", "SHIELD", "RESOURCE", "CARD"]
+        },
+        "count": {
+          "oneOf": [
+            { "type": "integer" },
+            { "type": "string", "enum": ["ALL", "UP_TO"] }
+          ]
+        },
+        "maxCount": { "type": "integer" },
+        "lvMin": { "type": "integer" },
+        "lvMax": { "type": "integer" },
+        "apMin": { "type": "integer" },
+        "apMax": { "type": "integer" },
+        "hpMax": { "type": "integer" },
+        "state": { "type": "string", "enum": ["ACTIVE", "RESTED", "DAMAGED"] },
+        "trait": { "type": "string" },
+        "nameContains": { "type": "string" },
+        "excludeName": { "type": "string" },
+        "zone": {
+          "type": "string",
+          "enum": ["BATTLE_AREA", "TRASH", "HAND", "DECK", "SHIELD", "RESOURCE"]
+        },
+        "other": { "type": "boolean" }
+      }
+    },
+    "EffectCondition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "zone"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "DEPLOYED_FROM_ZONE" },
+            "zone": { "type": "string", "enum": ["trash", "hand"] }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "TRASH_COUNT_AT_LEAST" },
+            "count": { "type": "integer" },
+            "color": { "$ref": "#/$defs/CardColor" },
+            "trait": { "type": "string" },
+            "cardType": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "FRIENDLY_BASE_IN_PLAY" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "minAp"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "SELF_AP_AT_LEAST" },
+            "minAp": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "trait"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "UNIT_TRAIT_IS" },
+            "trait": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "IS_YOUR_TURN" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "SELF_RESTED" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "DESTROYED_BY_BATTLE" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "owner", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "UNIT_COUNT_AT_LEAST" },
+            "owner": { "type": "string", "enum": ["ENEMY", "SELF", "ANY"] },
+            "count": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "DEVELOPMENT_EXILE" },
+            "count": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "text"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "RAW_CONDITION" },
+            "text": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "EffectStep": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["action"],
+          "additionalProperties": false,
+          "properties": { "action": { "const": "ADD_SELF_TO_HAND" } }
+        },
+        {
+          "type": "object",
+          "required": ["action"],
+          "additionalProperties": false,
+          "properties": { "action": { "const": "DEPLOY_SELF" } }
+        },
+        {
+          "type": "object",
+          "required": ["action"],
+          "additionalProperties": false,
+          "properties": { "action": { "const": "ACTIVATE_MAIN_EFFECT" } }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "DESTROY" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "amount", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "DEAL_DAMAGE" },
+            "amount": { "type": "integer" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "delta", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "MODIFY_AP" },
+            "delta": { "type": "integer" },
+            "duration": { "$ref": "#/$defs/EffectDuration" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "delta", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "MODIFY_HP" },
+            "delta": { "type": "integer" },
+            "duration": { "$ref": "#/$defs/EffectDuration" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "REST" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "SET_ACTIVE" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "FREEZE" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "BOUNCE" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "RETURN_TO_DECK" },
+            "position": { "type": "string", "enum": ["TOP", "BOTTOM", "SHUFFLE"] },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "DRAW" },
+            "count": { "type": "integer" },
+            "bothPlayers": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "DISCARD" },
+            "count": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "LOOK_TOP" },
+            "count": { "type": "integer" },
+            "revealSearch": { "type": "boolean" },
+            "trashRest": { "type": "boolean" },
+            "trait": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "REVEAL_TOP" },
+            "count": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "ADD_SHIELD_TO_HAND" },
+            "count": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "ADD_FROM_TRASH_TO_HAND" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "free", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "DEPLOY_FROM_TRASH" },
+            "free": { "type": "boolean" },
+            "rested": { "type": "boolean" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "PAIR_SELF_FROM_TRASH" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "DEPLOY_TOKEN" },
+            "count": { "type": "integer" },
+            "ap": { "type": "integer" },
+            "hp": { "type": "integer" },
+            "name": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "amount", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "RECOVER_HP" },
+            "amount": { "type": "integer" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "keyword", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "GRANT_KEYWORD" },
+            "keyword": { "$ref": "#/$defs/KeywordAbility" },
+            "duration": { "$ref": "#/$defs/EffectDuration" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "summary"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "DAMAGE_PROOF" },
+            "summary": { "type": "string" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "ADD_RESOURCE" },
+            "count": { "type": "integer" },
+            "ex": { "type": "boolean" },
+            "rested": { "type": "boolean" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "amount"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "COST_REDUCTION" },
+            "amount": { "type": "integer" },
+            "lvDelta": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "CANT_ATTACK" },
+            "duration": { "$ref": "#/$defs/EffectDuration" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "ALLOW_ATTACK_ACTIVE" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "count"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "MILL" },
+            "count": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["action", "target"],
+          "additionalProperties": false,
+          "properties": {
+            "action": { "const": "EXILE" },
+            "target": { "$ref": "#/$defs/TargetSelector" }
+          }
+        }
+      ]
+    },
+    "EffectClause": {
+      "type": "object",
+      "required": ["raw", "timings", "oncePerTurn", "steps", "unparsedResidual"],
+      "additionalProperties": false,
+      "properties": {
+        "raw": { "type": "string" },
+        "timings": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/EffectTiming" }
+        },
+        "oncePerTurn": { "type": "boolean" },
+        "pairFilter": { "$ref": "#/$defs/PairFilter" },
+        "cost": { "$ref": "#/$defs/ActivationCost" },
+        "condition": { "$ref": "#/$defs/EffectCondition" },
+        "steps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EffectStep" }
+        },
+        "unparsedResidual": { "type": "string" }
+      }
+    },
+    "SynergyNodeKey": {
+      "type": "string",
+      "enum": [
+        "DEPLOY_FROM_TRASH",
+        "TRASH_COUNT_FUEL",
+        "AP_THRESHOLD_5",
+        "DAMAGED_ENEMY_TARGET",
+        "RESTED_ENEMY_TARGET"
+      ]
+    },
+    "CardSynergyProfile": {
+      "type": "object",
+      "required": ["requires", "enables"],
+      "additionalProperties": false,
+      "properties": {
+        "requires": { "type": "array", "items": { "$ref": "#/$defs/SynergyNodeKey" } },
+        "enables": { "type": "array", "items": { "$ref": "#/$defs/SynergyNodeKey" } }
+      }
+    },
+    "EffectPrerequisite": {
+      "type": "object",
+      "required": ["kind", "minCopies", "primaryClause", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["TRAIT", "COLOR", "CARD_TYPE", "NAME"] },
+        "trait": { "type": "string" },
+        "color": { "$ref": "#/$defs/CardColor" },
+        "cardType": { "type": "string", "enum": ["UNIT", "PILOT", "BASE", "COMMAND", "CARD"] },
+        "nameContains": { "type": "string" },
+        "minCopies": { "type": "integer", "enum": [4, 8] },
+        "primaryClause": { "type": "boolean" },
+        "reason": { "type": "string" }
+      }
+    },
+    "CompiledCardEffect": {
+      "type": "object",
+      "required": [
+        "cardNo",
+        "sourcePrintId",
+        "name",
+        "type",
+        "color",
+        "keywords",
+        "clauses",
+        "synergy",
+        "prerequisites"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cardNo": { "type": "string", "minLength": 1 },
+        "sourcePrintId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "color": { "$ref": "#/$defs/CardColor" },
+        "keywords": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/KeywordAbility" }
+        },
+        "clauses": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EffectClause" }
+        },
+        "synergy": { "$ref": "#/$defs/CardSynergyProfile" },
+        "prerequisites": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EffectPrerequisite" }
+        }
+      }
+    }
+  }
+}

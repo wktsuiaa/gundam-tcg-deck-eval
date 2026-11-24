@@ -27,6 +27,7 @@
   - `data/rules.json`: Synced official deck rules, turn phases, rule PDFs, general FAQs, and per-card FAQ index.
   - `data/gundam.db`: Local SQLite database (git-ignored, auto-rebuilt on writable local startup from JSON shards; skipped on read-only serverless filesystems).
 - `scripts/`: Python ingestion scripts (`sync_catalog.py`, `sync_rules.py`) and TypeScript effect compiler (`compile_effects.ts`).
+- `docs/schemas/` & `docs/DATA_SCHEMAS.md`: Machine-readable Draft 2020-12 JSON Schemas (`packages.schema.json`, `collection-shard.schema.json`, `rules.schema.json`, `effect-shard.schema.json`) and technical schema reference.
 - `.github/workflows/sync-catalog.yml`: Weekly, push-triggered, and manual CI automation workflow.
 
 ## Data Storage & Deduplication Flow

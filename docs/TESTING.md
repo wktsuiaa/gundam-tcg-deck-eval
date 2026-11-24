@@ -29,6 +29,9 @@ npm test
    - Initializes a 2-deck Sandbox match (5-card hands, 6 Shields, Turn 1 active side).
    - Verifies reactive Top 3 Best-Move Advisor ranking (`evaluateSandboxBestMoves`), turn handover, and `stepSandboxBot` execution.
    - Verifies fail-closed **Effect Clause** execution (`ST09-006` hand vs. trash deploy, `ST09-001` → `ST09-006` chain, `ST09-003` symmetrical AoE, `ST09-004` conditional `<Suppression>`, `ST09-009` target filter, `GD05-112` `PAIR_SELF_FROM_TRASH` gating onto `(MF)` Units, and `"Manual resolution required"` fail-closed logs).
+5. **`__tests__/data-schemas.test.ts`**:
+   - Validates `data/packages.json`, `data/rules.json`, all 26 `data/collections/*.json` shards, and all 28 `data/effects/*.json` **Effect Shards** against the Draft 2020-12 JSON Schemas in `docs/schemas/*.schema.json`.
+   - Verifies negative contract mutations (wrong `schemaVersion`, unexpected properties, unknown `EffectStep.action` / `EffectCondition.kind`, invalid `RawCardPrint.type`) are rejected.
 
 ## Build & Lint Verification
 
