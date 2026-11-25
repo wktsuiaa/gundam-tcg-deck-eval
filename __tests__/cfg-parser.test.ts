@@ -154,10 +154,30 @@ describe('Seam 1: Chevrotain CFG Parser & Structural Normalizer', () => {
     expect(unregisteredHooks).toEqual([]);
   });
 
-  it('attaches typed abilities additively on compileCardEffect alongside clauses', () => {
+  it('attaches typed abilities on compileCardEffect and avoids false replacement/continuous classifications', () => {
     const compiled = compileCardEffect(corpus.get('GD05-124')!);
-    expect(compiled.clauses.length).toBeGreaterThanOrEqual(3);
-    expect(compiled.abilities).toBeDefined();
-    expect(compiled.abilities!.some((a) => a.kind === 'REPLACEMENT_EFFECT')).toBe(true);
+    expect(compiled.abilities.length).toBeGreaterThanOrEqual(3);
+    expect(compiled.abilities.some((a) => a.kind === 'REPLACEMENT_EFFECT')).toBe(true);
+
+    // Triggered/activated "would ... instead" clauses remain EFFECT_CLAUSE
+    for (const no of ['GD04-087', 'GD04-095', 'GD06-018']) {
+      const ab = parseCardAbilities(corpus.get(no)!);
+      expect(ab.abilities.some((a) => a.kind === 'REPLACEMENT_EFFECT')).toBe(false);
+    }
+
+    // Untagged one-shot temporary AP deduction + conditional Destroy stays EFFECT_CLAUSE
+    const spell = compileCardEffect({
+      printId: 'TST-095',
+      cardNo: 'TST-095',
+      name: 'Test Spell',
+      type: 'COMMAND',
+      color: 'Blue',
+      ap: null,
+      effect: 'Choose 1 enemy Unit. It gets AP-3 until end of turn. Destroy it if AP is 0.',
+    });
+    expect(spell.abilities[0]?.kind).toBe('EFFECT_CLAUSE');
+    if (spell.abilities[0]?.kind === 'EFFECT_CLAUSE') {
+      expect(spell.abilities[0].steps.map((s) => s.action)).toEqual(['MODIFY_AP', 'DESTROY']);
+    }
   });
 });

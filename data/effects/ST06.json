@@ -10,50 +10,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【When Linked】If another friendly (Clan) Unit is in play, this gains <First Strike> during this turn.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Amate Yuzuriha (Machu)"
-            ],
-            "traits": [
-              "Machu"
-            ],
-            "raw": "[Amate Yuzuriha (Machu)]"
-          },
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 1,
-            "other": true,
-            "traits": [
-              "Clan"
-            ]
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "First Strike",
-                "value": null
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -134,37 +90,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】If another friendly (Clan) Unit is in play, choose 1 enemy Unit. Deal 1 damage to it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 1,
-            "other": true,
-            "traits": [
-              "Clan"
-            ]
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -221,30 +146,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Activate･Main】<Support 1>",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Support",
-                "value": 1
-              },
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -283,7 +184,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -301,30 +201,6 @@
         {
           "name": "Breach",
           "value": 1
-        }
-      ],
-      "clauses": [
-        {
-          "raw": "【Attack】Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "UP_TO",
-                "maxCount": 2,
-                "trait": "Clan"
-              }
-            }
-          ],
-          "unparsedResidual": ""
         }
       ],
       "abilities": [
@@ -376,7 +252,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -391,28 +266,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 of your other (Clan) Units. During this turn, it may choose an active enemy Unit with 3 or less AP as its attack target.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ALLOW_ATTACK_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "other": true,
-                "trait": "Clan"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -458,7 +311,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -473,80 +325,6 @@
       "type": "PILOT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Linked】Look at the top card of your deck. If it is a (Clan) card, you may reveal it and add it to your hand. Return any remaining card to the bottom of your deck.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Amate Yuzuriha (Machu)"
-            ],
-            "traits": [
-              "Clan",
-              "Newtype"
-            ],
-            "raw": "[Amate Yuzuriha (Machu)]"
-          },
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "filter": {
-                "traits": [
-                  "Clan"
-                ],
-                "placedFromDeck": true
-              },
-              "thenSteps": [
-                {
-                  "action": "LOOK_TOP",
-                  "count": 1,
-                  "revealSearch": true,
-                  "target": {
-                    "owner": "ANY",
-                    "cardType": "CARD",
-                    "count": 1,
-                    "trait": "Clan"
-                  }
-                }
-              ]
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "zone": "DECK",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -653,68 +431,6 @@
       "type": "PILOT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】【Attack】If you have a (Clan) Unit in play, look at the top card of your deck. Return it to the top or bottom of your deck.",
-          "timings": [
-            "DURING_LINK",
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Shuji Itō"
-            ],
-            "traits": [
-              "Clan",
-              "Newtype"
-            ],
-            "raw": "[Shuji Itō]"
-          },
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 1,
-            "traits": [
-              "Clan"
-            ]
-          },
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "zone": "DECK",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -817,45 +533,6 @@
       "type": "COMMAND",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "UP_TO",
-                "maxCount": 2,
-                "trait": "Clan"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Gaia (GQ)]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Gaia (GQ)"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -917,39 +594,6 @@
       "type": "COMMAND",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】Look at the top 3 cards of your deck. You may reveal 1 (Clan) Unit card/Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 3,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true,
-              "trait": "Clan"
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1005,45 +649,6 @@
       "type": "COMMAND",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Action】Choose 1 to 2 friendly (Clan) Units. They can't receive battle damage from enemy Units that are Lv.2 or lower during this turn.",
-          "timings": [
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "They can't receive battle damage from enemy Units that are Lv.2 or lower during this turn.",
-              "damageType": "BATTLE",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "UP_TO",
-                "maxCount": 2,
-                "trait": "Clan"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Ortega (GQ)]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Ortega (GQ)"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1103,69 +708,6 @@
       "type": "BASE",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】Rest this Base：If a friendly (Clan) Link Unit is in play, choose 1 friendly Unit. It gets AP+2 during this turn.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "Rest this Base",
-            "restSelf": true
-          },
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 1,
-            "linked": true,
-            "traits": [
-              "Clan"
-            ]
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1256,68 +798,6 @@
       "type": "BASE",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Once per Turn】When a friendly (Clan) Unit links, it gains <Breach 3> during this turn.",
-          "timings": [
-            "WHEN_UNIT_LINKED"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_UNIT_LINKED",
-            "actor": "FRIENDLY",
-            "actorFilter": {
-              "owner": "SELF",
-              "cardType": "UNIT",
-              "count": 1,
-              "trait": "Clan"
-            },
-            "raw": "When a friendly (Clan) Unit links"
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Breach",
-                "value": 3
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",

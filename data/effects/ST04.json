@@ -15,30 +15,6 @@
           "value": null
         }
       ],
-      "clauses": [
-        {
-          "raw": "【When Paired･Lv.4 or Higher Pilot】Choose 1 enemy Unit with 4 or less HP. Return it to its owner's hand.",
-          "timings": [
-            "WHEN_PAIRED"
-          ],
-          "oncePerTurn": false,
-          "pairFilter": {
-            "lvMin": 4
-          },
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "hpMax": 4
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -48,6 +24,9 @@
             "WHEN_PAIRED"
           ],
           "oncePerTurn": false,
+          "pairFilter": {
+            "lvMin": 4
+          },
           "steps": [
             {
               "action": "BOUNCE",
@@ -74,27 +53,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Draw 1. Then, discard 1.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            },
-            {
-              "action": "DISCARD",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -132,7 +90,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -152,7 +109,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -167,7 +123,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -182,32 +137,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Attack】If this Unit has 5 or more AP, choose 1 enemy Unit that is Lv.5 or higher. Deal 3 damage to it.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "SELF_AP_AT_LEAST",
-            "minAp": 5
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 3,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMin": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -257,7 +186,6 @@
           "value": 3
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -272,7 +200,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -287,32 +214,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Pair】【Destroyed】If you have another Link Unit in play, draw 1.",
-          "timings": [
-            "DURING_PAIR",
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 1,
-            "other": true,
-            "linked": true
-          },
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -353,41 +254,6 @@
       "type": "PILOT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Attack】Choose 1 enemy Unit. It gets AP-2 during this battle.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": -2,
-              "duration": "THIS_BATTLE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -440,53 +306,6 @@
       "type": "PILOT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Linked】During this turn, this Unit may choose an active enemy Unit that is Lv.5 or lower as its attack target.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Athrun Zala"
-            ],
-            "traits": [
-              "ZAFT",
-              "Coordinator"
-            ],
-            "raw": "[Athrun Zala]"
-          },
-          "steps": [
-            {
-              "action": "ALLOW_ATTACK_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "ACTIVE",
-                "lvMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -566,69 +385,6 @@
       "type": "COMMAND",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】If you have no (Earth Alliance) Unit tokens in play, deploy 1 [Aile Strike Gundam]((Earth Alliance)･AP3･HP3･<Blocker>) Unit token.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT_TOKEN",
-            "min": 0,
-            "max": 0,
-            "traits": [
-              "Earth Alliance"
-            ]
-          },
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 3,
-              "hp": 3,
-              "name": "Aile Strike Gundam",
-              "traits": [
-                "(Earth Alliance"
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Main】If you have no (Earth Alliance) Unit tokens in play, deploy 1 [Sword Strike Gundam]((Earth Alliance)･AP4･HP2･<Blocker>) or 1 [Launcher Strike Gundam]((Earth Alliance)･AP2･HP4･<Blocker>) Unit token.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT_TOKEN",
-            "min": 0,
-            "max": 0,
-            "traits": [
-              "Earth Alliance"
-            ]
-          },
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 4,
-              "hp": 2,
-              "name": "Sword Strike Gundam",
-              "traits": [
-                "(Earth Alliance",
-                "(Earth Alliance"
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -716,42 +472,6 @@
       "type": "COMMAND",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "hpMax": 3
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Mu La Flaga]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Mu La Flaga"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -799,47 +519,6 @@
       "type": "COMMAND",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 friendly Unit that is Lv.2 or lower. It gains <First Strike> during this turn.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "First Strike",
-                "value": null
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 2
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Miguel Ayman]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Miguel Ayman"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -892,68 +571,6 @@
       "type": "BASE",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】【Once per Turn】②：Choose 1 friendly Unit with <Blocker>. Set it as active. It can't attack during this turn.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": true,
-          "cost": {
-            "raw": "②",
-            "resourceCost": 2
-          },
-          "steps": [
-            {
-              "action": "SET_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "keyword": "Blocker"
-              }
-            },
-            {
-              "action": "CANT_ATTACK",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "keyword": "Blocker"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1032,59 +649,6 @@
       "type": "BASE",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】Rest this Base：Choose 1 friendly Unit. It gets AP+1 during this turn.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "Rest this Base",
-            "restSelf": true
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",

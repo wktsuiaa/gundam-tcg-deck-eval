@@ -23,7 +23,7 @@ import type {
   TurnOrderSetting,
   TurnWinChancePoint,
 } from '@/types/gundam';
-import { doesPilotLinkUnit, extractPilotNamesForLink } from '@/lib/gundam-keywords';
+import { doesPilotLinkUnit, extractPilotNamesForLink, isCommandPilot } from '@/lib/gundam-keywords';
 import {
   flattenEffectSteps,
   type CardSynergyProfile,
@@ -32,6 +32,7 @@ import {
   type EffectStep,
   type SynergyNodeKey,
 } from '@/lib/effect-parser';
+import { getAbilitySteps, getAbilityTimings } from '@/lib/cfg-parser';
 
 const EMPTY_SYNERGY: CardSynergyProfile = { requires: [], enables: [] };
 
@@ -373,16 +374,15 @@ function hasDensityGateCondition(cond: EffectCondition | undefined): boolean {
 }
 
 function collectStepsAndResiduals(card: GundamCardPrint) {
-  const parsed = card.compiledEffect ?? { keywords: [], clauses: [] };
+  const parsed = card.compiledEffect ?? { keywords: [], abilities: [] };
   const steps: { step: EffectStep; gated: boolean }[] = [];
-  const residuals: string[] = [];
 
-  for (const clause of parsed.clauses) {
-    const gated = hasDensityGateCondition(clause.condition);
-    for (const step of flattenEffectSteps(clause.steps)) steps.push({ step, gated });
-    if (clause.unparsedResidual) residuals.push(clause.unparsedResidual);
+  for (const ab of parsed.abilities) {
+    const cond = ab.kind === 'CUSTOM_HOOK' ? undefined : ab.condition;
+    const gated = hasDensityGateCondition(cond);
+    for (const step of flattenEffectSteps(getAbilitySteps(ab))) steps.push({ step, gated });
   }
-  return { parsed, steps, residualText: residuals.join(' ') };
+  return { parsed, steps, residualText: '' };
 }
 
 export function detectEffectStyles(card: GundamCardPrint): EffectStyleTag[] {
@@ -520,8 +520,10 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   const hasFirstStrike = hasKeywordNamed('First Strike');
   const hasHighManeuver = hasKeywordNamed('High-Maneuver');
   const hasSupport = hasKeywordNamed('Support');
-  const hasPairTrigger = parsed.clauses.some((c) =>
-    c.timings.some((t) => t === 'WHEN_PAIRED' || t === 'WHEN_LINKED' || t === 'DURING_PAIR' || t === 'DURING_LINK')
+  const hasPairTrigger = parsed.abilities.some((ab) =>
+    getAbilityTimings(ab).some(
+      (t) => t === 'WHEN_PAIRED' || t === 'WHEN_LINKED' || t === 'DURING_PAIR' || t === 'DURING_LINK'
+    )
   );
   const hasConditionalGate = steps.length > 0 && steps.every((x) => x.gated);
   const gateMult = hasConditionalGate ? 0.5 : 1;
@@ -547,7 +549,7 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (hasBreach) aggro += 28;
   if (hasFirstStrike) aggro += 22;
   if (hasHighManeuver) aggro += 22;
-  if (parsed.clauses.some((c) => c.timings.includes('ATTACK'))) aggro += 16;
+  if (parsed.abilities.some((ab) => getAbilityTimings(ab).includes('ATTACK'))) aggro += 16;
   if (hasStep((s) => s.action === 'MODIFY_AP' && s.delta > 0)) aggro += 12;
 
   // Defense / Durability
@@ -574,7 +576,14 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   // Card Liquidity
   if (hasDraw) liquidity += 48 * gateMult;
   if (hasSearch) liquidity += 34 * gateMult;
-  if (parsed.clauses.some((c) => c.timings.includes('BURST') && c.steps.some((s) => s.action === 'DRAW' || s.action === 'ADD_SELF_TO_HAND'))) {
+  if (
+    parsed.abilities.some(
+      (ab) =>
+        ab.kind === 'EFFECT_CLAUSE' &&
+        ab.timings.includes('BURST') &&
+        ab.steps.some((s) => s.action === 'DRAW' || s.action === 'ADD_SELF_TO_HAND')
+    )
+  ) {
     // Burst self-add preserves card presence without inflating active deck draw velocity
     if (hasDraw) liquidity += 12;
   }
@@ -594,7 +603,20 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (effectStyles.includes('AP Deduction')) control += 18 * gateMult;
   if (effectStyles.includes('Destroy')) control += 20 * gateMult;
   if (effectStyles.includes('Bounce')) control += 20 * gateMult;
-  if (parsed.clauses.some((c) => c.timings.includes('BURST') && c.steps.some((s) => s.action === 'REST' || s.action === 'DESTROY' || s.action === 'DEAL_DAMAGE' || s.action === 'ACTIVATE_MAIN_EFFECT'))) {
+  if (
+    parsed.abilities.some(
+      (ab) =>
+        ab.kind === 'EFFECT_CLAUSE' &&
+        ab.timings.includes('BURST') &&
+        ab.steps.some(
+          (s) =>
+            s.action === 'REST' ||
+            s.action === 'DESTROY' ||
+            s.action === 'DEAL_DAMAGE' ||
+            s.action === 'ACTIVATE_MAIN_EFFECT'
+        )
+    )
+  ) {
     control += 14;
   }
   if (hasStep((s) => s.action === 'CANT_ATTACK')) control += 16 * gateMult;
@@ -677,7 +699,7 @@ export function computeHexagonAndBreakdowns(
   let costWeight = 0;
 
   const units = mainExpanded.filter((x) => x.card.type === 'UNIT');
-  const pilots = mainExpanded.filter((x) => x.card.type === 'PILOT');
+  const pilots = mainExpanded.filter((x) => x.card.type === 'PILOT' || isCommandPilot(x.card));
   const traitCounts = new Map<string, number>();
 
   for (const { card, qty } of mainExpanded) {
@@ -1254,7 +1276,7 @@ function generateDeckPlaybook(
 
   const earlyUnits = mainExpanded.filter((x) => x.card.type === 'UNIT' && (x.card.cost ?? 9) <= 2);
   const heavyCards = mainExpanded.filter((x) => (x.card.lv ?? 0) >= 5 || (x.card.cost ?? 0) >= 4);
-  const pilots = mainExpanded.filter((x) => x.card.type === 'PILOT');
+  const pilots = mainExpanded.filter((x) => x.card.type === 'PILOT' || isCommandPilot(x.card));
   const units = mainExpanded.filter((x) => x.card.type === 'UNIT');
   const bases = mainExpanded.filter((x) => x.card.type === 'BASE');
   const commands = mainExpanded.filter((x) => x.card.type === 'COMMAND');
@@ -1473,7 +1495,7 @@ export function gradeSimulatedHand(
   const units = hand.filter((c) => c.type === 'UNIT');
   const earlyUnits = units.filter((c) => (c.cost ?? 9) <= 2);
   const midUnits = units.filter((c) => (c.cost ?? 9) === 3);
-  const pilots = hand.filter((c) => c.type === 'PILOT');
+  const pilots = hand.filter((c) => c.type === 'PILOT' || isCommandPilot(c));
   const heavy = hand.filter((c) => (c.cost ?? 0) >= 4 || (c.lv ?? 0) >= 5);
   const liquidity = hand.filter((c) => {
     const s = scoreSingleCardSignals(c);
@@ -1703,10 +1725,16 @@ export function filterPoolByConstraints(
       const traitMatches = pool.filter(matchesAnyTrait);
       pool = pool.filter((card) => {
         if (matchesAnyTrait(card)) return true;
-        if (card.type === 'PILOT' && traitMatches.some((u) => u.type === 'UNIT' && doesPilotLinkUnit(card, u))) {
+        if (
+          (card.type === 'PILOT' || isCommandPilot(card)) &&
+          traitMatches.some((u) => u.type === 'UNIT' && doesPilotLinkUnit(card, u))
+        ) {
           return true;
         }
-        if (card.type === 'UNIT' && traitMatches.some((p) => p.type === 'PILOT' && doesPilotLinkUnit(p, card))) {
+        if (
+          card.type === 'UNIT' &&
+          traitMatches.some((p) => (p.type === 'PILOT' || isCommandPilot(p)) && doesPilotLinkUnit(p, card))
+        ) {
           return true;
         }
         return false;
@@ -1714,10 +1742,10 @@ export function filterPoolByConstraints(
     } else {
       // Lock to cards participating in at least one Pilot-Unit Link pair within the constrained pool
       const units = pool.filter((card) => card.type === 'UNIT' && Boolean(card.link));
-      const pilots = pool.filter((card) => card.type === 'PILOT');
+      const pilots = pool.filter((card) => card.type === 'PILOT' || isCommandPilot(card));
       pool = pool.filter((card) => {
         if (card.type === 'UNIT') return pilots.some((p) => doesPilotLinkUnit(p, card));
-        if (card.type === 'PILOT') return units.some((u) => doesPilotLinkUnit(card, u));
+        if (card.type === 'PILOT' || isCommandPilot(card)) return units.some((u) => doesPilotLinkUnit(card, u));
         return true;
       });
     }
@@ -1921,9 +1949,9 @@ function rankCandidatesForStrategy(
   }
 
   const currentUnits = currentCards.filter((c) => c.type === 'UNIT');
-  const currentPilots = currentCards.filter((c) => c.type === 'PILOT');
+  const currentPilots = currentCards.filter((c) => c.type === 'PILOT' || isCommandPilot(c));
   const poolUnits = pool.filter((c) => c.type === 'UNIT');
-  const poolPilots = pool.filter((c) => c.type === 'PILOT');
+  const poolPilots = pool.filter((c) => c.type === 'PILOT' || isCommandPilot(c));
 
   const focuses = normalizeTraitFocus(blueprint.traitFocus as unknown as string | string[]);
   const focusPool =
@@ -1986,7 +2014,7 @@ function rankCandidatesForStrategy(
 
     // 1. Multi-Strategy tactical bonuses
     const cost = card.cost ?? 2;
-    if (selectedStyles.has('Link-Strike') && (card.link || card.type === 'PILOT' || sig.hasPairTrigger)) {
+    if (selectedStyles.has('Link-Strike') && (card.link || card.type === 'PILOT' || isCommandPilot(card) || sig.hasPairTrigger)) {
       fit += 14;
       reasons.push('Triggers Link-Strike synergy');
     }
@@ -2083,7 +2111,7 @@ function rankCandidatesForStrategy(
     }
 
     // Pilot–Unit Linkage coherence (explicitly counts live Link pairs in deck or eligible pool)
-    if (card.type === 'PILOT') {
+    if (card.type === 'PILOT' || isCommandPilot(card)) {
       const deckLinks = currentUnits.filter((u) => doesPilotLinkUnit(card, u)).length;
       const poolLinks = poolUnits.filter((u) => doesPilotLinkUnit(card, u)).length;
       if (deckLinks > 0) {
@@ -2274,7 +2302,7 @@ export function generateStrategyDeck(
   const chosenUnits = [...chosen.values()].filter((x) => x.card.type === 'UNIT').map((x) => x.card);
   const pass2Ranked = rankCandidatesForStrategy(allCards, effectiveBlueprint, toEntries(), 400);
   const pilotRanked = pass2Ranked
-    .filter((r) => r.card.type === 'PILOT' && !r.unmetPrimary)
+    .filter((r) => (r.card.type === 'PILOT' || isCommandPilot(r.card)) && !r.unmetPrimary)
     .map((r) => {
       const linkMatches = chosenUnits.filter((u) => doesPilotLinkUnit(r.card, u)).length;
       return { ...r, score: r.fitScore + linkMatches * 35 + (r.enablesUnitPrereq ? 50 : 0) };

@@ -639,7 +639,21 @@ describe('Seam 3: Effect Prerequisite Enforcement, Trait Cohesion & Multi-Pass D
 
     expect(doesPilotLinkUnit(eb01076, loweUnit)).toBe(true);
     expect(doesPilotLinkUnit(gd02098, charUnit)).toBe(true);
-    expect(eb01076.compiledEffect?.clauses.some((c) => c.steps.some((s) => s.action === 'GRANT_PILOT_MODE'))).toBe(true);
+    expect(
+      eb01076.compiledEffect?.abilities.some(
+        (a) => a.kind === 'CONTINUOUS_MODIFIER' && a.modifier.type === 'GRANT_PILOT_MODE' && a.modifier.pilotName === 'Lowe Guele'
+      )
+    ).toBe(true);
+
+    const deck = createBlankCustomDeck(1);
+    deck.mainDeck = [
+      { cardNo: loweUnit.cardNo, printId: loweUnit.printId, qty: 4 },
+      { cardNo: eb01076.cardNo, printId: eb01076.printId, qty: 4 },
+    ];
+    const map = resolveCardMap([loweUnit, eb01076]);
+    const analysis = analyzeDeck(deck, map.byPrintId, map.byCardNo);
+    expect(analysis.linkCoveragePct).toBe(100);
+    expect(analysis.playbook.combos.some((c) => c.category === 'Link Pair' && c.cards.some((x) => x.cardNo === eb01076.cardNo))).toBe(true);
 
     const st09003 = byCardNo.get('ST09-003')!;
     expect(st09003.compiledEffect?.prerequisites.some((p) => p.kind === 'LINK' && p.anyNames?.includes('Athrun Zala'))).toBe(true);

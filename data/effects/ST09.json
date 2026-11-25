@@ -10,36 +10,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Activate･Main】②, return this Unit to the bottom of its owner's deck：Choose 1 Unit card with \"Impulse Gundam\" in its card name that is Lv.4 or higher from your trash. Deploy it.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "②, return this Unit to the bottom of its owner's deck",
-            "resourceCost": 2,
-            "returnSelfToDeckBottom": true
-          },
-          "steps": [
-            {
-              "action": "DEPLOY_FROM_TRASH",
-              "free": true,
-              "rested": false,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMin": 4,
-                "nameContains": "Impulse Gundam",
-                "zone": "TRASH"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -95,29 +65,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Destroyed】Choose 1 (Minerva Squad) Unit card without \"Force Impulse Gundam\" in its card name from your trash. Add it to your hand.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_FROM_TRASH_TO_HAND",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Minerva Squad",
-                "excludeName": "Force Impulse Gundam",
-                "zone": "TRASH"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -167,41 +114,6 @@
         {
           "name": "Breach",
           "value": 3
-        }
-      ],
-      "clauses": [
-        {
-          "raw": "【When Linked】If there are 5 or more purple cards in your trash, deal 2 damage to all Units with 5 or less AP.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Athrun Zala"
-            ],
-            "traits": [],
-            "raw": "[Athrun Zala]"
-          },
-          "condition": {
-            "kind": "TRASH_COUNT_AT_LEAST",
-            "count": 5,
-            "color": "Purple"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": "ALL",
-                "apMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
         }
       ],
       "abilities": [
@@ -278,33 +190,6 @@
           "value": null
         }
       ],
-      "clauses": [
-        {
-          "raw": "While a friendly Base in play, this Unit gains <Suppression>.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "FRIENDLY_BASE_IN_PLAY"
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Suppression",
-                "value": null
-              },
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -343,7 +228,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -358,31 +242,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】If you deploy this Unit from your trash, choose 1 enemy Unit that is Lv.3 or lower. Destroy it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "DEPLOYED_FROM_ZONE",
-            "zone": "trash"
-          },
-          "steps": [
-            {
-              "action": "DESTROY",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 3
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -429,7 +288,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -444,43 +302,6 @@
       "type": "PILOT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Attack】If this is a (Minerva Squad) Unit, choose 1 of your Resources. Set it as active.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "UNIT_TRAIT_IS",
-            "trait": "Minerva Squad"
-          },
-          "steps": [
-            {
-              "action": "SET_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "RESOURCE",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -544,29 +365,6 @@
       "type": "COMMAND",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 active enemy Unit with 4 or less AP. Destroy it.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DESTROY",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "ACTIVE",
-                "apMax": 4
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -604,53 +402,6 @@
       "type": "BASE",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, look at the top 2 cards of your deck and return 1 to the top. Place the remaining card into your trash.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "IS_YOUR_TURN"
-              },
-              "thenSteps": [
-                {
-                  "action": "LOOK_TOP",
-                  "count": 2,
-                  "revealSearch": false,
-                  "trashRest": false
-                }
-              ]
-            },
-            {
-              "action": "MILL",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",

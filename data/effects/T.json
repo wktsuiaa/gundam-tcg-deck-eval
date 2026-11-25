@@ -10,7 +10,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -25,7 +24,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -40,7 +38,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -55,7 +52,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -70,7 +66,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -85,7 +80,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -100,7 +94,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -120,7 +113,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -140,7 +132,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -160,7 +151,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -180,7 +170,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -195,7 +184,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -210,7 +198,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -225,38 +212,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "This Unit can't be set as active or paired with a Pilot.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "RESTRICTION",
-              "rule": "CANT_SET_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              },
-              "summary": "This Unit can't be set as active or paired with a Pilot."
-            },
-            {
-              "action": "RESTRICTION",
-              "rule": "CANT_BE_PAIRED",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              },
-              "summary": "This Unit can't be set as active or paired with a Pilot."
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -289,7 +244,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -304,7 +258,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -319,7 +272,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -334,7 +286,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -349,7 +300,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -364,7 +314,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -379,26 +328,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "This Unit can't choose the enemy player as its attack target.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "CANT_ATTACK",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -431,28 +360,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "This Unit can't be paired with a Pilot.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "RESTRICTION",
-              "rule": "CANT_BE_PAIRED",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              },
-              "summary": "This Unit can't be paired with a Pilot."
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -485,7 +392,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -500,7 +406,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -515,7 +420,6 @@
       "type": "UNIT・TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -535,7 +439,6 @@
           "value": 1
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -550,7 +453,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -565,7 +467,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -580,36 +481,6 @@
       "type": "UNIT・TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "This Unit can't be paired with a Pilot or attack.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "RESTRICTION",
-              "rule": "CANT_BE_PAIRED",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              },
-              "summary": "This Unit can't be paired with a Pilot or attack."
-            },
-            {
-              "action": "CANT_ATTACK",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -647,7 +518,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -662,7 +532,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -677,7 +546,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -692,7 +560,6 @@
       "type": "UNIT TOKEN",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -712,7 +579,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -732,7 +598,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -752,7 +617,6 @@
           "value": 3
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -767,7 +631,6 @@
       "type": "BASE",
       "color": "Colorless",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],

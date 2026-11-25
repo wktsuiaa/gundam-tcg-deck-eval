@@ -15,30 +15,6 @@
           "value": 2
         }
       ],
-      "clauses": [
-        {
-          "raw": "【During Pair】During your turn, all your Units get AP+1.",
-          "timings": [
-            "DURING_PAIR"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "ALL"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -78,27 +54,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【When Paired･(White Base Team) Pilot】Draw 1.",
-          "timings": [
-            "WHEN_PAIRED"
-          ],
-          "oncePerTurn": false,
-          "pairFilter": {
-            "trait": "White Base Team",
-            "color": "White"
-          },
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -108,6 +63,10 @@
             "WHEN_PAIRED"
           ],
           "oncePerTurn": false,
+          "pairFilter": {
+            "trait": "White Base Team",
+            "color": "White"
+          },
           "steps": [
             {
               "action": "DRAW",
@@ -140,7 +99,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -155,27 +113,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "hpMax": 2
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -213,7 +150,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -228,29 +164,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn.",
-          "timings": [
-            "WHEN_PAIRED"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": -3,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -288,7 +201,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -308,7 +220,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -326,26 +237,6 @@
         {
           "name": "Blocker",
           "value": null
-        }
-      ],
-      "clauses": [
-        {
-          "raw": "This Unit can't choose the enemy player as its attack target.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "CANT_ATTACK",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
         }
       ],
       "abilities": [
@@ -380,40 +271,6 @@
       "type": "PILOT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it.",
-          "timings": [
-            "WHEN_PAIRED"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "hpMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -466,39 +323,6 @@
       "type": "PILOT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": true,
-          "steps": [
-            {
-              "action": "SET_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "RESOURCE",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -549,42 +373,6 @@
       "type": "COMMAND",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "RESTED"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Hayato Kobayashi]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Hayato Kobayashi"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -636,41 +424,6 @@
       "type": "COMMAND",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "RECOVER_HP",
-              "amount": 3,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Kai Shiden]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Kai Shiden"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -717,42 +470,6 @@
       "type": "COMMAND",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Activate this card's 【Main】.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ACTIVATE_MAIN_EFFECT"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": -3,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -804,61 +521,6 @@
       "type": "BASE",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": true,
-          "cost": {
-            "raw": "②",
-            "resourceCost": 2
-          },
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 3,
-              "hp": 3,
-              "name": "Gundam",
-              "traits": [
-                "(White Base Team",
-                "(White Base Team",
-                "(White Base Team"
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -911,60 +573,6 @@
       "type": "BASE",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "Rest this Base",
-            "restSelf": true
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "ALL",
-                "linked": true
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",

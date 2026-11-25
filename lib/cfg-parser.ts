@@ -11,6 +11,7 @@ import type {
   KeywordAbility,
   KeywordName,
   LinkRequirement,
+  PairFilter,
   ScaleMetric,
   TargetSelector,
   TriggerEvent,
@@ -48,6 +49,7 @@ export interface EffectClauseAst {
   timings: EffectTiming[];
   oncePerTurn: boolean;
   triggerEvent?: TriggerEvent;
+  pairFilter?: PairFilter;
   linkRequirement?: LinkRequirement;
   cost?: ActivationCost;
   condition?: EffectCondition;
@@ -66,9 +68,11 @@ export interface ReplacementEffectAst {
   scope: 'ACTIVE_ZONE' | 'PAIRED' | 'LINKED';
   intercepts: ReplacementEventKind;
   subject: TargetSelector;
+  pairFilter?: PairFilter;
   condition?: EffectCondition;
   optional: boolean;
   duration?: EffectDuration;
+  steps?: EffectStep[];
   replacementSummary: string;
   maxPerEventInstance: 1;
 }
@@ -81,6 +85,7 @@ export interface ContinuousModifierAst {
   activeIn: 'BATTLE_AREA' | 'HAND' | 'TRASH' | 'ANY';
   requiresPair?: boolean;
   requiresLink?: LinkRequirement;
+  pairFilter?: PairFilter;
   oncePerTurn?: boolean;
   condition?: EffectCondition;
   duration?: EffectDuration;
@@ -101,6 +106,7 @@ export interface ContinuousModifierAst {
     | {
         type: 'GRANT_KEYWORD';
         keyword: KeywordAbility;
+        scaleBy?: ScaleMetric;
         target: TargetSelector;
       }
     | {
@@ -121,6 +127,25 @@ export interface ContinuousModifierAst {
         rule: ProhibitionRule;
         target: TargetSelector;
         sourceFilter?: TargetSelector;
+      }
+    | {
+        type: 'ALLOW_ATTACK_ACTIVE';
+        target: TargetSelector;
+      }
+    | {
+        type: 'FREEZE_AURA';
+        target: TargetSelector;
+      }
+    | {
+        type: 'RESTRICTION';
+        rule: string;
+        target: TargetSelector;
+        summary: string;
+      }
+    | {
+        type: 'REDIRECT_ATTACK_TARGET';
+        rule: string;
+        target: TargetSelector;
       }
     | {
         type: 'STATIC_PERMISSION';
@@ -252,6 +277,7 @@ export function normalizeCardEffectText(rawEffect: string): string {
   const normalizedLines: string[] = [];
   let activeModalPrefix = '';
   let pendingFollowUpPrefix = '';
+  let previousRawWasFollowingGrant = false;
 
   for (const rawLine of rawLines) {
     // Modal boilerplate line e.g. "【Action】When playing this card, choose 1 of the following effects and activate it："
@@ -272,6 +298,16 @@ export function normalizeCardEffectText(rawEffect: string): string {
         activeModalPrefix = headers;
         pendingFollowUpPrefix = '';
       }
+      previousRawWasFollowingGrant = false;
+      continue;
+    }
+
+    if (previousRawWasFollowingGrant && normalizedLines.length > 0) {
+      const subBody = rawLine.replace(/^■\s*/, '').trim();
+      normalizedLines[normalizedLines.length - 1] = normalizeGlyphs(
+        `${normalizedLines[normalizedLines.length - 1]} ${subBody}`
+      );
+      previousRawWasFollowingGrant = /following effect[^:：]*[:：]$/i.test(rawLine);
       continue;
     }
 
@@ -279,6 +315,7 @@ export function normalizeCardEffectText(rawEffect: string): string {
       const optionBody = rawLine.replace(/^■\s*/, '').trim();
       const combined = activeModalPrefix ? `${activeModalPrefix} ${optionBody}`.trim() : optionBody;
       pendingFollowUpPrefix = '';
+      previousRawWasFollowingGrant = false;
       normalizedLines.push(normalizeGlyphs(combined));
       continue;
     }
@@ -287,12 +324,14 @@ export function normalizeCardEffectText(rawEffect: string): string {
       const combined = `${pendingFollowUpPrefix} ${rawLine}`.trim();
       pendingFollowUpPrefix = '';
       activeModalPrefix = '';
+      previousRawWasFollowingGrant = false;
       normalizedLines.push(normalizeGlyphs(combined));
       continue;
     }
 
     activeModalPrefix = '';
     pendingFollowUpPrefix = '';
+    previousRawWasFollowingGrant = /following effect[^:：]*[:：]$/i.test(rawLine);
     normalizedLines.push(normalizeGlyphs(rawLine));
   }
 
@@ -394,7 +433,10 @@ class GundamClauseCstParser extends CstParser {
 
   private keywordOnlyUnit = this.RULE('keywordOnlyUnit', () => {
     this.AT_LEAST_ONE(() => {
-      this.CONSUME(KeywordTag);
+      this.OR([
+        { ALT: () => this.CONSUME(KeywordTag) },
+        { ALT: () => this.CONSUME(BracketName) },
+      ]);
     });
   });
 
@@ -494,7 +536,14 @@ class GundamClauseCstParser extends CstParser {
 
   private isKeywordOnlyLine(): boolean {
     const toks = this.scanLineTokens();
-    return toks.length > 0 && toks.every((t) => t.tokenType === KeywordTag);
+    return (
+      toks.length > 0 &&
+      toks.every(
+        (t) =>
+          (t.tokenType === KeywordTag || t.tokenType === BracketName) &&
+          parseKeywordTag(t.image) !== null
+      )
+    );
   }
 
   private isReplacementClause(): boolean {
@@ -505,14 +554,16 @@ class GundamClauseCstParser extends CstParser {
     const timingTags = toks
       .filter((t) => t.tokenType === TimingTag)
       .map((t) => t.image);
-    const hasActiveSpellOrAction = timingTags.some((img) =>
-      /【(?:Main|Action|Burst|Deploy|Activate)/i.test(img)
+    // Clauses with active or trigger timing tags (e.g. 【Attack】, 【When Linked】, 【Activate･Action】)
+    // are triggered/activated EFFECT_CLAUSE abilities that set up a temporary or conditional effect, not passive replacements.
+    const hasActiveOrTriggerTiming = timingTags.some((img) =>
+      /【(?:Main|Action|Burst|Deploy|Attack|Destroyed|When |Activate)/i.test(img)
     );
+    if (hasActiveOrTriggerTiming) return false;
     // True event replacements: "would ... instead", "would ... doesn't receive", or "When you rest ... instead"
     if (hasWould && (hasInstead || hasDoesnt)) return true;
     const text = toks.map((t) => t.image).join(' ');
     if (
-      !hasActiveSpellOrAction &&
       hasInstead &&
       /\bWhen\s+you\s+rest\b/i.test(text)
     ) {
@@ -538,8 +589,11 @@ class GundamClauseCstParser extends CstParser {
     const text = toks.map((t) => t.image).join(' ');
     if (/name is also treated as/i.test(text)) return true;
 
-    // Phase-boundary triggers ("At the end of your turn,", "At the start of your opponent's turn,")
-    if (/^【Once per Turn】\s*At\s+the\s+(?:end|start)\s+of\b|^At\s+the\s+(?:end|start)\s+of\b/i.test(text)) {
+    // Phase-boundary triggers ("At the end of your/a/the turn,", "At the start of your opponent's turn,")
+    if (
+      /\bAt\s+the\s+(?:end|start)\s+of\b/i.test(text) &&
+      !/\bwhile\b/i.test(text.split(/\bAt\s+the\b/i)[0] ?? '')
+    ) {
       return false;
     }
 
@@ -551,9 +605,17 @@ class GundamClauseCstParser extends CstParser {
 
     if (hasStaticTiming) return true;
 
+    // Imperative or temporary one-shot spell sentences ("Choose 1 ...", "... until end of turn", "... during this turn")
+    if (
+      /\b(?:until end of turn|during this turn|during this battle)\b/i.test(text) ||
+      /^(?:Choose|Destroy|Draw|Deal|Return|Deploy|Recover|Discard|Rest|Set)\b/i.test(text)
+    ) {
+      return false;
+    }
+
     if (
       /can't|cannot/i.test(text) ||
-      (/\b(?:Increase|Reduce|gains|gets)\b/i.test(text) && !/during this turn/i.test(text))
+      /\b(?:Increase|Reduce|gains?|gets)\b/i.test(text)
     ) {
       return true;
     }
@@ -568,7 +630,7 @@ const clauseParser = new GundamClauseCstParser();
 // ---------------------------------------------------------------------------
 
 function parseKeywordTag(raw: string): KeywordAbility | null {
-  const inner = raw.replace(/^<|>$/g, '').trim();
+  const inner = raw.replace(/^<|>$|^\[|\]$/g, '').trim();
   const m = inner.match(/^([A-Za-z-]+(?:\s+[A-Za-z-]+)?)\s*(\d+)?$/);
   if (!m) return null;
   const canonical = KEYWORD_NAMES[m[1].toLowerCase()];
@@ -607,6 +669,7 @@ function liftContinuousModifier(
   const requiresPair =
     /【During Pair/i.test(raw) || (legacyClause?.timings.includes('DURING_PAIR') ?? false);
   const requiresLink = legacyClause?.linkRequirement;
+  const pairFilter = legacyClause?.pairFilter;
   const oncePerTurn = /【Once per Turn】/.test(raw) || (legacyClause?.oncePerTurn ?? false);
   const condition = legacyClause?.condition;
   const duration: EffectDuration | undefined = /during this battle/i.test(raw)
@@ -614,6 +677,14 @@ function liftContinuousModifier(
     : /during this turn/i.test(raw)
     ? 'THIS_TURN'
     : 'CONTINUOUS';
+
+  const sharedMeta = {
+    ...(requiresPair ? { requiresPair } : {}),
+    ...(requiresLink ? { requiresLink } : {}),
+    ...(pairFilter ? { pairFilter } : {}),
+    ...(oncePerTurn ? { oncePerTurn } : {}),
+    ...(condition ? { condition } : {}),
+  };
 
   // Layer 4: "can't" / "cannot" prohibitions
   if (/\b(?:can't|cannot)\b/i.test(raw)) {
@@ -623,10 +694,7 @@ function liftContinuousModifier(
       raw,
       layer: 4,
       activeIn: 'BATTLE_AREA',
-      ...(requiresPair ? { requiresPair } : {}),
-      ...(requiresLink ? { requiresLink } : {}),
-      ...(oncePerTurn ? { oncePerTurn } : {}),
-      ...(condition ? { condition } : {}),
+      ...sharedMeta,
       duration,
       modifier: {
         type: 'PROHIBITION',
@@ -662,7 +730,26 @@ function liftContinuousModifier(
   }
 
   // Layer 2: Keyword or Trait grants
-  const kwMatch = raw.match(/gains\s*(<[^<>]+>)/i);
+  const legacyKw = legacyClause?.steps.find((s) => s.action === 'GRANT_KEYWORD');
+  if (legacyKw && legacyKw.action === 'GRANT_KEYWORD') {
+    return {
+      kind: 'CONTINUOUS_MODIFIER',
+      clauseIndex,
+      raw,
+      layer: 2,
+      activeIn: 'BATTLE_AREA',
+      ...sharedMeta,
+      duration,
+      modifier: {
+        type: 'GRANT_KEYWORD',
+        keyword: legacyKw.keyword,
+        ...(legacyKw.scaleBy ? { scaleBy: legacyKw.scaleBy } : {}),
+        target: legacyKw.target,
+      },
+    };
+  }
+
+  const kwMatch = raw.match(/\bgains?\b[^.]*?(<[^<>]+>)/i);
   const kwParsed = kwMatch ? parseKeywordTag(kwMatch[1]) : null;
   if (kwParsed) {
     return {
@@ -671,14 +758,30 @@ function liftContinuousModifier(
       raw,
       layer: 2,
       activeIn: 'BATTLE_AREA',
-      ...(requiresPair ? { requiresPair } : {}),
-      ...(requiresLink ? { requiresLink } : {}),
-      ...(condition ? { condition } : {}),
+      ...sharedMeta,
       duration,
       modifier: {
         type: 'GRANT_KEYWORD',
         keyword: kwParsed,
         target: { owner: 'SELF', self: true, cardType: 'UNIT' },
+      },
+    };
+  }
+
+  const legacyTrait = legacyClause?.steps.find((s) => s.action === 'GRANT_TRAIT');
+  if (legacyTrait && legacyTrait.action === 'GRANT_TRAIT') {
+    return {
+      kind: 'CONTINUOUS_MODIFIER',
+      clauseIndex,
+      raw,
+      layer: 2,
+      activeIn: 'BATTLE_AREA',
+      ...sharedMeta,
+      duration,
+      modifier: {
+        type: 'GRANT_TRAIT',
+        traits: legacyTrait.traits,
+        target: legacyTrait.target,
       },
     };
   }
@@ -692,9 +795,7 @@ function liftContinuousModifier(
       raw,
       layer: 3,
       activeIn: 'BATTLE_AREA',
-      ...(requiresPair ? { requiresPair } : {}),
-      ...(requiresLink ? { requiresLink } : {}),
-      ...(condition ? { condition } : {}),
+      ...sharedMeta,
       duration,
       modifier: {
         type: 'MODIFY_STAT',
@@ -725,9 +826,7 @@ function liftContinuousModifier(
       raw,
       layer: 3,
       activeIn: 'BATTLE_AREA',
-      ...(requiresPair ? { requiresPair } : {}),
-      ...(requiresLink ? { requiresLink } : {}),
-      ...(condition ? { condition } : {}),
+      ...sharedMeta,
       duration,
       modifier: {
         type: 'MODIFY_STAT',
@@ -748,6 +847,7 @@ function liftContinuousModifier(
       layer: 3,
       activeIn: legacyCostRed.zone === 'TRASH' ? 'TRASH' : 'HAND',
       ...(condition ? { condition } : {}),
+      ...(pairFilter ? { pairFilter } : {}),
       modifier: {
         type: 'COST_REDUCTION',
         amount: legacyCostRed.amount,
@@ -774,7 +874,6 @@ function liftContinuousModifier(
     };
   }
 
-  // Remaining static Layer-2/3 rules (e.g., ALLOW_ATTACK_ACTIVE, GRANT_TRAIT, MODIFY_HP)
   const legacyHp = legacyClause?.steps.find((s) => s.action === 'MODIFY_HP');
   if (legacyHp && legacyHp.action === 'MODIFY_HP') {
     return {
@@ -783,9 +882,7 @@ function liftContinuousModifier(
       raw,
       layer: 3,
       activeIn: 'BATTLE_AREA',
-      ...(requiresPair ? { requiresPair } : {}),
-      ...(requiresLink ? { requiresLink } : {}),
-      ...(condition ? { condition } : {}),
+      ...sharedMeta,
       duration,
       modifier: {
         type: 'MODIFY_STAT',
@@ -797,15 +894,84 @@ function liftContinuousModifier(
     };
   }
 
+  const legacyAllowActive = legacyClause?.steps.find((s) => s.action === 'ALLOW_ATTACK_ACTIVE');
+  if (legacyAllowActive && legacyAllowActive.action === 'ALLOW_ATTACK_ACTIVE') {
+    return {
+      kind: 'CONTINUOUS_MODIFIER',
+      clauseIndex,
+      raw,
+      layer: 2,
+      activeIn: 'BATTLE_AREA',
+      ...sharedMeta,
+      duration,
+      modifier: {
+        type: 'ALLOW_ATTACK_ACTIVE',
+        target: legacyAllowActive.target,
+      },
+    };
+  }
+
+  const legacyFreeze = legacyClause?.steps.find((s) => s.action === 'FREEZE');
+  if (legacyFreeze && legacyFreeze.action === 'FREEZE') {
+    return {
+      kind: 'CONTINUOUS_MODIFIER',
+      clauseIndex,
+      raw,
+      layer: 4,
+      activeIn: 'BATTLE_AREA',
+      ...sharedMeta,
+      duration,
+      modifier: {
+        type: 'FREEZE_AURA',
+        target: legacyFreeze.target,
+      },
+    };
+  }
+
+  const legacyRedirect = legacyClause?.steps.find((s) => s.action === 'REDIRECT_ATTACK_TARGET');
+  if (legacyRedirect && legacyRedirect.action === 'REDIRECT_ATTACK_TARGET') {
+    return {
+      kind: 'CONTINUOUS_MODIFIER',
+      clauseIndex,
+      raw,
+      layer: 4,
+      activeIn: 'BATTLE_AREA',
+      ...sharedMeta,
+      duration,
+      modifier: {
+        type: 'REDIRECT_ATTACK_TARGET',
+        rule: legacyRedirect.rule,
+        target: legacyRedirect.target,
+      },
+    };
+  }
+
+  const legacyRestriction = legacyClause?.steps.find((s) => s.action === 'RESTRICTION');
+  if (legacyRestriction && legacyRestriction.action === 'RESTRICTION') {
+    return {
+      kind: 'CONTINUOUS_MODIFIER',
+      clauseIndex,
+      raw,
+      layer: 4,
+      activeIn: 'BATTLE_AREA',
+      ...sharedMeta,
+      duration,
+      modifier: {
+        type: 'RESTRICTION',
+        rule: legacyRestriction.rule,
+        target: legacyRestriction.target,
+        summary: legacyRestriction.summary,
+      },
+    };
+  }
+
   return {
     kind: 'CONTINUOUS_MODIFIER',
     clauseIndex,
     raw,
     layer: 2,
     activeIn: 'BATTLE_AREA',
-    ...(requiresPair ? { requiresPair } : {}),
-    ...(requiresLink ? { requiresLink } : {}),
-    ...(condition ? { condition } : {}),
+    ...sharedMeta,
     duration,
     modifier: {
       type: 'STATIC_PERMISSION',
@@ -833,6 +999,7 @@ function liftReplacementEffect(
     scope,
     intercepts: detectReplacementIntercept(raw),
     subject: { owner: 'SELF', self: true, cardType: 'UNIT' },
+    ...(legacyClause?.pairFilter ? { pairFilter: legacyClause.pairFilter } : {}),
     ...(legacyClause?.condition ? { condition: legacyClause.condition } : {}),
     optional: /\byou may\b/i.test(raw),
     duration: /during this battle/i.test(raw)
@@ -840,6 +1007,7 @@ function liftReplacementEffect(
       : /during this turn/i.test(raw)
       ? 'THIS_TURN'
       : 'CONTINUOUS',
+    ...(legacyClause?.steps?.length ? { steps: legacyClause.steps } : {}),
     replacementSummary: raw,
     maxPerEventInstance: 1,
   };
@@ -888,7 +1056,10 @@ export function parseCardAbilities(
 
     if (cst.children.keywordOnlyUnit) {
       const kwNode = cst.children.keywordOnlyUnit[0] as CstNode;
-      for (const tok of (kwNode.children.KeywordTag ?? []) as IToken[]) {
+      for (const tok of [
+        ...((kwNode.children.KeywordTag ?? []) as IToken[]),
+        ...((kwNode.children.BracketName ?? []) as IToken[]),
+      ]) {
         const parsedKw = parseKeywordTag(tok.image);
         if (parsedKw) keywords.push(parsedKw);
       }
@@ -934,6 +1105,7 @@ export function parseCardAbilities(
       timings,
       oncePerTurn: /【Once per Turn】/.test(line) || (legacyClause?.oncePerTurn ?? false),
       ...(legacyClause?.triggerEvent ? { triggerEvent: legacyClause.triggerEvent } : {}),
+      ...(legacyClause?.pairFilter ? { pairFilter: legacyClause.pairFilter } : {}),
       ...(legacyClause?.linkRequirement ? { linkRequirement: legacyClause.linkRequirement } : {}),
       ...(legacyClause?.cost ? { cost: legacyClause.cost } : {}),
       ...(legacyClause?.condition ? { condition: legacyClause.condition } : {}),
@@ -971,4 +1143,107 @@ function inferFallbackTimings(line: string): EffectTiming[] {
   if (/When this Unit is attacked/i.test(line)) out.push('WHEN_ATTACKED');
   if (out.length === 0) out.push('CONTINUOUS');
   return out;
+}
+
+export function getAbilityTimings(ab: AbilityAst): EffectTiming[] {
+  switch (ab.kind) {
+    case 'EFFECT_CLAUSE':
+      return ab.timings;
+    case 'CONTINUOUS_MODIFIER': {
+      const timings: EffectTiming[] = [];
+      if (ab.requiresPair) timings.push('DURING_PAIR');
+      if (ab.requiresLink) timings.push('DURING_LINK');
+      timings.push('CONTINUOUS');
+      return timings;
+    }
+    case 'REPLACEMENT_EFFECT': {
+      const timings: EffectTiming[] = [];
+      if (ab.scope === 'PAIRED') timings.push('DURING_PAIR');
+      if (ab.scope === 'LINKED') timings.push('DURING_LINK');
+      timings.push('CONTINUOUS');
+      return timings;
+    }
+    case 'CUSTOM_HOOK':
+      return ab.hookId === 'ST01-015#2' ? ['ACTIVATE_MAIN'] : ['CONTINUOUS'];
+  }
+}
+
+export function getAbilitySteps(ab: AbilityAst): EffectStep[] {
+  switch (ab.kind) {
+    case 'EFFECT_CLAUSE':
+      return ab.steps;
+    case 'REPLACEMENT_EFFECT':
+      if (ab.steps?.length) return ab.steps;
+      if (ab.intercepts === 'WOULD_TAKE_DAMAGE') {
+        return [{ action: 'DAMAGE_PROOF', summary: ab.replacementSummary, duration: ab.duration, target: ab.subject }];
+      }
+      if (ab.intercepts === 'WOULD_REST') {
+        return [{ action: 'REST', target: ab.subject }];
+      }
+      return [];
+    case 'CONTINUOUS_MODIFIER': {
+      const m = ab.modifier;
+      switch (m.type) {
+        case 'MODIFY_STAT':
+          return [
+            m.stat === 'AP'
+              ? { action: 'MODIFY_AP', delta: m.delta, ...(m.scaleBy ? { scaleBy: m.scaleBy } : {}), duration: ab.duration, target: m.target }
+              : { action: 'MODIFY_HP', delta: m.delta, ...(m.scaleBy ? { scaleBy: m.scaleBy } : {}), duration: ab.duration, target: m.target },
+          ];
+        case 'COST_REDUCTION':
+          return [
+            {
+              action: 'COST_REDUCTION',
+              amount: m.amount,
+              ...(m.lvDelta !== undefined ? { lvDelta: m.lvDelta } : {}),
+              ...(ab.activeIn === 'TRASH' ? { zone: 'TRASH' as const } : { zone: 'HAND' as const }),
+            },
+          ];
+        case 'GRANT_KEYWORD':
+          return [
+            {
+              action: 'GRANT_KEYWORD',
+              keyword: m.keyword,
+              ...(m.scaleBy ? { scaleBy: m.scaleBy } : {}),
+              duration: ab.duration,
+              target: m.target,
+            },
+          ];
+        case 'GRANT_TRAIT':
+          return [{ action: 'GRANT_TRAIT', traits: m.traits, duration: ab.duration, target: m.target }];
+        case 'NAME_ALIAS':
+          return [{ action: 'NAME_ALIAS', alias: m.alias }];
+        case 'GRANT_PILOT_MODE':
+          return [{ action: 'GRANT_PILOT_MODE', pilotName: m.pilotName }];
+        case 'PROHIBITION':
+          if (m.rule === 'CANT_ATTACK') {
+            return [{ action: 'CANT_ATTACK', duration: ab.duration, target: m.target }];
+          }
+          if (
+            m.rule === 'CANT_RECEIVE_BATTLE_DAMAGE' ||
+            m.rule === 'CANT_RECEIVE_EFFECT_DAMAGE' ||
+            m.rule === 'CANT_RECEIVE_DAMAGE' ||
+            m.rule === 'CANT_BE_DESTROYED' ||
+            m.rule === 'CANT_BE_CHOSEN'
+          ) {
+            return [{ action: 'DAMAGE_PROOF', summary: ab.raw, duration: ab.duration, target: m.target }];
+          }
+          return [];
+        case 'ALLOW_ATTACK_ACTIVE':
+          return [{ action: 'ALLOW_ATTACK_ACTIVE', target: m.target }];
+        case 'FREEZE_AURA':
+          return [{ action: 'FREEZE', target: m.target }];
+        case 'RESTRICTION':
+          return [];
+        case 'REDIRECT_ATTACK_TARGET':
+          return [];
+        case 'STATIC_PERMISSION':
+          return [];
+      }
+    }
+    case 'CUSTOM_HOOK':
+      return ab.hookId === 'ST01-015#2'
+        ? [{ action: 'DEPLOY_TOKEN', count: 1, name: 'White Base Token' }]
+        : [];
+  }
 }

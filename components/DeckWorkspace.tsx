@@ -21,6 +21,7 @@ import {
   Sparkles,
   ShieldAlert,
   TrendingUp,
+  GitBranch,
 } from 'lucide-react';
 import type {
   DeckAnalysis,
@@ -58,6 +59,7 @@ import {
   TACTICAL_STYLE_META,
 } from '@/lib/deck-engine';
 import { CARD_COLOR_META } from '@/lib/gundam-keywords';
+import { buildDeckChainPreviews, verifyCustomDeckChain } from '@/lib/chain-verifier';
 import { CardArtwork } from '@/components/CardArtwork';
 import { HexagonRadar } from '@/components/HexagonRadar';
 import { RulesModal } from '@/components/RulesModal';
@@ -155,6 +157,12 @@ export function DeckWorkspace({
   const [simDeckOrder, setSimDeckOrder] = useState<GundamCardPrint[]>([]);
   const [mulliganUsed, setMulliganUsed] = useState(false);
 
+  // Chain Preview State
+  const [chainGoingSecond, setChainGoingSecond] = useState(false);
+  const [selectedChainId, setSelectedChainId] = useState<string | null>(null);
+  const [customChainCardA, setCustomChainCardA] = useState<string>('');
+  const [customChainCardB, setCustomChainCardB] = useState<string>('');
+
   const { byPrintId, byCardNo } = useMemo(() => resolveCardMap(allCards), [allCards]);
   const activeDeck = decks.find((d) => d.id === activeDeckId) ?? decks[0];
 
@@ -162,6 +170,36 @@ export function DeckWorkspace({
     if (!activeDeck) return null;
     return analyzeDeck(activeDeck, byPrintId, byCardNo);
   }, [activeDeck, byPrintId, byCardNo]);
+
+  const deckUniqueCards = useMemo(() => {
+    if (!activeDeck) return [];
+    const seen = new Set<string>();
+    const out: GundamCardPrint[] = [];
+    for (const e of activeDeck.mainDeck) {
+      const c = byPrintId.get(e.printId) ?? byCardNo.get(e.cardNo);
+      if (c && !seen.has(c.cardNo)) {
+        seen.add(c.cardNo);
+        out.push(c);
+      }
+    }
+    return out;
+  }, [activeDeck, byPrintId, byCardNo]);
+
+  const deckChainPreviews = useMemo(() => {
+    return buildDeckChainPreviews(deckUniqueCards, 6);
+  }, [deckUniqueCards]);
+
+  const customChainResult = useMemo(() => {
+    if (!customChainCardA) return null;
+    const cardA = deckUniqueCards.find((c) => c.cardNo === customChainCardA);
+    if (!cardA) return null;
+    const cardB = customChainCardB ? deckUniqueCards.find((c) => c.cardNo === customChainCardB) ?? null : null;
+    return {
+      cardA,
+      cardB,
+      ...verifyCustomDeckChain(cardA, cardB, chainGoingSecond),
+    };
+  }, [customChainCardA, customChainCardB, deckUniqueCards, chainGoingSecond]);
 
   const blueprint = useMemo(
     () => normalizeBlueprint(activeDeck?.strategyBlueprint),
@@ -1107,6 +1145,189 @@ export function DeckWorkspace({
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Rules-Accurate Chain Preview Section */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-4 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] pb-3">
+              <div className="flex items-center gap-2">
+                <GitBranch className="h-4 w-4 text-blue-400" />
+                <div>
+                  <h3 className="font-display text-base font-bold text-white">
+                    Chain Preview (Rules Verifier)
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Simulates Lv., Cost, EX Resource, [Link] timing, and triggered resolution lines from this deck.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-[#0B0E14] p-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setChainGoingSecond(false)}
+                  className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                    !chainGoingSecond ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Going 1st
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChainGoingSecond(true)}
+                  className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                    chainGoingSecond ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Going 2nd (+1 EX)
+                </button>
+              </div>
+            </div>
+
+            {deckChainPreviews.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-white/10 py-5 text-center text-xs text-slate-400">
+                Add Units with matching Pilots, Command-Pilots, or Enabler/Payoff cards to preview verified chains.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                <div className="lg:col-span-5 space-y-2">
+                  {deckChainPreviews.map((chain, idx) => {
+                    const res = chainGoingSecond ? chain.secondPlayerResult : chain.firstPlayerResult;
+                    const active = (selectedChainId ?? deckChainPreviews[0].id) === chain.id;
+                    return (
+                      <button
+                        key={chain.id}
+                        type="button"
+                        onClick={() => setSelectedChainId(chain.id)}
+                        className={`w-full rounded-lg border p-2.5 text-left transition-colors ${
+                          active
+                            ? 'border-blue-500/60 bg-blue-500/10'
+                            : 'border-white/[0.07] bg-[#0B0E14] hover:border-white/20'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-xs font-semibold text-white">
+                            {idx + 1}. {chain.title}
+                          </span>
+                          <span
+                            className={`shrink-0 font-mono text-[10px] font-semibold ${
+                              res.legal ? 'text-emerald-400' : 'text-amber-300'
+                            }`}
+                          >
+                            {res.legal ? `Turn ${chain.minTurn} Legal` : res.reason}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                          <span>{chain.category}</span>
+                          <span>{chain.cards.map((c) => c.cardNo).join(' + ')}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="lg:col-span-7 space-y-3 rounded-lg border border-white/[0.07] bg-[#0B0E14] p-3.5">
+                  {(() => {
+                    const chosen =
+                      deckChainPreviews.find((c) => c.id === selectedChainId) ?? deckChainPreviews[0];
+                    const res = chainGoingSecond ? chosen.secondPlayerResult : chosen.firstPlayerResult;
+                    return (
+                      <div className="space-y-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-xs font-semibold text-white">{chosen.title}</span>
+                          <span className="font-mono text-[11px] text-slate-300">
+                            Earliest Full Line: Turn {chosen.minTurn}
+                            {chainGoingSecond ? ' (uses EX Resource)' : ''}
+                          </span>
+                        </div>
+                        {!res.legal && (
+                          <div className="rounded border border-red-500/30 bg-red-500/10 px-2.5 py-1.5 text-[11px] text-red-200">
+                            {res.reason}: {res.detail}
+                          </div>
+                        )}
+                        <div className="space-y-1.5 text-[11px]">
+                          {res.trace.map((step, i) => (
+                            <div
+                              key={i}
+                              className="flex items-start gap-2 rounded border border-white/[0.05] bg-[#131822] px-2.5 py-1.5 text-slate-200"
+                            >
+                              <span className="shrink-0 font-mono text-[10px] font-semibold text-blue-300">
+                                {step.kind}
+                              </span>
+                              <span>{step.detail}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* Custom 2-Card Line Verifier */}
+            {deckUniqueCards.length > 0 && (
+              <div className="border-t border-white/[0.06] pt-3 space-y-2.5">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="font-medium text-slate-300">Test Custom 2-Card Line:</span>
+                  <select
+                    value={customChainCardA}
+                    onChange={(e) => setCustomChainCardA(e.target.value)}
+                    aria-label="Custom chain first card"
+                    className="rounded-lg border border-white/10 bg-[#0B0E14] px-2.5 py-1.5 text-xs text-white"
+                  >
+                    <option value="">Select Card 1...</option>
+                    {deckUniqueCards.map((c) => (
+                      <option key={c.cardNo} value={c.cardNo}>
+                        {c.cardNo} · {c.name} ({c.type})
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-slate-500">→</span>
+                  <select
+                    value={customChainCardB}
+                    onChange={(e) => setCustomChainCardB(e.target.value)}
+                    aria-label="Custom chain second card"
+                    className="rounded-lg border border-white/10 bg-[#0B0E14] px-2.5 py-1.5 text-xs text-white"
+                  >
+                    <option value="">None (1-Card Play)</option>
+                    {deckUniqueCards.map((c) => (
+                      <option key={c.cardNo} value={c.cardNo}>
+                        {c.cardNo} · {c.name} ({c.type})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {customChainResult && (
+                  <div className="rounded-lg border border-white/[0.06] bg-[#0B0E14] p-3 space-y-1.5 text-[11px]">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-white">
+                        {customChainResult.cardA.name}
+                        {customChainResult.cardB ? ` + ${customChainResult.cardB.name}` : ''} (Turn {customChainResult.turn})
+                      </span>
+                      <span
+                        className={`font-mono font-semibold ${
+                          customChainResult.result.legal ? 'text-emerald-400' : 'text-red-400'
+                        }`}
+                      >
+                        {customChainResult.result.legal
+                          ? 'Verified Legal'
+                          : customChainResult.result.reason}
+                      </span>
+                    </div>
+                    {!customChainResult.result.legal && (
+                      <div className="text-red-200">{customChainResult.result.detail}</div>
+                    )}
+                    {customChainResult.result.trace.map((step, i) => (
+                      <div key={i} className="flex items-start gap-2 text-slate-300">
+                        <span className="shrink-0 font-mono text-[10px] text-blue-300">{step.kind}</span>
+                        <span>{step.detail}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

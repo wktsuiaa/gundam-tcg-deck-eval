@@ -4,11 +4,14 @@ import { describe, expect, it } from 'vitest';
 import type { GundamCardPrint } from '@/types/gundam';
 import { compileCardEffect } from '@/lib/effect-parser';
 import {
+  buildDeckChainPreviews,
   evaluateUnitEffectiveState,
+  previewSandboxMoveChain,
   verifyPlayLine,
   type ChainMatchState,
   type ChainUnitInstance,
 } from '@/lib/chain-verifier';
+import { createInitialSandboxMatch, evaluateSandboxBestMoves } from '@/lib/sandbox-engine';
 
 function loadCompiledCorpus(): Map<string, GundamCardPrint> {
   const colDir = path.join(process.cwd(), 'data', 'collections');
@@ -506,6 +509,111 @@ describe('Seam 3: Rules-Accurate Chain Verifier (Core Gates & 4-Layer Modifiers)
     if (res.legal) {
       expect(res.finalState.players.A.battleArea[0]?.card.cardNo).toBe('ST09-006');
       expect(res.finalState.players.B.battleArea).toHaveLength(0);
+    }
+  });
+
+  it('recognizes [Link] on paired Pilots & Command-Pilots (isUnitLinked), fires WHEN_LINKED, and executes PAIR_SELF_FROM_TRASH', () => {
+    const astraysUnit = makeCard({
+      cardNo: 'TST-ASTRAY',
+      printId: 'TST-ASTRAY',
+      name: 'Gundam Astray Red Frame',
+      type: 'UNIT',
+      lv: 3,
+      cost: 2,
+      ap: 3,
+      hp: 3,
+      traits: ['G Generation'],
+      link: '[Lowe Guele]',
+      effect: '【When Linked】Draw 1.',
+    });
+    const eb01076 = corpus.get('EB01-076')!; // Command-Pilot 【Pilot】[Lowe Guele]
+    const state = makeBaseState({ turn: 4 });
+    state.players.A.activeResources = 4;
+    state.players.A.hand = [astraysUnit, eb01076];
+    state.players.A.deck = [makeCard({ cardNo: 'DRW-1', name: 'Drawn Card' })];
+
+    const linkRes = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state },
+      playLine: [
+        { type: 'DEPLOY_UNIT', side: 'A', handIndex: 0 },
+        { type: 'PAIR_PILOT', side: 'A', handIndex: 0, targetUnitId: 'A-U-unit#1' },
+        { type: 'ATTACK_SHIELD', side: 'A', attackerId: 'A-U-unit#1' },
+      ],
+      witness: {},
+    });
+    expect(linkRes.legal).toBe(true);
+    if (linkRes.legal) {
+      expect(linkRes.trace.some((t) => t.detail.includes('linked=true'))).toBe(true);
+      expect(linkRes.trace.some((t) => t.detail.includes('WHEN_LINKED'))).toBe(true);
+      expect(linkRes.finalState.players.A.hand.map((c) => c.cardNo)).toContain('DRW-1');
+    }
+
+    // PAIR_SELF_FROM_TRASH (GD05-112 played from hand pairs itself onto unpaired (MF) Unit)
+    const mfUnit = makeCard({
+      cardNo: 'TST-MF',
+      printId: 'TST-MF',
+      name: 'Shining Gundam',
+      traits: ['MF'],
+      ap: 4,
+      hp: 4,
+    });
+    const gd05112 = corpus.get('GD05-112')!;
+    const trashPairState = makeBaseState({ turn: 5 });
+    trashPairState.players.A.activeResources = 5;
+    trashPairState.players.A.battleArea = [makeUnit('A-MF', mfUnit, { deployedTurn: 1 })];
+    trashPairState.players.A.hand = [gd05112];
+
+    const pairSelfRes = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state: trashPairState },
+      playLine: [{ type: 'PLAY_COMMAND', side: 'A', handIndex: 0 }],
+      witness: {},
+    });
+    expect(pairSelfRes.legal).toBe(true);
+    if (pairSelfRes.legal) {
+      expect(pairSelfRes.finalState.players.A.battleArea[0].pairedPilot?.cardNo).toBe('GD05-112');
+      expect(pairSelfRes.finalState.players.A.trash.some((c) => c.cardNo === 'GD05-112')).toBe(false);
+    }
+
+    // Deck & Sandbox Chain Preview helpers
+    const previews = buildDeckChainPreviews([astraysUnit, eb01076]);
+    expect(previews.some((p) => p.category === 'Command-Pilot Link' && p.firstPlayerResult.legal)).toBe(true);
+  });
+
+  it('previews legal and blocked moves accurately via previewSandboxMoveChain', () => {
+    const unit = makeCard({ cardNo: 'TST-U', printId: 'TST-U', name: 'Sample Unit', lv: 2, cost: 1, ap: 3, hp: 3 });
+    const dummyDeck = {
+      id: 'd1',
+      name: 'Test',
+      updatedAt: '2026-01-01',
+      mainDeck: [{ cardNo: 'TST-U', printId: 'TST-U', qty: 10 }],
+      resourceDeck: [],
+    };
+    const byPrint = new Map([[unit.printId, unit]]);
+    const byNo = new Map([[unit.cardNo, unit]]);
+    const sandbox = createInitialSandboxMatch(dummyDeck, dummyDeck, 'A', byPrint, byNo);
+    sandbox.players.A.hand = [unit];
+    sandbox.players.A.resourcesTotal = 2;
+    sandbox.players.A.resourcesActive = 2;
+
+    const moves = evaluateSandboxBestMoves(sandbox, 'A');
+    const legalPreview = previewSandboxMoveChain(sandbox, moves[0]);
+    expect(legalPreview.result.legal).toBe(true);
+
+    // Exhaust active resources to verify fail-closed INSUFFICIENT_RESOURCES
+    sandbox.players.A.resourcesActive = 0;
+    const blockedPreview = previewSandboxMoveChain(sandbox, {
+      id: 'deploy-fail',
+      rank: 1,
+      actionType: 'DEPLOY_UNIT',
+      title: 'Deploy Sample Unit',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 50,
+      card: unit,
+    });
+    expect(blockedPreview.result.legal).toBe(false);
+    if (!blockedPreview.result.legal) {
+      expect(blockedPreview.result.reason).toBe('INSUFFICIENT_RESOURCES');
     }
   });
 });

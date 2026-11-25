@@ -15,7 +15,7 @@ abilityLine
   ;
 
 keywordLine
-  : LT_KEYWORD INT? GT
+  : (KEYWORD_TAG | '[' WORD ']')
   ;
 
 replacementClause
@@ -45,11 +45,11 @@ staticScope
   ;
 
 prohibitionBody
-  : clauseSegment+ ('can\'t' | 'cannot') clauseSegment+
+  : clauseSegment+ ('can\'t' | 'cannot' | 'won\'t') clauseSegment+
   ;
 
 statAuraBody
-  : ('Increase' | 'Reduce' | 'This' 'Unit' 'gets' | 'All' 'your') clauseSegment+
+  : ('Increase' | 'Reduce' | 'This' 'Unit' 'gets' | 'All' 'your' | 'While') clauseSegment+
   ;
 
 identityAliasBody
@@ -58,8 +58,8 @@ identityAliasBody
 
 effectClause
   : timingHeader+ oncePerTurn? guardPrefix* triggerPrefix? activationCost? stepSequence '.'?
-  | oncePerTurn? guardPrefix* triggerPrefix activationCost? stepSequence '.'?
-  | oncePerTurn? guardPrefix+ stepSequence '.'?
+  | staticScope* oncePerTurn? guardPrefix* triggerPrefix activationCost? stepSequence '.'?
+  | staticScope* oncePerTurn? guardPrefix+ stepSequence '.'?
   ;
 
 timingHeader
@@ -72,7 +72,7 @@ oncePerTurn
 
 guardPrefix
   : ('During' ('your' | 'your opponent\'s') 'turn' | 'While' clauseSegment+ | 'If' clauseSegment+) COMMA
-  | 'At' ('the end of your turn' | 'the start of your opponent\'s turn') COMMA
+  | 'At' 'the' ('end' | 'start') 'of' clauseSegment+ COMMA
   ;
 
 triggerPrefix

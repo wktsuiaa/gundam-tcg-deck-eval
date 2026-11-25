@@ -8,22 +8,22 @@ import type {
   SandboxUnitInstance,
   SavedDeck,
 } from '@/types/gundam';
-import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
+import { doesPilotLinkUnit, isCommandPilot } from '@/lib/gundam-keywords';
 import { expandEntries, scoreSingleCardSignals } from '@/lib/deck-engine';
 import type {
   ActivationCost,
-  EffectClause,
+  CompiledCardEffect,
   EffectCondition,
   EffectTiming,
   KeywordName,
-  ParsedCardEffects,
   ScaleMetric,
   TargetSelector,
 } from '@/lib/effect-parser';
+import type { EffectClauseAst } from '@/lib/cfg-parser';
 
-const EMPTY_PARSED_EFFECTS: Pick<ParsedCardEffects, 'keywords' | 'clauses'> = {
+const EMPTY_PARSED_EFFECTS: Pick<CompiledCardEffect, 'keywords' | 'abilities'> = {
   keywords: [],
-  clauses: [],
+  abilities: [],
 };
 
 function shuffleCards(cards: GundamCardPrint[]): GundamCardPrint[] {
@@ -88,19 +88,14 @@ function continuousApBuff(u: SandboxUnitInstance, state?: SandboxMatchState, sid
   const cards = u.pairedPilot ? [u.card, u.pairedPilot] : [u.card];
   for (const c of cards) {
     const parsed = c.compiledEffect ?? EMPTY_PARSED_EFFECTS;
-    for (const clause of parsed.clauses) {
-      const isContinuous =
-        clause.timings.includes('CONTINUOUS') ||
-        clause.timings.includes('DURING_PAIR') ||
-        (clause.timings.includes('DURING_LINK') && u.isLinked);
-      if (!isContinuous || clause.unparsedResidual) continue;
-      if (clause.timings.includes('DURING_PAIR') && !u.pairedPilot) continue;
-      if (!checkCondition(clause.condition, state, side, u)) continue;
-      for (const step of clause.steps) {
-        if (step.action === 'MODIFY_AP' && step.target.self) {
-          const factor = evaluateScaleMetric(step.scaleBy, state, side, u);
-          if (factor !== null) bonus += step.delta * factor;
-        }
+    for (const ab of parsed.abilities) {
+      if (ab.kind !== 'CONTINUOUS_MODIFIER' || ab.layer !== 3) continue;
+      if (ab.requiresPair && !u.pairedPilot) continue;
+      if (ab.requiresLink && !u.isLinked) continue;
+      if (!checkCondition(ab.condition, state, side, u)) continue;
+      if (ab.modifier.type === 'MODIFY_STAT' && ab.modifier.stat === 'AP' && ab.modifier.target.self) {
+        const factor = evaluateScaleMetric(ab.modifier.scaleBy, state, side, u);
+        if (factor !== null) bonus += ab.modifier.delta * factor;
       }
     }
   }
@@ -301,16 +296,14 @@ function unitKeywordValue(
     if (innate) return innate.value ?? 1;
 
     if (state && side) {
-      for (const clause of parsed.clauses) {
-        const isContinuous =
-          clause.timings.includes('CONTINUOUS') ||
-          clause.timings.includes('DURING_PAIR') ||
-          (clause.timings.includes('DURING_LINK') && u.isLinked);
-        if (!isContinuous) continue;
-        if (clause.timings.includes('DURING_PAIR') && !u.pairedPilot) continue;
-        if (!checkCondition(clause.condition, state, side, u)) continue;
-        const grant = clause.steps.find((s) => s.action === 'GRANT_KEYWORD' && s.keyword.name === name);
-        if (grant && grant.action === 'GRANT_KEYWORD') return grant.keyword.value ?? 1;
+      for (const ab of parsed.abilities) {
+        if (ab.kind !== 'CONTINUOUS_MODIFIER' || ab.layer !== 2) continue;
+        if (ab.requiresPair && !u.pairedPilot) continue;
+        if (ab.requiresLink && !u.isLinked) continue;
+        if (!checkCondition(ab.condition, state, side, u)) continue;
+        if (ab.modifier.type === 'GRANT_KEYWORD' && ab.modifier.keyword.name === name) {
+          return ab.modifier.keyword.value ?? 1;
+        }
       }
     }
   }
@@ -416,10 +409,11 @@ export function getLegalTargetOptions(
   selfUnit?: SandboxUnitInstance
 ): SandboxUnitInstance[] {
   const parsed = card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
-  for (const clause of parsed.clauses) {
-    if (!clause.timings.includes(timing)) continue;
-    if (!checkCondition(clause.condition, state, side, selfUnit)) continue;
-    for (const step of clause.steps) {
+  for (const ab of parsed.abilities) {
+    if (ab.kind !== 'EFFECT_CLAUSE') continue;
+    if (!ab.timings.includes(timing)) continue;
+    if (!checkCondition(ab.condition, state, side, selfUnit)) continue;
+    for (const step of ab.steps) {
       if ('target' in step && step.target && step.target.owner === 'ENEMY' && step.target.count === 1) {
         return findBattleAreaTargets(state, side, step.target, selfUnit).map((x) => x.unit);
       }
@@ -584,17 +578,13 @@ function payActivationCost(
 function resolveClause(
   state: SandboxMatchState,
   side: SandboxSide,
-  clause: EffectClause,
+  clause: EffectClauseAst,
   sourceCard: GundamCardPrint,
   selfUnit?: SandboxUnitInstance,
   targetInstanceId?: string,
   destroyedByBattle = false
 ): string[] {
   const notes: string[] = [];
-  if (clause.unparsedResidual) {
-    notes.push(`Manual resolution required: ${clause.raw}`);
-    return notes;
-  }
   if (clause.oncePerTurn && selfUnit && !clause.timings.includes('ACTIVATE_MAIN')) {
     if (selfUnit.triggeredClauseTurns?.[clause.raw] === state.turn) {
       return notes;
@@ -616,6 +606,11 @@ function resolveClause(
   }
 
   const actor = state.players[side];
+
+  if (clause.steps.length === 0) {
+    notes.push(`Manual resolution required: ${clause.raw}`);
+    return notes;
+  }
 
   for (const step of clause.steps) {
     switch (step.action) {
@@ -852,20 +847,21 @@ function resolveClausesForTiming(
 ): string[] {
   const parsed = card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
   const notes: string[] = [];
-  for (const clause of parsed.clauses) {
-    if (!clause.timings.includes(timing)) continue;
-    if (timing === 'WHEN_DESTROY_BY_BATTLE' && clause.triggerEvent) {
-      if (clause.triggerEvent.damageType === 'EFFECT') continue;
+  for (const ab of parsed.abilities) {
+    if (ab.kind !== 'EFFECT_CLAUSE') continue;
+    if (!ab.timings.includes(timing)) continue;
+    if (timing === 'WHEN_DESTROY_BY_BATTLE' && ab.triggerEvent) {
+      if (ab.triggerEvent.damageType === 'EFFECT') continue;
       if (
         destroyTargetKind &&
-        clause.triggerEvent.targetKind &&
-        clause.triggerEvent.targetKind !== 'ANY_ENEMY_CARD' &&
-        clause.triggerEvent.targetKind !== destroyTargetKind
+        ab.triggerEvent.targetKind &&
+        ab.triggerEvent.targetKind !== 'ANY_ENEMY_CARD' &&
+        ab.triggerEvent.targetKind !== destroyTargetKind
       ) {
         continue;
       }
     }
-    notes.push(...resolveClause(state, side, clause, card, selfUnit, targetInstanceId, destroyedByBattle));
+    notes.push(...resolveClause(state, side, ab, card, selfUnit, targetInstanceId, destroyedByBattle));
   }
   return notes;
 }
@@ -906,8 +902,10 @@ export function canUnitAttack(unit: SandboxUnitInstance, currentTurn: number): b
 export function canActivateUnitMain(state: SandboxMatchState, side: SandboxSide, unit: SandboxUnitInstance): boolean {
   const player = state.players[side];
   const parsed = unit.card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
-  const clause = parsed.clauses.find((c) => c.timings.includes('ACTIVATE_MAIN'));
-  if (!clause || clause.unparsedResidual) return false;
+  const clause = parsed.abilities.find(
+    (ab): ab is EffectClauseAst => ab.kind === 'EFFECT_CLAUSE' && ab.timings.includes('ACTIVATE_MAIN')
+  );
+  if (!clause) return false;
   if (clause.oncePerTurn && unit.activatedMainTurn === state.turn) return false;
   if (!canPayActivationCost(player, clause.cost, unit)) return false;
   if (!checkCondition(clause.condition, state, side, unit)) return false;
@@ -1011,7 +1009,9 @@ export function applySandboxMove(
     const unit = player.battleArea.find((u) => u.instanceId === move.unitInstanceId);
     if (unit && canActivateUnitMain(next, side, unit)) {
       const parsed = unit.card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
-      const clause = parsed.clauses.find((c) => c.timings.includes('ACTIVATE_MAIN'));
+      const clause = parsed.abilities.find(
+        (ab): ab is EffectClauseAst => ab.kind === 'EFFECT_CLAUSE' && ab.timings.includes('ACTIVATE_MAIN')
+      );
       if (clause) {
         unit.activatedMainTurn = next.turn;
         payActivationCost(next, side, clause.cost, unit);
@@ -1273,7 +1273,7 @@ export function evaluateSandboxBestMoves(
       });
     }
 
-    if (card.type === 'PILOT') {
+    if (card.type === 'PILOT' || isCommandPilot(card)) {
       for (const unit of player.battleArea) {
         if (unit.pairedPilot) continue;
         const links = doesPilotLinkUnit(card, unit.card);
@@ -1281,7 +1281,7 @@ export function evaluateSandboxBestMoves(
         if (links && unit.summonedTurn === state.turn) {
           score += 14;
         }
-        const newAp = effectiveAp(unit) + (card.ap ?? 1);
+        const newAp = effectiveAp(unit) + (card.ap ?? 0);
         candidates.push({
           id: `pair-${card.printId}-${unit.instanceId}`,
           actionType: 'PAIR_PILOT',
@@ -1298,28 +1298,33 @@ export function evaluateSandboxBestMoves(
     }
 
     if (card.type === 'COMMAND') {
-      const legalTargets = getLegalTargetOptions(state, side, card, 'MAIN');
-      const bestTarget = [...legalTargets].sort((a, b) => effectiveAp(b) - effectiveAp(a))[0];
-      const sig = scoreSingleCardSignals(card);
-      let score = 48;
-      let reason = `Applies ${sig.effectStyles.join(' / ') || 'tactical'} effect.`;
-      if (bestTarget) {
-        score += 32 + effectiveAp(bestTarget) * 3;
-        reason = `Answers opponent's ${bestTarget.card.name} (${effectiveAp(bestTarget)}/${effectiveRemainingHp(bestTarget)}).`;
-      } else if (sig.hasDraw || sig.hasSearch || sig.hasRamp) {
-        score += 24;
-        reason = `Builds hand liquidity or Resource curve advantage without risking board tempo.`;
+      const hasMainClause = (card.compiledEffect?.abilities ?? []).some(
+        (ab) => ab.kind === 'EFFECT_CLAUSE' && ab.timings.includes('MAIN')
+      );
+      if (hasMainClause) {
+        const legalTargets = getLegalTargetOptions(state, side, card, 'MAIN');
+        const bestTarget = [...legalTargets].sort((a, b) => effectiveAp(b) - effectiveAp(a))[0];
+        const sig = scoreSingleCardSignals(card);
+        let score = 48;
+        let reason = `Applies ${sig.effectStyles.join(' / ') || 'tactical'} effect.`;
+        if (bestTarget) {
+          score += 32 + effectiveAp(bestTarget) * 3;
+          reason = `Answers opponent's ${bestTarget.card.name} (${effectiveAp(bestTarget)}/${effectiveRemainingHp(bestTarget)}).`;
+        } else if (sig.hasDraw || sig.hasSearch || sig.hasRamp) {
+          score += 24;
+          reason = `Builds hand liquidity or Resource curve advantage without risking board tempo.`;
+        }
+        candidates.push({
+          id: `cmd-${card.printId}`,
+          actionType: 'PLAY_COMMAND',
+          title: `Play ${card.name} (C${card.cost ?? 0})`,
+          reason,
+          winDeltaPct: Math.max(2, Math.round((score - 45) * 0.22)),
+          priorityScore: score,
+          card,
+          targetInstanceId: bestTarget?.instanceId,
+        });
       }
-      candidates.push({
-        id: `cmd-${card.printId}`,
-        actionType: 'PLAY_COMMAND',
-        title: `Play ${card.name} (C${card.cost ?? 0})`,
-        reason,
-        winDeltaPct: Math.max(2, Math.round((score - 45) * 0.22)),
-        priorityScore: score,
-        card,
-        targetInstanceId: bestTarget?.instanceId,
-      });
     }
 
     if (card.type === 'BASE' && !player.base) {

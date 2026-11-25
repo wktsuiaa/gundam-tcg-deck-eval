@@ -128,17 +128,35 @@ export function groupPrintsByCardNo(cards: GundamCardPrint[]): GundamCardGroup[]
 }
 
 /**
+ * Returns true if a card is a Command-Pilot (COMMAND with 【Pilot】[Name] / GRANT_PILOT_MODE).
+ */
+export function isCommandPilot(card: GundamCardPrint): boolean {
+  if (card.type !== 'COMMAND') return false;
+  if (card.compiledEffect?.abilities) {
+    return card.compiledEffect.abilities.some(
+      (ab) => ab.kind === 'CONTINUOUS_MODIFIER' && ab.modifier.type === 'GRANT_PILOT_MODE'
+    );
+  }
+  return /【Pilot】\s*\[([^\]]+)\]/i.test(card.effect ?? '');
+}
+
+/**
  * Extracts effective pilot names for Link matching (Pilot name, 【Pilot】[Name] modes, and Name Aliases).
  */
 export function extractPilotNamesForLink(card: GundamCardPrint): string[] {
   const names: string[] = [];
   if (card.type === 'PILOT' && card.name) names.push(card.name);
 
-  if (card.compiledEffect?.clauses) {
-    for (const clause of card.compiledEffect.clauses) {
-      for (const step of clause.steps) {
-        if (step.action === 'GRANT_PILOT_MODE') names.push(step.pilotName);
-        else if (step.action === 'NAME_ALIAS') names.push(step.alias);
+  if (card.compiledEffect?.abilities) {
+    for (const ab of card.compiledEffect.abilities) {
+      if (ab.kind === 'CONTINUOUS_MODIFIER') {
+        if (ab.modifier.type === 'GRANT_PILOT_MODE') names.push(ab.modifier.pilotName);
+        else if (ab.modifier.type === 'NAME_ALIAS') names.push(ab.modifier.alias);
+      } else if (ab.kind === 'EFFECT_CLAUSE') {
+        for (const step of ab.steps) {
+          if (step.action === 'GRANT_PILOT_MODE') names.push(step.pilotName);
+          else if (step.action === 'NAME_ALIAS') names.push(step.alias);
+        }
       }
     }
   } else if (card.effect) {

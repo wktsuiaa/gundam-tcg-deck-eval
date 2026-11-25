@@ -13,6 +13,9 @@ import {
   Eye,
   EyeOff,
   Trophy,
+  GitBranch,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import type {
   GundamCardPrint,
@@ -27,6 +30,8 @@ import {
   resolveCardMap,
   STARTER_PRESETS,
 } from '@/lib/deck-engine';
+import { extractPilotNamesForLink, isCommandPilot } from '@/lib/gundam-keywords';
+import { previewSandboxMoveChain } from '@/lib/chain-verifier';
 import {
   applySandboxMove,
   canActivateUnitMain,
@@ -78,7 +83,9 @@ export function MatchSandbox({
 
   const [revealHandB, setRevealHandB] = useState(true);
   const [selectedPilotCard, setSelectedPilotCard] = useState<GundamCardPrint | null>(null);
+  const [commandPilotPendingCard, setCommandPilotPendingCard] = useState<GundamCardPrint | null>(null);
   const [selectedAttackerId, setSelectedAttackerId] = useState<string | null>(null);
+  const [previewedMoveId, setPreviewedMoveId] = useState<string | null>(null);
   const [pendingTargetMove, setPendingTargetMove] = useState<{
     move: SandboxMoveSuggestion;
     options: SandboxUnitInstance[];
@@ -90,7 +97,9 @@ export function MatchSandbox({
   const handleStartMatch = () => {
     if (!deckA || !deckB) return;
     setSelectedPilotCard(null);
+    setCommandPilotPendingCard(null);
     setSelectedAttackerId(null);
+    setPreviewedMoveId(null);
     setPendingTargetMove(null);
     setMatch(createInitialSandboxMatch(deckA, deckB, firstSide, byPrintId, byCardNo));
   };
@@ -100,10 +109,42 @@ export function MatchSandbox({
     return evaluateSandboxBestMoves(match, match.activeSide);
   }, [match]);
 
+  const activePreviewMove = useMemo(() => {
+    if (!match || match.winner) return null;
+    if (previewedMoveId) {
+      const found = bestMoves.find((m) => m.id === previewedMoveId);
+      if (found) return found;
+    }
+    if (selectedPilotCard) {
+      const firstUnpaired = match.players[match.activeSide].battleArea.find((u) => !u.pairedPilot);
+      if (firstUnpaired) {
+        return {
+          id: `preview-pair-${selectedPilotCard.printId}`,
+          rank: 1 as const,
+          actionType: 'PAIR_PILOT' as const,
+          title: `Pair ${selectedPilotCard.name} → ${firstUnpaired.card.name}`,
+          reason: 'Staged Pilot / Command-Pilot pair',
+          winDeltaPct: 0,
+          priorityScore: 0,
+          card: selectedPilotCard,
+          unitInstanceId: firstUnpaired.instanceId,
+        };
+      }
+    }
+    return bestMoves[0] ?? null;
+  }, [match, bestMoves, previewedMoveId, selectedPilotCard]);
+
+  const chainPreview = useMemo(() => {
+    if (!match || !activePreviewMove) return null;
+    return previewSandboxMoveChain(match, activePreviewMove);
+  }, [match, activePreviewMove]);
+
   const executeMove = (move: SandboxMoveSuggestion) => {
     if (!match) return;
     setSelectedPilotCard(null);
+    setCommandPilotPendingCard(null);
     setSelectedAttackerId(null);
+    setPreviewedMoveId(null);
     setPendingTargetMove(null);
     setMatch(applySandboxMove(match, move));
   };
@@ -111,7 +152,9 @@ export function MatchSandbox({
   const handleAutoStepMove = () => {
     if (!match || match.winner) return;
     setSelectedPilotCard(null);
+    setCommandPilotPendingCard(null);
     setSelectedAttackerId(null);
+    setPreviewedMoveId(null);
     setPendingTargetMove(null);
     setMatch(stepSandboxBot(match));
   };
@@ -126,7 +169,9 @@ export function MatchSandbox({
       guard += 1;
     }
     setSelectedPilotCard(null);
+    setCommandPilotPendingCard(null);
     setSelectedAttackerId(null);
+    setPreviewedMoveId(null);
     setPendingTargetMove(null);
     setMatch(current);
   };
@@ -147,14 +192,52 @@ export function MatchSandbox({
     executeMove({ ...move, targetInstanceId: options[0]?.instanceId });
   };
 
+  const playCommandCard = (side: SandboxSide, card: GundamCardPrint) => {
+    if (!match) return;
+    const move: SandboxMoveSuggestion = {
+      id: `manual-${card.printId}-${match.turn}-${match.log.length}`,
+      rank: 1,
+      actionType: 'PLAY_COMMAND',
+      title: `Play ${card.name}`,
+      reason: 'Manual Command play',
+      winDeltaPct: 0,
+      priorityScore: 0,
+      card,
+    };
+    dispatchTargetedOrImmediate(side, move, card, 'MAIN');
+  };
+
   const handleManualCardClick = (side: SandboxSide, card: GundamCardPrint) => {
     if (!match || match.winner || match.activeSide !== side) return;
     const player = match.players[side];
     if (!canPayCard(player, card)) return;
 
+    const hasUnpairedUnit = player.battleArea.some((u) => !u.pairedPilot);
+
     if (card.type === 'PILOT') {
-      if (player.battleArea.some((u) => !u.pairedPilot)) {
+      if (hasUnpairedUnit) {
+        setCommandPilotPendingCard(null);
         setSelectedPilotCard((prev) => (prev?.printId === card.printId ? null : card));
+      }
+      return;
+    }
+
+    if (isCommandPilot(card)) {
+      const hasMainClause = (card.compiledEffect?.abilities ?? []).some(
+        (ab) => ab.kind === 'EFFECT_CLAUSE' && ab.timings.includes('MAIN')
+      );
+      if (hasMainClause && hasUnpairedUnit) {
+        setSelectedPilotCard(null);
+        setCommandPilotPendingCard((prev) => (prev?.printId === card.printId ? null : card));
+        return;
+      }
+      if (!hasMainClause && hasUnpairedUnit) {
+        setCommandPilotPendingCard(null);
+        setSelectedPilotCard((prev) => (prev?.printId === card.printId ? null : card));
+        return;
+      }
+      if (hasMainClause) {
+        playCommandCard(side, card);
       }
       return;
     }
@@ -524,10 +607,50 @@ export function MatchSandbox({
             )}
           </div>
 
+          {isActive && commandPilotPendingCard && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs">
+              <div className="text-amber-200">
+                <strong className="text-white">{commandPilotPendingCard.name}</strong> has dual Command / Pilot mode (
+                {extractPilotNamesForLink(commandPilotPendingCard).join(', ') || 'Pilot'} +{commandPilotPendingCard.ap ?? 0}/+{commandPilotPendingCard.hp ?? 0}). Choose how to play:
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const card = commandPilotPendingCard;
+                    setCommandPilotPendingCard(null);
+                    playCommandCard(side, card);
+                  }}
+                  className="rounded bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-500"
+                >
+                  Play as Command
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPilotCard(commandPilotPendingCard);
+                    setCommandPilotPendingCard(null);
+                  }}
+                  className="rounded bg-amber-500/30 border border-amber-400/50 px-2.5 py-1 text-[11px] font-medium text-amber-100 hover:bg-amber-500/45"
+                >
+                  Pair as Pilot
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCommandPilotPendingCard(null)}
+                  className="rounded border border-white/15 px-2 py-1 text-[11px] text-slate-300 hover:bg-white/10"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           {showHandCards ? (
             <div className="flex gap-2 overflow-x-auto pb-1">
               {player.hand.map((c, idx) => {
                 const playable = isActive && canPayCard(player, c);
+                const cmdPilot = isCommandPilot(c);
                 return (
                   <div
                     key={`${c.printId}-${idx}`}
@@ -547,7 +670,7 @@ export function MatchSandbox({
                       className="aspect-[5/7] w-full overflow-hidden rounded"
                       title={
                         playable
-                          ? `Play ${c.name} (Lv.${c.lv ?? 1} / C${c.cost ?? 0})`
+                          ? `${cmdPilot ? 'Play Command or Pair as Pilot: ' : 'Play '}${c.name} (Lv.${c.lv ?? 1} / C${c.cost ?? 0})`
                           : `Inspect ${c.name}`
                       }
                     >
@@ -558,7 +681,9 @@ export function MatchSandbox({
                     </div>
                     <div className="flex items-center justify-between font-mono text-[9px] text-slate-400">
                       <span>Lv{c.lv ?? 1}·C{c.cost ?? 0}</span>
-                      <span>{c.type.slice(0, 4)}</span>
+                      <span className={cmdPilot ? 'text-amber-300' : ''}>
+                        {cmdPilot ? 'CMD·PLT' : c.type.slice(0, 4)}
+                      </span>
                     </div>
                   </div>
                 );
@@ -730,11 +855,12 @@ export function MatchSandbox({
                 {bestMoves.map((move) => (
                   <div
                     key={move.id}
-                    className={`rounded-lg border p-3 space-y-2 ${
+                    onMouseEnter={() => setPreviewedMoveId(move.id)}
+                    className={`rounded-lg border p-3 space-y-2 transition-colors ${
                       move.rank === 1
                         ? 'border-emerald-500/40 bg-emerald-500/10'
                         : 'border-white/[0.07] bg-[#0B0E14]'
-                    }`}
+                    } ${activePreviewMove?.id === move.id ? 'ring-1 ring-blue-400/60' : ''}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5">
@@ -748,17 +874,91 @@ export function MatchSandbox({
                       </span>
                     </div>
                     <p className="text-[11px] leading-snug text-slate-300">{move.reason}</p>
-                    <button
-                      type="button"
-                      onClick={() => executeMove(move)}
-                      className="flex w-full items-center justify-center gap-1.5 rounded-md bg-blue-600/85 py-1.5 text-[11px] font-medium text-white hover:bg-blue-500 transition-colors"
-                    >
-                      <Sparkles className="h-3 w-3" />
-                      <span>Apply Move</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => executeMove(move)}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-blue-600/85 py-1.5 text-[11px] font-medium text-white hover:bg-blue-500 transition-colors"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        <span>Apply Move</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewedMoveId(move.id)}
+                        className="rounded-md border border-white/15 bg-white/[0.04] px-2.5 py-1.5 text-[11px] font-medium text-slate-200 hover:bg-white/10"
+                        title="Preview Chain Resolution"
+                      >
+                        Chain
+                      </button>
+                    </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Rules-Accurate Chain Preview */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#131822] p-4 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <GitBranch className="h-4 w-4 text-blue-400" />
+                <h3 className="font-display text-sm font-bold text-white">Chain Preview</h3>
+              </div>
+              {chainPreview && (
+                <span
+                  className={`inline-flex items-center gap-1 font-mono text-[11px] font-semibold ${
+                    chainPreview.result.legal ? 'text-emerald-400' : 'text-red-400'
+                  }`}
+                >
+                  {chainPreview.result.legal ? (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>Verified Legal</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      <span>{chainPreview.result.reason}</span>
+                    </>
+                  )}
+                </span>
+              )}
+            </div>
+
+            {chainPreview ? (
+              <div className="space-y-2">
+                <div className="rounded border border-white/[0.06] bg-[#0B0E14] px-2.5 py-2 text-[11px]">
+                  <div className="font-semibold text-white">{chainPreview.moveTitle}</div>
+                  <div className="mt-0.5 font-mono text-[10px] text-slate-400 tabular-nums">
+                    Lv.{chainPreview.lvRequired} · Cost {chainPreview.costRequired} ({chainPreview.activeResources} active)
+                  </div>
+                </div>
+                {!chainPreview.result.legal && (
+                  <div className="rounded border border-red-500/30 bg-red-500/10 px-2.5 py-1.5 text-[11px] text-red-200">
+                    {chainPreview.result.detail}
+                  </div>
+                )}
+                {chainPreview.result.trace.length > 0 && (
+                  <div className="max-h-40 space-y-1 overflow-y-auto pr-1 text-[11px]">
+                    {chainPreview.result.trace.map((step, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2 rounded border border-white/[0.05] bg-[#0B0E14] px-2 py-1 text-slate-300"
+                      >
+                        <span className="shrink-0 font-mono text-[10px] font-semibold text-blue-300">
+                          {step.kind}
+                        </span>
+                        <span className="leading-snug">{step.detail}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="py-3 text-center text-[11px] text-slate-500">
+                Hover or select a candidate move to preview its rules-verified resolution chain.
               </div>
             )}
           </div>

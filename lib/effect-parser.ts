@@ -277,12 +277,19 @@ export type EffectStep =
   | { action: 'IF_PREVIOUS_SUCCEEDED'; negated?: boolean; filter?: { count?: number; lvMin?: number; cardType?: string; traits?: string[]; drawAccepted?: boolean; placedFromDeck?: boolean }; thenSteps: EffectStep[] }
   | { action: 'GRANT_CLAUSE'; clause: EffectClause; duration?: EffectDuration; target: TargetSelector };
 
+export interface PairFilter {
+  trait?: string;
+  color?: CardColor;
+  lvMin?: number;
+  lvMax?: number;
+}
+
 export interface EffectClause {
   raw: string;
   timings: EffectTiming[];
   oncePerTurn: boolean;
   triggerEvent?: TriggerEvent;
-  pairFilter?: { trait?: string; color?: CardColor; lvMin?: number; lvMax?: number };
+  pairFilter?: PairFilter;
   linkRequirement?: LinkRequirement;
   cost?: ActivationCost;
   condition?: EffectCondition;
@@ -303,8 +310,7 @@ export interface CompiledCardEffect {
   type: string;
   color: CardColor;
   keywords: KeywordAbility[];
-  clauses: EffectClause[];
-  abilities?: AbilityAst[];
+  abilities: AbilityAst[];
   synergy: CardSynergyProfile;
   prerequisites: EffectPrerequisite[];
 }
@@ -2723,14 +2729,16 @@ export function compileCardEffect(
 ): CompiledCardEffect {
   const parsed = parseCardEffects(card);
   const cfg = parseCardAbilities(card, parsed.clauses);
+  if (cfg.errors.length > 0) {
+    throw new Error(`CFG parse failure for ${card.cardNo}: ${cfg.errors.join('; ')}`);
+  }
   return {
     cardNo: card.cardNo,
     sourcePrintId: card.printId,
     name: card.name,
     type: card.type,
     color: card.color,
-    keywords: parsed.keywords,
-    clauses: parsed.clauses,
+    keywords: cfg.keywords.length > 0 ? cfg.keywords : parsed.keywords,
     abilities: cfg.abilities,
     synergy: extractSynergyProfile(card, parsed),
     prerequisites: extractEffectPrerequisites(card, parsed),

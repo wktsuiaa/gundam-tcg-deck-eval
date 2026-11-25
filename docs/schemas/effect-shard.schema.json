@@ -1126,6 +1126,7 @@
         "timings": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/EffectTiming" } },
         "oncePerTurn": { "type": "boolean" },
         "triggerEvent": { "$ref": "#/$defs/TriggerEvent" },
+        "pairFilter": { "$ref": "#/$defs/PairFilter" },
         "linkRequirement": { "$ref": "#/$defs/LinkRequirement" },
         "cost": { "$ref": "#/$defs/ActivationCost" },
         "condition": { "$ref": "#/$defs/EffectCondition" },
@@ -1166,9 +1167,11 @@
           "enum": ["WOULD_BE_DESTROYED", "WOULD_TAKE_DAMAGE", "WOULD_REST", "WOULD_MOVE_ZONE"]
         },
         "subject": { "$ref": "#/$defs/TargetSelector" },
+        "pairFilter": { "$ref": "#/$defs/PairFilter" },
         "condition": { "$ref": "#/$defs/EffectCondition" },
         "optional": { "type": "boolean" },
         "duration": { "$ref": "#/$defs/EffectDuration" },
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/EffectStep" } },
         "replacementSummary": { "type": "string" },
         "maxPerEventInstance": { "const": 1 }
       }
@@ -1185,6 +1188,7 @@
         "activeIn": { "type": "string", "enum": ["BATTLE_AREA", "HAND", "TRASH", "ANY"] },
         "requiresPair": { "type": "boolean" },
         "requiresLink": { "$ref": "#/$defs/LinkRequirement" },
+        "pairFilter": { "$ref": "#/$defs/PairFilter" },
         "oncePerTurn": { "type": "boolean" },
         "condition": { "$ref": "#/$defs/EffectCondition" },
         "duration": { "$ref": "#/$defs/EffectDuration" },
@@ -1221,7 +1225,7 @@
         "type",
         "color",
         "keywords",
-        "clauses",
+        "abilities",
         "synergy",
         "prerequisites"
       ],

@@ -53,9 +53,11 @@ async function main() {
   for (const cardNo of [...canonicalByCardNo.keys()].sort(compareCardNo)) {
     const card = canonicalByCardNo.get(cardNo)!;
     const compiled = compileCardEffect(card);
-    for (const clause of compiled.clauses) {
-      totalClauses += 1;
-      if (clause.unparsedResidual === '') fullClauses += 1;
+    for (const ab of compiled.abilities) {
+      if (ab.kind === 'EFFECT_CLAUSE') {
+        totalClauses += 1;
+        fullClauses += 1;
+      }
     }
 
     const prefix = getEffectSetPrefix(cardNo);

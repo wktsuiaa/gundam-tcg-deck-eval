@@ -178,16 +178,16 @@ describe('JSON Data Contracts (docs/schemas/*.schema.json)', () => {
 
     // Invalid EffectStep action discriminator
     const badStep = structuredClone(sampleEffect) as {
-      effects: Record<string, { clauses: { steps: unknown[] }[] }>;
+      effects: Record<string, { abilities: { steps: unknown[] }[] }>;
     };
-    badStep.effects['ST09-001'].clauses[0].steps[0] = { action: 'UNKNOWN_STEP' };
+    badStep.effects['ST09-001'].abilities[0].steps[0] = { action: 'UNKNOWN_STEP' };
     expect(validateSchema(badStep, effectSchema, effectSchema).length).toBeGreaterThan(0);
 
     // Invalid EffectCondition kind discriminator
     const badCondition = structuredClone(sampleEffect) as {
-      effects: Record<string, { clauses: { condition?: unknown }[] }>;
+      effects: Record<string, { abilities: { condition?: unknown }[] }>;
     };
-    badCondition.effects['ST09-006'].clauses[0].condition = { kind: 'BOGUS_CONDITION' };
+    badCondition.effects['ST09-006'].abilities[0].condition = { kind: 'BOGUS_CONDITION' };
     expect(validateSchema(badCondition, effectSchema, effectSchema).length).toBeGreaterThan(0);
 
     // Invalid RawCardPrint type in collection shard

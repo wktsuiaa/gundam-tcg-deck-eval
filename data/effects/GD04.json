@@ -10,41 +10,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Link】【Attack】If you are attacking an enemy Unit, you may return a blue Pilot paired with this Unit to its owner's hand.",
-          "timings": [
-            "DURING_LINK",
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Amuro Ray"
-            ],
-            "traits": [],
-            "raw": "[Amuro Ray]"
-          },
-          "condition": {
-            "kind": "SELF_STATE",
-            "attackingTarget": "ENEMY_UNIT"
-          },
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "PILOT",
-                "count": 1,
-                "color": "Blue"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -105,84 +70,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "During your turn, all your (Earth Federation) Units get AP+1.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "ALL",
-                "trait": "Earth Federation"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】During this turn, when one of your (Earth Federation) Units destroys an enemy Unit with battle damage, choose 1 enemy Unit with 5 or less HP. Rest it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_CLAUSE",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              },
-              "clause": {
-                "raw": "when one of your (Earth Federation) Units destroys an enemy Unit with battle damage, choose 1 enemy Unit with 5 or less HP.",
-                "timings": [
-                  "WHEN_DESTROY_BY_BATTLE"
-                ],
-                "oncePerTurn": false,
-                "triggerEvent": {
-                  "kind": "WHEN_DESTROY_BY_BATTLE",
-                  "actor": "FRIENDLY",
-                  "actorFilter": {
-                    "owner": "SELF",
-                    "cardType": "UNIT",
-                    "count": 1,
-                    "trait": "Earth Federation"
-                  },
-                  "targetKind": "UNIT",
-                  "targetFilter": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1
-                  },
-                  "damageType": "BATTLE",
-                  "raw": "when one of your (Earth Federation) Units destroys an enemy Unit with battle damage"
-                },
-                "steps": [],
-                "unparsedResidual": ""
-              }
-            },
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -285,32 +172,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Attack】If you have 3 or more (League Militaire) Units in play, draw 1.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 3,
-            "traits": [
-              "League Militaire"
-            ]
-          },
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -365,28 +226,6 @@
           "value": 2
         }
       ],
-      "clauses": [
-        {
-          "raw": "【Once per Turn】When you pair a (Cyber-Newtype) Pilot with one of your blue Units, draw 1.",
-          "timings": [
-            "WHEN_ATTACKED"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_ATTACKED",
-            "actor": "SELF",
-            "raw": "When you pair a (Cyber-Newtype) Pilot with one of your blue Units"
-          },
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -423,7 +262,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -441,36 +279,6 @@
         {
           "name": "Breach",
           "value": 3
-        }
-      ],
-      "clauses": [
-        {
-          "raw": "【Activate･Main】【Once per Turn】Rest 1 of your other (League Militaire) Units：Choose 1 enemy Unit with 4 or less HP. Rest it.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": true,
-          "steps": [
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "other": true,
-                "hpMax": 4,
-                "trait": "League Militaire"
-              }
-            },
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
         }
       ],
       "abilities": [
@@ -528,26 +336,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Pair】【Attack】Deploy 1 [Parts] Unit token.",
-          "timings": [
-            "DURING_PAIR",
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 2,
-              "hp": 2,
-              "name": "Parts"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -582,38 +370,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Link】This Unit gains <High-Maneuver>.",
-          "timings": [
-            "DURING_LINK"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Amuro Ray"
-            ],
-            "traits": [],
-            "raw": "[Amuro Ray]"
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "High-Maneuver",
-                "value": null
-              },
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -668,39 +424,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【When Linked】Choose 1 of your other (White Base Team) Units that is Lv.4 or higher. Set it as active.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Kai Shiden",
-              "Hayato Kobayashi"
-            ],
-            "traits": [],
-            "raw": "[Kai Shiden] / [Hayato Kobayashi]"
-          },
-          "steps": [
-            {
-              "action": "SET_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "BASE",
-                "count": 1,
-                "other": true,
-                "lvMin": 4,
-                "trait": "White Base Team",
-                "color": "White"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -768,7 +491,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -783,35 +505,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Destroyed】If another friendly (League Militaire) Unit is in play, deploy 1 [Parts] Unit token.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 1,
-            "other": true,
-            "traits": [
-              "League Militaire"
-            ]
-          },
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 2,
-              "hp": 2,
-              "name": "Parts"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -864,7 +557,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -879,35 +571,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "While this Unit is rested, all your (League Militaire) Unit tokens gain <Blocker>.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "SELF_RESTED"
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Blocker",
-                "value": null
-              },
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT_TOKEN",
-                "token": true,
-                "count": "ALL",
-                "trait": "League Militaire"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -920,12 +583,17 @@
           },
           "duration": "CONTINUOUS",
           "modifier": {
-            "type": "STATIC_PERMISSION",
-            "summary": "While this Unit is rested, all your (League Militaire) Unit tokens gain <Blocker>.",
+            "type": "GRANT_KEYWORD",
+            "keyword": {
+              "name": "Blocker",
+              "value": null
+            },
             "target": {
               "owner": "SELF",
-              "self": true,
-              "cardType": "UNIT"
+              "cardType": "UNIT_TOKEN",
+              "token": true,
+              "count": "ALL",
+              "trait": "League Militaire"
             }
           }
         }
@@ -951,7 +619,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -966,29 +633,6 @@
       "type": "UNIT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 of your active (League Militaire) Units and 1 enemy Unit that is Lv.3 or lower. Rest them.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "ACTIVE",
-                "lvMax": 3,
-                "trait": "League Militaire"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1042,26 +686,6 @@
           "value": null
         }
       ],
-      "clauses": [
-        {
-          "raw": "This Unit can't choose the enemy player as its attack target.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "CANT_ATTACK",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -1094,49 +718,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【When Paired･(Newtype) Pilot】Deploy 2 [Wire-Guided Arm] Unit tokens.",
-          "timings": [
-            "WHEN_PAIRED"
-          ],
-          "oncePerTurn": false,
-          "pairFilter": {
-            "trait": "Newtype"
-          },
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 2,
-              "ap": 2,
-              "hp": 2,
-              "name": "Wire-Guided Arm"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Destroyed】Deploy 1 rested [Zeong (Head)]((Zeon)･AP3･HP1) Unit token.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 3,
-              "hp": 1,
-              "name": "Zeong (Head)",
-              "traits": [
-                "Head",
-                "(Zeon"
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1146,6 +727,9 @@
             "WHEN_PAIRED"
           ],
           "oncePerTurn": false,
+          "pairFilter": {
+            "trait": "Newtype"
+          },
           "steps": [
             {
               "action": "DEPLOY_TOKEN",
@@ -1206,32 +790,6 @@
           "value": 5
         }
       ],
-      "clauses": [
-        {
-          "raw": "【Once per Turn】During your turn, when one of your other (Academy) Units receives damage from an enemy, place 1 EX Resource.",
-          "timings": [
-            "WHEN_ATTACKED"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_ATTACKED",
-            "actor": "SELF",
-            "raw": "when one of your other (Academy) Units receives damage from an enemy"
-          },
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "ADD_RESOURCE",
-              "count": 1,
-              "ex": true,
-              "rested": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1284,39 +842,6 @@
         {
           "name": "Breach",
           "value": 3
-        }
-      ],
-      "clauses": [
-        {
-          "raw": "【Destroyed】Look at the top 3 cards of your deck. You may reveal 1 (CB) Unit card that is Lv.5 or lower among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 3,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true,
-              "trait": "CB"
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
         }
       ],
       "abilities": [
@@ -1374,37 +899,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Once per Turn】During your turn, when you play and activate a (Dawn of Fold) Command card using an EX Resource, draw 1.",
-          "timings": [
-            "WHEN_PLAY_CARD_WITH_EX_RESOURCE"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_PLAY_CARD_WITH_EX_RESOURCE",
-            "actor": "SELF",
-            "targetFilter": {
-              "owner": "ANY",
-              "cardType": "EX_RESOURCE",
-              "count": 1,
-              "trait": "Dawn of Fold"
-            },
-            "raw": "when you play and activate a (Dawn of Fold) Command card using an EX Resource"
-          },
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1453,42 +947,6 @@
         {
           "name": "Breach",
           "value": 3
-        }
-      ],
-      "clauses": [
-        {
-          "raw": "During your turn, when you play and activate a (Dawn of Fold) Command card using an EX Resource, you may pair that card from your trash with one of your Units with \"Gundam Lfrith\" in its card name.",
-          "timings": [
-            "WHEN_PLAY_CARD_WITH_EX_RESOURCE"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_PLAY_CARD_WITH_EX_RESOURCE",
-            "actor": "SELF",
-            "targetFilter": {
-              "owner": "ANY",
-              "cardType": "EX_RESOURCE",
-              "count": 1,
-              "trait": "Dawn of Fold"
-            },
-            "raw": "when you play and activate a (Dawn of Fold) Command card using an EX Resource"
-          },
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "PAIR_SELF_FROM_TRASH",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "nameContains": "Gundam Lfrith",
-                "zone": "BATTLE_AREA"
-              }
-            }
-          ],
-          "unparsedResidual": ""
         }
       ],
       "abilities": [
@@ -1550,64 +1008,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "All your Unit tokens gain <Breach 1>.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Breach",
-                "value": 1
-              },
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT_TOKEN",
-                "token": true,
-                "count": "ALL"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】All Units that are Lv.3 or lower other than Unit tokens are deployed rested.",
-          "timings": [
-            "DURING_LINK"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Challia Bull"
-            ],
-            "traits": [],
-            "raw": "[Challia Bull]"
-          },
-          "steps": [
-            {
-              "action": "RESTRICTION",
-              "rule": "DEPLOYED_RESTED",
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT_TOKEN",
-                "token": true,
-                "count": "ALL",
-                "state": "RESTED",
-                "other": true,
-                "excludeToken": true,
-                "lvMax": 3
-              },
-              "summary": "All Units that are Lv.3 or lower other than Unit tokens are deployed rested."
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -1617,12 +1017,16 @@
           "activeIn": "BATTLE_AREA",
           "duration": "CONTINUOUS",
           "modifier": {
-            "type": "STATIC_PERMISSION",
-            "summary": "All your Unit tokens gain <Breach 1>.",
+            "type": "GRANT_KEYWORD",
+            "keyword": {
+              "name": "Breach",
+              "value": 1
+            },
             "target": {
               "owner": "SELF",
-              "self": true,
-              "cardType": "UNIT"
+              "cardType": "UNIT_TOKEN",
+              "token": true,
+              "count": "ALL"
             }
           }
         },
@@ -1630,7 +1034,7 @@
           "kind": "CONTINUOUS_MODIFIER",
           "clauseIndex": 1,
           "raw": "【During Link】All Units that are Lv.3 or lower other than Unit tokens are deployed rested.",
-          "layer": 2,
+          "layer": 4,
           "activeIn": "BATTLE_AREA",
           "requiresLink": {
             "role": "UNIT_REQUIRES_PILOT",
@@ -1642,13 +1046,19 @@
           },
           "duration": "CONTINUOUS",
           "modifier": {
-            "type": "STATIC_PERMISSION",
-            "summary": "【During Link】All Units that are Lv.3 or lower other than Unit tokens are deployed rested.",
+            "type": "RESTRICTION",
+            "rule": "DEPLOYED_RESTED",
             "target": {
-              "owner": "SELF",
-              "self": true,
-              "cardType": "UNIT"
-            }
+              "owner": "ANY",
+              "cardType": "UNIT_TOKEN",
+              "token": true,
+              "count": "ALL",
+              "state": "RESTED",
+              "other": true,
+              "excludeToken": true,
+              "lvMax": 3
+            },
+            "summary": "All Units that are Lv.3 or lower other than Unit tokens are deployed rested."
           }
         }
       ],
@@ -1676,27 +1086,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 of your Units paired with a (Super Soldier) Pilot. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ALLOW_ATTACK_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "PILOT",
-                "count": 1,
-                "trait": "Super Soldier"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1741,39 +1130,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Look at the top 3 cards of your deck. You may reveal 1 (Academy) Unit card/Command card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 3,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true,
-              "trait": "Academy"
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1829,42 +1185,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Destroyed】During your turn, if you have another (Dawn of Fold) Unit in play, place 1 EX Resource.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "ALL_OF",
-            "conditions": [
-              {
-                "kind": "IS_YOUR_TURN"
-              },
-              {
-                "kind": "BOARD_CARD_COUNT",
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "min": 1,
-                "other": true,
-                "traits": [
-                  "Dawn of Fold"
-                ]
-              }
-            ]
-          },
-          "steps": [
-            {
-              "action": "ADD_RESOURCE",
-              "count": 1,
-              "ex": true,
-              "rested": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1924,34 +1244,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Look at the top card of your deck. Return it to the top of your deck or place it into your trash.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "TOP",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "zone": "DECK",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1994,7 +1286,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -2009,32 +1300,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Attack】Choose 1 active enemy Unit. It gains <Blocker> during this turn.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Blocker",
-                "value": null
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "ACTIVE"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -2075,38 +1340,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Once per Turn】If you have a (CB) Pilot in play, when this Unit receives damage from an enemy, reduce it by 1.",
-          "timings": [
-            "WHEN_ATTACKED"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_ATTACKED",
-            "actor": "SELF",
-            "raw": "when this Unit receives damage from an enemy"
-          },
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "PILOT",
-            "min": 1,
-            "traits": [
-              "CB"
-            ]
-          },
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "reduce it by 1.",
-              "amount": 1,
-              "damageType": "ANY"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -2162,28 +1395,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Attack】Choose 1 of your other (Academy) Units. During this turn, it may choose an active enemy Unit that is Lv.3 or lower as its attack target.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ALLOW_ATTACK_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "other": true,
-                "trait": "Academy"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -2229,7 +1440,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -2244,7 +1454,6 @@
       "type": "UNIT",
       "color": "Green",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -2259,68 +1468,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "When this Unit or one of your (Neo Zeon) Units is deployed, choose 1 enemy Unit. Deal 3 damage to it.",
-          "timings": [
-            "WHEN_UNIT_DEPLOYED"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_UNIT_DEPLOYED",
-            "actor": "FRIENDLY",
-            "actorFilter": {
-              "owner": "SELF",
-              "self": true,
-              "cardType": "UNIT",
-              "count": 1,
-              "trait": "Neo Zeon"
-            },
-            "raw": "When this Unit or one of your (Neo Zeon) Units is deployed"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 3,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】All your Units gain (Neo Zeon).",
-          "timings": [
-            "DURING_LINK"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Full Frontal"
-            ],
-            "traits": [],
-            "raw": "[Full Frontal]"
-          },
-          "steps": [
-            {
-              "action": "GRANT_TRAIT",
-              "traits": [
-                "Neo Zeon"
-              ],
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "ALL"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -2370,12 +1517,14 @@
           },
           "duration": "CONTINUOUS",
           "modifier": {
-            "type": "STATIC_PERMISSION",
-            "summary": "【During Link】All your Units gain (Neo Zeon).",
+            "type": "GRANT_TRAIT",
+            "traits": [
+              "Neo Zeon"
+            ],
             "target": {
               "owner": "SELF",
-              "self": true,
-              "cardType": "UNIT"
+              "cardType": "UNIT",
+              "count": "ALL"
             }
           }
         }
@@ -2417,36 +1566,6 @@
         {
           "name": "First Strike",
           "value": null
-        }
-      ],
-      "clauses": [
-        {
-          "raw": "【During Link】This Unit gets AP+2 for each of your rested (CB) Units.",
-          "timings": [
-            "DURING_LINK"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Allelujah Haptism",
-              "Hallelujah Haptism"
-            ],
-            "traits": [],
-            "raw": "[Allelujah Haptism] / [Hallelujah Haptism]"
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 2,
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
         }
       ],
       "abilities": [
@@ -2513,60 +1632,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 of your (Mafty) Units. When it destroys an enemy Unit with battle damage during this turn, if you have 3 or less cards in your hand, draw 1.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_CLAUSE",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Mafty"
-              },
-              "clause": {
-                "raw": "When it destroys an enemy Unit with battle damage during this turn, if you have 3 or less cards in your hand, draw 1.",
-                "timings": [
-                  "WHEN_DESTROY_BY_BATTLE"
-                ],
-                "oncePerTurn": false,
-                "triggerEvent": {
-                  "kind": "WHEN_DESTROY_BY_BATTLE",
-                  "actor": "SELF",
-                  "targetKind": "UNIT",
-                  "targetFilter": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1
-                  },
-                  "damageType": "BATTLE",
-                  "raw": "When it destroys an enemy Unit with battle damage during this turn"
-                },
-                "condition": {
-                  "kind": "HAND_COUNT",
-                  "owner": "SELF",
-                  "max": 3
-                },
-                "steps": [
-                  {
-                    "action": "DRAW",
-                    "count": 1,
-                    "bothPlayers": false
-                  }
-                ],
-                "unparsedResidual": ""
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -2644,48 +1709,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】You may choose 1 to 2 of your other active (CB) Units. Rest them. If you do, deal damage equal to the number of Units rested with this effect to all enemy Units that are Lv.6 or lower.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "REST",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "UP_TO",
-                "maxCount": 2,
-                "state": "ACTIVE",
-                "other": true,
-                "trait": "CB"
-              }
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "DEAL_DAMAGE",
-                  "amount": 1,
-                  "scaleBy": {
-                    "metric": "AFFECTED_COUNT"
-                  },
-                  "target": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": "ALL",
-                    "lvMax": 6
-                  }
-                }
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -2753,72 +1776,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "While you have a red (Super Soldier) Pilot in play, this Unit gains <First Strike>.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "PILOT",
-            "min": 1,
-            "color": "Red",
-            "traits": [
-              "Super Soldier"
-            ]
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "First Strike",
-                "value": null
-              },
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "While you have a green (Super Soldier) Pilot in play, this Unit gains <Breach 3>.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "PILOT",
-            "min": 1,
-            "color": "Green",
-            "traits": [
-              "Super Soldier"
-            ]
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Breach",
-                "value": 3
-              },
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -2903,33 +1860,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】If 2 or more enemy Units are in play, choose 1 enemy Unit that is Lv.2 or lower. Deal 2 damage to it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "UNIT_COUNT_AT_LEAST",
-            "owner": "ENEMY",
-            "count": 2
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 2
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -2973,68 +1903,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "If there are 8 or more (Neo Zeon) cards in your trash, this card in your hand gets cost -4.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "TRASH_COUNT_AT_LEAST",
-            "count": 8,
-            "trait": "Neo Zeon",
-            "traits": [
-              "Neo Zeon"
-            ]
-          },
-          "steps": [
-            {
-              "action": "COST_REDUCTION",
-              "amount": 4
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Choose 1 enemy Unit. Deal 1 damage to it. If it has <Repair>, deal 3 damage instead.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "SELF_STATE",
-                "keyword": "Repair"
-              },
-              "thenSteps": [
-                {
-                  "action": "DEAL_DAMAGE",
-                  "amount": 3,
-                  "target": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1
-                  }
-                }
-              ],
-              "replacesPrevious": true
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -3127,7 +1995,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -3142,30 +2009,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Once per Turn】When this Unit is rested by an effect, set it as active.",
-          "timings": [
-            "WHEN_RESTED"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_RESTED",
-            "actor": "SELF",
-            "raw": "When this Unit is rested by an effect"
-          },
-          "steps": [
-            {
-              "action": "SET_ACTIVE",
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -3204,42 +2047,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Link】【Once per Turn】When damage from one of your Units paired with a (Cyber-Newtype) Pilot destroys an enemy shield area card, choose 1 enemy Unit with 5 or less AP. Deal 2 damage to it.",
-          "timings": [
-            "DURING_LINK",
-            "WHEN_ATTACKED"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_ATTACKED",
-            "actor": "SELF",
-            "raw": "When damage from one of your Units paired with a (Cyber-Newtype) Pilot destroys an enemy shield area card"
-          },
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Deux Murasame"
-            ],
-            "traits": [],
-            "raw": "[Deux Murasame]"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "apMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -3303,27 +2110,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 enemy Base. Deal 1 damage to it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "BASE",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -3361,35 +2147,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Attack】If you are attacking a damaged enemy Unit, this Unit gains <Breach 3> during this battle.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "SELF_STATE",
-            "attackingTarget": "DAMAGED_ENEMY_UNIT"
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Breach",
-                "value": 3
-              },
-              "duration": "THIS_BATTLE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -3433,37 +2190,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【When Linked】Choose 1 of your (CB) Units. During this turn, it may choose a damaged active enemy Unit as its attack target.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Ali al-Saachez"
-            ],
-            "traits": [
-              "Trinity"
-            ],
-            "raw": "(Trinity) Trait / [Ali al-Saachez]"
-          },
-          "steps": [
-            {
-              "action": "ALLOW_ATTACK_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "CB"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -3531,41 +2257,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】You may rest this Unit. If you do, choose 1 enemy Unit that is Lv.3 or lower. Deal 2 damage to it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "REST",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "DEAL_DAMAGE",
-                  "amount": 2,
-                  "target": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1,
-                    "lvMax": 3
-                  }
-                }
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -3617,7 +2308,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -3632,7 +2322,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -3650,47 +2339,6 @@
         {
           "name": "Suppression",
           "value": null
-        }
-      ],
-      "clauses": [
-        {
-          "raw": "【During Pair】【Attack】If you are attacking the enemy player, you may choose 7 (Vulture) cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit/Base that is Lv.8 or lower. Destroy it.",
-          "timings": [
-            "DURING_PAIR",
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "SELF_STATE",
-            "attackingTarget": "ENEMY_PLAYER"
-          },
-          "steps": [
-            {
-              "action": "EXILE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "count": 7,
-                "trait": "Vulture",
-                "zone": "TRASH"
-              }
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "DESTROY",
-                  "target": {
-                    "owner": "ENEMY",
-                    "cardType": "BASE",
-                    "count": 1,
-                    "lvMax": 8
-                  }
-                }
-              ]
-            }
-          ],
-          "unparsedResidual": ""
         }
       ],
       "abilities": [
@@ -3761,30 +2409,6 @@
           "value": null
         }
       ],
-      "clauses": [
-        {
-          "raw": "【During Pair】【Attack】You may choose 1 (Minerva Squad) Unit card from your trash. Pay its cost to deploy it.",
-          "timings": [
-            "DURING_PAIR",
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_FROM_TRASH",
-              "free": false,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Minerva Squad",
-                "zone": "TRASH"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -3834,35 +2458,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Pair･(Vulture) Pilot】If there are 7 or more cards in your trash, this Unit may choose an active enemy Unit with a keyword effect as its attack target.",
-          "timings": [
-            "DURING_PAIR"
-          ],
-          "oncePerTurn": false,
-          "pairFilter": {
-            "trait": "Vulture"
-          },
-          "condition": {
-            "kind": "TRASH_COUNT_AT_LEAST",
-            "count": 7
-          },
-          "steps": [
-            {
-              "action": "ALLOW_ATTACK_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "ACTIVE"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -3871,18 +2466,22 @@
           "layer": 2,
           "activeIn": "BATTLE_AREA",
           "requiresPair": true,
+          "pairFilter": {
+            "trait": "Vulture"
+          },
           "condition": {
             "kind": "TRASH_COUNT_AT_LEAST",
             "count": 7
           },
           "duration": "CONTINUOUS",
           "modifier": {
-            "type": "STATIC_PERMISSION",
-            "summary": "【During Pair<DOT>(Vulture) Pilot】If there are 7 or more cards in your trash, this Unit may choose an active enemy Unit with a keyword effect as its attack target.",
+            "type": "ALLOW_ATTACK_ACTIVE",
             "target": {
               "owner": "SELF",
               "self": true,
-              "cardType": "UNIT"
+              "cardType": "UNIT",
+              "count": 1,
+              "state": "ACTIVE"
             }
           }
         }
@@ -3911,29 +2510,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Pair】【Attack】You may choose 1 enemy Unit. Deal 2 damage to it and this Unit.",
-          "timings": [
-            "DURING_PAIR",
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -3971,38 +2547,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Link】【Once per Turn】When this Unit receives damage from an enemy, reduce it by 1.",
-          "timings": [
-            "DURING_LINK",
-            "WHEN_ATTACKED"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_ATTACKED",
-            "actor": "SELF",
-            "raw": "When this Unit receives damage from an enemy"
-          },
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [],
-            "traits": [
-              "Minerva Squad"
-            ],
-            "raw": "(Minerva Squad) Trait"
-          },
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "reduce it by 1.",
-              "amount": 1,
-              "damageType": "ANY"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4060,38 +2604,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "When this Unit deals battle damage to an enemy Unit, destroy that enemy Unit.",
-          "timings": [
-            "WHEN_DEAL_DAMAGE"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_DEAL_DAMAGE",
-            "actor": "SELF",
-            "targetKind": "UNIT",
-            "targetFilter": {
-              "owner": "ENEMY",
-              "cardType": "UNIT",
-              "count": 1
-            },
-            "damageType": "BATTLE",
-            "raw": "When this Unit deals battle damage to an enemy Unit"
-          },
-          "steps": [
-            {
-              "action": "DESTROY",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4138,7 +2650,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -4153,41 +2664,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Deal 1 damage to this Unit. If you do, choose 1 enemy Unit with 3 or less AP. Rest it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "REST",
-                  "target": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1,
-                    "apMax": 3
-                  }
-                }
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4239,34 +2715,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 enemy Unit that is Lv.6 or lower. During this turn, reduce its AP by an amount equal to the number of Unit cards with \"Gundam Virtue\" in their card names in your trash.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": -1,
-              "scaleBy": {
-                "metric": "TRASH_COUNT",
-                "owner": "SELF",
-                "nameContains": "Gundam Virtue"
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 6
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4309,34 +2757,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Pair･(Vulture) Pilot】【Destroyed】If it is your turn, return this Unit's paired Pilot to its owner's hand.",
-          "timings": [
-            "DURING_PAIR",
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "pairFilter": {
-            "trait": "Vulture"
-          },
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "PILOT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4347,6 +2767,9 @@
             "DESTROYED"
           ],
           "oncePerTurn": false,
+          "pairFilter": {
+            "trait": "Vulture"
+          },
           "condition": {
             "kind": "IS_YOUR_TURN"
           },
@@ -4385,7 +2808,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -4400,27 +2822,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】If you deploy this Unit from your trash, draw 1.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "DEPLOYED_FROM_ZONE",
-            "zone": "trash"
-          },
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4463,26 +2864,6 @@
           "value": null
         }
       ],
-      "clauses": [
-        {
-          "raw": "This Unit can't attack while there are 6 or less cards in your trash.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "CANT_ATTACK",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -4515,7 +2896,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -4530,28 +2910,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 enemy Unit that is Lv.1 or lower or has 1 or less AP. Destroy it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DESTROY",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 1,
-                "apMax": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4588,7 +2946,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -4603,68 +2960,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Link】【Activate･Main】Exile 3 blue cards from your trash：Set this Unit as active. It can't choose the enemy player as its attack target during this turn.",
-          "timings": [
-            "DURING_LINK",
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Riddhe Marcenas"
-            ],
-            "traits": [],
-            "raw": "[Riddhe Marcenas]"
-          },
-          "cost": {
-            "raw": "Exile 3 blue cards from your trash",
-            "exileFromTrashCount": 3
-          },
-          "steps": [
-            {
-              "action": "SET_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            },
-            {
-              "action": "CANT_ATTACK",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Attack】All enemy Units get AP-1 during this turn.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": -1,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": "ALL"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4758,33 +3053,6 @@
           "value": null
         }
       ],
-      "clauses": [
-        {
-          "raw": "When you activate a Command's 【Main】/【Action】 effect, choose 1 enemy Unit. It gets AP-2 during this turn.",
-          "timings": [
-            "WHEN_ATTACKED"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_ATTACKED",
-            "actor": "SELF",
-            "raw": "When you activate a Command's 【Main】/【Action】 effect"
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": -2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4826,32 +3094,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Activate･Main】【Once per Turn】①：Choose 1 Unit card with <Repair>/<Breach>/<First Strike>/<Support>/<High-Maneuver>/<Suppression>/<Blocker> from any player's trash. During this turn, this Unit gets AP+1 and all <Repair>/<Breach>/<First Strike>/<Support>/<High-Maneuver>/<Suppression>/<Blocker> on that Unit card.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": true,
-          "cost": {
-            "raw": "①",
-            "resourceCost": 1
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4899,31 +3141,6 @@
           "value": null
         }
       ],
-      "clauses": [
-        {
-          "raw": "When this Unit receives effect damage from an enemy, reduce it by 3.",
-          "timings": [
-            "WHEN_RECEIVE_DAMAGE"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_RECEIVE_DAMAGE",
-            "actor": "SELF",
-            "targetKind": "UNIT",
-            "damageType": "EFFECT",
-            "raw": "When this Unit receives effect damage from an enemy"
-          },
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "reduce it by 3.",
-              "amount": 3,
-              "damageType": "ANY"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -4968,8 +3185,10 @@
           "value": null
         }
       ],
-      "clauses": [
+      "abilities": [
         {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
           "raw": "【During Link】At the end of a turn where you have paid ① or more for one of your other (Militia)/(Dianna Counter) Units' effects, choose 1 of your (Militia) Units. Set it as active.",
           "timings": [
             "DURING_LINK",
@@ -5004,45 +3223,7 @@
                 "trait": "Militia"
               }
             }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
-      "abilities": [
-        {
-          "kind": "CONTINUOUS_MODIFIER",
-          "clauseIndex": 0,
-          "raw": "【During Link】At the end of a turn where you have paid <RES_COST:1> or more for one of your other (Militia)/(Dianna Counter) Units' effects, choose 1 of your (Militia) Units. Set it as active.",
-          "layer": 2,
-          "activeIn": "BATTLE_AREA",
-          "requiresLink": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Loran Cehack"
-            ],
-            "traits": [],
-            "raw": "[Loran Cehack]"
-          },
-          "condition": {
-            "kind": "TURN_HISTORY",
-            "event": "PAID_EFFECT_COST_AT_LEAST",
-            "minCost": 1,
-            "traits": [
-              "Militia",
-              "Dianna Counter"
-            ],
-            "other": true
-          },
-          "duration": "CONTINUOUS",
-          "modifier": {
-            "type": "STATIC_PERMISSION",
-            "summary": "【During Link】At the end of a turn where you have paid <RES_COST:1> or more for one of your other (Militia)/(Dianna Counter) Units' effects, choose 1 of your (Militia) Units. Set it as active.",
-            "target": {
-              "owner": "SELF",
-              "self": true,
-              "cardType": "UNIT"
-            }
-          }
+          ]
         }
       ],
       "synergy": {
@@ -5088,33 +3269,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】You may pair 1 Pilot card with \"Ali al-Saachez\" in its card name from your hand with this Unit.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "PAIR_FROM_HAND",
-              "pilotFilter": {
-                "owner": "ANY",
-                "cardType": "PILOT",
-                "count": 1
-              },
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT",
-                "count": 1,
-                "zone": "HAND"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -5156,82 +3310,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】If an enemy (CB) Unit is in play, add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "ENEMY",
-            "cardType": "UNIT",
-            "min": 1,
-            "traits": [
-              "CB"
-            ]
-          },
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】Choose 1 (Superpower Bloc) card and 1 (UN) card from your trash. Exile them from the game. If you do, set this Unit as active. It can't attack during this turn.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "EXILE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "count": 1,
-                "trait": "Superpower Bloc",
-                "traits": [
-                  "Superpower Bloc",
-                  "UN"
-                ],
-                "zone": "TRASH"
-              }
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "SET_ACTIVE",
-                  "target": {
-                    "owner": "SELF",
-                    "self": true,
-                    "cardType": "UNIT"
-                  }
-                }
-              ]
-            },
-            {
-              "action": "CANT_ATTACK",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "count": 1,
-                "trait": "Superpower Bloc",
-                "traits": [
-                  "Superpower Bloc",
-                  "UN"
-                ],
-                "zone": "TRASH"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -5335,35 +3413,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【When Linked】Choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Riddhe Marcenas"
-            ],
-            "traits": [],
-            "raw": "[Riddhe Marcenas]"
-          },
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "hpMax": 3
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -5418,32 +3467,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Activate･Main】【Once per Turn】①：This Unit gets AP+2 during this turn.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": true,
-          "cost": {
-            "raw": "①",
-            "resourceCost": 1
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -5486,37 +3509,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Attack】You may pay ①. If you do, draw 1. Then, discard 1.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "PAY_RESOURCE",
-              "amount": 1,
-              "optional": true
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
-                }
-              ]
-            },
-            {
-              "action": "DISCARD",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -5564,22 +3556,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "Reduce the cost of this card in your hand by an amount equal to the number of (UN)/(Superpower Bloc) Command cards in your trash.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "COST_REDUCTION",
-              "amount": 1
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -5618,7 +3594,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -5638,7 +3613,6 @@
           "value": null
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -5653,7 +3627,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -5668,7 +3641,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -5683,39 +3655,6 @@
       "type": "UNIT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Destroyed】If you have another (UN)/(Superpower Bloc) Unit in play, deploy 1 rested [Alvaaron]((UN)･AP4･HP1) Unit token.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 1,
-            "other": true,
-            "traits": [
-              "UN",
-              "Superpower Bloc"
-            ]
-          },
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 4,
-              "hp": 1,
-              "name": "Alvaaron",
-              "traits": [
-                "(UN"
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -5776,42 +3715,6 @@
       "type": "PILOT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Paired】If this is a (League Militaire) Unit, deploy 1 [Parts] Unit token.",
-          "timings": [
-            "WHEN_PAIRED"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "UNIT_TRAIT_IS",
-            "trait": "League Militaire"
-          },
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 2,
-              "hp": 2,
-              "name": "Parts"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -5874,52 +3777,6 @@
       "type": "PILOT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Linked】Choose 1 rested Unit. Deal 1 damage to it.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Rosamia Badam"
-            ],
-            "traits": [
-              "Titans",
-              "Cyber-Newtype"
-            ],
-            "raw": "[Rosamia Badam]"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "RESTED"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -5998,42 +3855,6 @@
       "type": "PILOT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "All your (League Militaire) Unit tokens get AP+1.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT_TOKEN",
-                "token": true,
-                "count": "ALL",
-                "trait": "League Militaire"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -6093,43 +3914,6 @@
       "type": "PILOT",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Attack】Choose 1 of your (White Base Team) Units. It gets AP+1 during this turn.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "BASE",
-                "count": 1,
-                "trait": "White Base Team",
-                "color": "White"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -6193,66 +3977,6 @@
       "type": "PILOT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】【Once per Turn】When you play and activate an (Academy) Command card using an EX Resource, if you have no remaining EX Resources, place 1 rested EX Resource.",
-          "timings": [
-            "DURING_LINK",
-            "WHEN_PLAY_CARD_WITH_EX_RESOURCE"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_PLAY_CARD_WITH_EX_RESOURCE",
-            "actor": "SELF",
-            "targetFilter": {
-              "owner": "ANY",
-              "cardType": "EX_RESOURCE",
-              "count": 1,
-              "trait": "Academy"
-            },
-            "raw": "When you play and activate an (Academy) Command card using an EX Resource"
-          },
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Suletta Mercury"
-            ],
-            "traits": [
-              "Academy"
-            ],
-            "raw": "[Suletta Mercury]"
-          },
-          "condition": {
-            "kind": "RESOURCE_COUNT",
-            "owner": "SELF",
-            "ex": true,
-            "min": 0,
-            "max": 0
-          },
-          "steps": [
-            {
-              "action": "ADD_RESOURCE",
-              "count": 1,
-              "ex": true,
-              "rested": true
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -6344,55 +4068,6 @@
       "type": "PILOT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】【Destroyed】If you have no EX Resources, place 1 EX Resource.",
-          "timings": [
-            "DURING_LINK",
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Garma Zabi"
-            ],
-            "traits": [
-              "Zeon"
-            ],
-            "raw": "[Garma Zabi]"
-          },
-          "condition": {
-            "kind": "RESOURCE_COUNT",
-            "owner": "SELF",
-            "ex": true,
-            "min": 0,
-            "max": 0
-          },
-          "steps": [
-            {
-              "action": "ADD_RESOURCE",
-              "count": 1,
-              "ex": true,
-              "rested": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -6473,8 +4148,10 @@
       "type": "PILOT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
+      "abilities": [
         {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
           "raw": "【Burst】Add this card to your hand.",
           "timings": [
             "BURST"
@@ -6484,10 +4161,11 @@
             {
               "action": "ADD_SELF_TO_HAND"
             }
-          ],
-          "unparsedResidual": ""
+          ]
         },
         {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
           "raw": "【During Link】【Attack】You may choose 1 of your (Academy) Units. During this battle, battle damage this Unit would receive is dealt to that Unit instead.",
           "timings": [
             "DURING_LINK",
@@ -6520,40 +4198,7 @@
               },
               "duration": "THIS_BATTLE"
             }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
-      "abilities": [
-        {
-          "kind": "EFFECT_CLAUSE",
-          "clauseIndex": 0,
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
           ]
-        },
-        {
-          "kind": "REPLACEMENT_EFFECT",
-          "clauseIndex": 1,
-          "raw": "【During Link】【Attack】You may choose 1 of your (Academy) Units. During this battle, battle damage this Unit would receive is dealt to that Unit instead.",
-          "scope": "LINKED",
-          "intercepts": "WOULD_MOVE_ZONE",
-          "subject": {
-            "owner": "SELF",
-            "self": true,
-            "cardType": "UNIT"
-          },
-          "optional": true,
-          "duration": "THIS_BATTLE",
-          "replacementSummary": "【During Link】【Attack】You may choose 1 of your (Academy) Units. During this battle, battle damage this Unit would receive is dealt to that Unit instead.",
-          "maxPerEventInstance": 1
         }
       ],
       "synergy": {
@@ -6593,42 +4238,6 @@
       "type": "PILOT",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "When this Unit is blocked by an enemy Unit that is Lv.4 or lower, it can't receive battle damage during this battle.",
-          "timings": [
-            "WHEN_BLOCKED"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_BLOCKED",
-            "actor": "SELF",
-            "raw": "When this Unit is blocked by an enemy Unit that is Lv.4 or lower"
-          },
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "it can't receive battle damage during this battle.",
-              "damageType": "BATTLE",
-              "duration": "THIS_BATTLE"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -6682,43 +4291,6 @@
       "type": "PILOT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】<Support 2>",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Support",
-                "value": 2
-              },
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -6771,96 +4343,6 @@
       "type": "PILOT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】【Once per Turn】During your turn, when this Unit destroys an enemy Unit with battle damage, look at the top card of your deck. If it is a (CB) card, you may reveal it and add it to your hand. Return any remaining card to the bottom of your deck.",
-          "timings": [
-            "DURING_LINK",
-            "WHEN_DESTROY_BY_BATTLE"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_DESTROY_BY_BATTLE",
-            "actor": "SELF",
-            "targetKind": "UNIT",
-            "targetFilter": {
-              "owner": "ENEMY",
-              "cardType": "UNIT",
-              "count": 1
-            },
-            "damageType": "BATTLE",
-            "raw": "when this Unit destroys an enemy Unit with battle damage"
-          },
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Hallelujah Haptism"
-            ],
-            "traits": [
-              "CB",
-              "Super Soldier"
-            ],
-            "raw": "[Hallelujah Haptism]"
-          },
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "filter": {
-                "traits": [
-                  "CB"
-                ],
-                "placedFromDeck": true
-              },
-              "thenSteps": [
-                {
-                  "action": "LOOK_TOP",
-                  "count": 1,
-                  "revealSearch": true,
-                  "target": {
-                    "owner": "ANY",
-                    "cardType": "CARD",
-                    "count": 1,
-                    "trait": "CB"
-                  }
-                }
-              ]
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "SELF",
-                "cardType": "CARD",
-                "zone": "DECK",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -6983,40 +4465,6 @@
       "type": "PILOT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Destroyed】Choose 1 undamaged enemy Unit. Deal 1 damage to it.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -7069,52 +4517,6 @@
       "type": "PILOT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Linked】Choose 1 damaged enemy Unit. Deal 1 damage to it.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Michael Trinity"
-            ],
-            "traits": [
-              "CB",
-              "Trinity"
-            ],
-            "raw": "[Michael Trinity]"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "DAMAGED"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -7196,56 +4598,6 @@
       "type": "PILOT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Linked】Choose 1 of your (ZAFT) Link Units. During this turn, reduce the next damage it receives by 2.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Rey Za Burrel"
-            ],
-            "traits": [
-              "ZAFT",
-              "Minerva Squad"
-            ],
-            "raw": "[Rey Za Burrel]"
-          },
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "During this turn, reduce the next damage it receives by 2.",
-              "amount": 2,
-              "damageType": "ANY",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "linked": true,
-                "trait": "ZAFT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -7336,53 +4688,6 @@
       "type": "PILOT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Linked】Choose 1 purple Unit card with <Suppression> from your trash. Add it to your hand.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Pala Sys"
-            ],
-            "traits": [
-              "Satyricon",
-              "Vulture"
-            ],
-            "raw": "[Pala Sys]"
-          },
-          "steps": [
-            {
-              "action": "ADD_FROM_TRASH_TO_HAND",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "color": "Purple",
-                "keyword": "Suppression",
-                "zone": "TRASH"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -7462,8 +4767,10 @@
       "type": "PILOT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
+      "abilities": [
         {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 0,
           "raw": "【Burst】Add this card to your hand.",
           "timings": [
             "BURST"
@@ -7473,10 +4780,11 @@
             {
               "action": "ADD_SELF_TO_HAND"
             }
-          ],
-          "unparsedResidual": ""
+          ]
         },
         {
+          "kind": "EFFECT_CLAUSE",
+          "clauseIndex": 1,
           "raw": "【When Linked】Choose 1 of your (Minerva Squad) Units. During this turn, battle damage it would receive is dealt to this Unit instead.",
           "timings": [
             "WHEN_LINKED"
@@ -7510,40 +4818,7 @@
               },
               "duration": "THIS_TURN"
             }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
-      "abilities": [
-        {
-          "kind": "EFFECT_CLAUSE",
-          "clauseIndex": 0,
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
           ]
-        },
-        {
-          "kind": "REPLACEMENT_EFFECT",
-          "clauseIndex": 1,
-          "raw": "【When Linked】Choose 1 of your (Minerva Squad) Units. During this turn, battle damage it would receive is dealt to this Unit instead.",
-          "scope": "ACTIVE_ZONE",
-          "intercepts": "WOULD_MOVE_ZONE",
-          "subject": {
-            "owner": "SELF",
-            "self": true,
-            "cardType": "UNIT"
-          },
-          "optional": false,
-          "duration": "THIS_TURN",
-          "replacementSummary": "【When Linked】Choose 1 of your (Minerva Squad) Units. During this turn, battle damage it would receive is dealt to this Unit instead.",
-          "maxPerEventInstance": 1
         }
       ],
       "synergy": {
@@ -7585,63 +4860,6 @@
       "type": "PILOT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】When this Unit deals battle damage to an enemy Unit that is Lv.5 or lower, destroy that enemy Unit.",
-          "timings": [
-            "DURING_LINK",
-            "WHEN_DEAL_DAMAGE"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_DEAL_DAMAGE",
-            "actor": "SELF",
-            "targetKind": "UNIT",
-            "targetFilter": {
-              "owner": "ENEMY",
-              "cardType": "UNIT",
-              "count": 1,
-              "lvMax": 5
-            },
-            "damageType": "BATTLE",
-            "raw": "When this Unit deals battle damage to an enemy Unit that is Lv.5 or lower"
-          },
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Ennil El"
-            ],
-            "traits": [
-              "Vulture"
-            ],
-            "raw": "[Ennil El]"
-          },
-          "steps": [
-            {
-              "action": "DESTROY",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -7730,51 +4948,6 @@
       "type": "PILOT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Linked】Choose 1 enemy Unit with 3 or less HP. Return it to its owner's hand.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Loran Cehack"
-            ],
-            "traits": [
-              "Militia",
-              "Moonrace"
-            ],
-            "raw": "[Loran Cehack]"
-          },
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "hpMax": 3
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -7852,56 +5025,6 @@
       "type": "PILOT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】When this Unit receives effect damage from an enemy, reduce it by 2.",
-          "timings": [
-            "DURING_LINK",
-            "WHEN_RECEIVE_DAMAGE"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_RECEIVE_DAMAGE",
-            "actor": "SELF",
-            "targetKind": "UNIT",
-            "damageType": "EFFECT",
-            "raw": "When this Unit receives effect damage from an enemy"
-          },
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Riddhe Marcenas"
-            ],
-            "traits": [
-              "Earth Federation",
-              "Newtype"
-            ],
-            "raw": "[Riddhe Marcenas]"
-          },
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "reduce it by 2.",
-              "amount": 2,
-              "damageType": "ANY"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -7984,51 +5107,6 @@
       "type": "PILOT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【During Link】【Attack】You may choose 1 enemy Pilot. Return it to its owner's hand.",
-          "timings": [
-            "DURING_LINK",
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Ali al-Saachez"
-            ],
-            "traits": [
-              "Superpower Bloc",
-              "UN"
-            ],
-            "raw": "[Ali al-Saachez]"
-          },
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "PILOT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8106,49 +5184,6 @@
       "type": "PILOT",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Once per Turn】When you pay ① or more cost for one of your Units' effects, you may increase this Unit's AP during this turn by an amount equal to the cost paid.",
-          "timings": [
-            "WHEN_PAY_EFFECT_COST"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_PAY_EFFECT_COST",
-            "actor": "FRIENDLY",
-            "raw": "When you pay ① or more cost for one of your Units' effects"
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 1,
-              "scaleBy": {
-                "metric": "PAID_COST"
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8209,43 +5244,6 @@
       "type": "COMMAND",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Activate this card's 【Main】.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ACTIVATE_MAIN_EFFECT"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Main】/【Action】During this turn, friendly Units can't be destroyed by enemy effects. Then, draw 1.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "During this turn, friendly Units can't be destroyed by enemy effects.",
-              "damageType": "ANY",
-              "duration": "THIS_TURN"
-            },
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8298,43 +5296,6 @@
       "type": "COMMAND",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Draw 1.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Main】Choose 1 rested enemy Unit that is Lv.5 or lower. It won't be set as active during the start phase of your opponent's next turn.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "FREEZE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "RESTED",
-                "lvMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8389,31 +5350,6 @@
       "type": "COMMAND",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】Choose 1 of your Units. It gains <Repair 2> during this turn.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Repair",
-                "value": 2
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8453,43 +5389,6 @@
       "type": "COMMAND",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 to 2 enemy Units that are Lv.2 or lower. Rest them.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": "UP_TO",
-                "maxCount": 2,
-                "lvMax": 2
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Junko Jenko]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Junko Jenko"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8540,38 +5439,6 @@
       "type": "COMMAND",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】Look at the top 5 cards of your deck. You may reveal 1 Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 5,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8618,60 +5485,6 @@
       "type": "COMMAND",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】Choose 1 friendly (Academy) Unit. During this turn, it may choose an active enemy Unit with 5 or less AP as its attack target. If you use an EX Resource to play this card, choose 1 to 2 friendly (Academy) Units instead.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ALLOW_ATTACK_ACTIVE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Academy"
-              }
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "EX_RESOURCE_USED_TO_PLAY"
-              },
-              "thenSteps": [
-                {
-                  "action": "ALLOW_ATTACK_ACTIVE",
-                  "target": {
-                    "owner": "SELF",
-                    "cardType": "UNIT",
-                    "count": "UP_TO",
-                    "maxCount": 2,
-                    "trait": "Academy"
-                  }
-                }
-              ],
-              "replacesPrevious": true
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Norea Du Noc]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Norea Du Noc"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8749,47 +5562,6 @@
       "type": "COMMAND",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Action】Choose 1 of your rested Units. During this turn, all enemy Units must choose that Unit as their attack target when attacking.",
-          "timings": [
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "REDIRECT_ATTACK_TARGET",
-              "rule": "MUST_ATTACK_TARGET",
-              "attackerFilter": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": "ALL"
-              },
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "RESTED"
-              },
-              "duration": "THIS_TURN"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8846,66 +5618,6 @@
       "type": "COMMAND",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 friendly (Academy) Unit. During this turn, reduce the next damage it receives by 2. If you use an EX Resource to play this card, reduce by 4 instead.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "During this turn, reduce the next damage it receives by 2.",
-              "amount": 2,
-              "damageType": "ANY",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Academy"
-              }
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "EX_RESOURCE_USED_TO_PLAY"
-              },
-              "thenSteps": [
-                {
-                  "action": "DAMAGE_PROOF",
-                  "amount": 4,
-                  "summary": "reduce by 4",
-                  "target": {
-                    "owner": "SELF",
-                    "cardType": "UNIT",
-                    "count": 1,
-                    "trait": "Academy"
-                  }
-                }
-              ],
-              "replacesPrevious": true
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Sophie Pulone]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Sophie Pulone"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -8989,29 +5701,6 @@
       "type": "COMMAND",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 enemy Unit that is Lv.6 or lower. Deal 4 damage to it.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 4,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 6
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9051,28 +5740,6 @@
       "type": "COMMAND",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Deploy 1 EX Base.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 0,
-              "hp": 3,
-              "name": "EX Base",
-              "baseToken": true,
-              "exBase": true
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9109,45 +5776,6 @@
       "type": "COMMAND",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 to 3 of your (CB) Units. They get AP+2 during this turn.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": "UP_TO",
-                "maxCount": 3,
-                "trait": "CB"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Johann Trinity]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Johann Trinity"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9209,42 +5837,6 @@
       "type": "COMMAND",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】Deal 1 damage to all Units that are Lv.2 or lower.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": "ALL",
-                "lvMax": 2
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Gates Capa]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Gates Capa"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9292,50 +5884,6 @@
       "type": "COMMAND",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Choose 1 enemy Unit. It gets AP-2 during this turn.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": -2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Action】Choose 1 of your Units. During this battle, reduce battle damage it receives by 3.",
-          "timings": [
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "During this battle, reduce battle damage it receives by 3.",
-              "amount": 3,
-              "damageType": "BATTLE",
-              "duration": "THIS_BATTLE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9395,48 +5943,6 @@
       "type": "COMMAND",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Choose 1 Unit card with \"Trans-Am\" in its card name from your trash. Add it to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_FROM_TRASH_TO_HAND",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "nameContains": "Trans-Am",
-                "zone": "TRASH"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Main】/【Action】Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to them.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9505,77 +6011,6 @@
       "type": "COMMAND",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Choose 1 enemy Unit. Deal 1 damage to it.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Main】Choose 1 of your Units. When it deals battle damage to an enemy Unit that is Lv.5 or lower during this turn, destroy that enemy Unit.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_CLAUSE",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              },
-              "clause": {
-                "raw": "When it deals battle damage to an enemy Unit that is Lv.5 or lower during this turn, destroy that enemy Unit.",
-                "timings": [
-                  "WHEN_DEAL_DAMAGE"
-                ],
-                "oncePerTurn": false,
-                "triggerEvent": {
-                  "kind": "WHEN_DEAL_DAMAGE",
-                  "actor": "SELF",
-                  "targetKind": "UNIT",
-                  "targetFilter": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1,
-                    "lvMax": 5
-                  },
-                  "damageType": "BATTLE",
-                  "raw": "When it deals battle damage to an enemy Unit that is Lv.5 or lower during this turn"
-                },
-                "steps": [
-                  {
-                    "action": "DESTROY",
-                    "target": {
-                      "owner": "ENEMY",
-                      "cardType": "UNIT",
-                      "count": 1
-                    }
-                  }
-                ],
-                "unparsedResidual": ""
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9664,57 +6099,6 @@
       "type": "COMMAND",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】Place the top 2 cards of your deck into your trash. If you do, choose 1 enemy Unit with 4 or less AP. Deal an amount of damage equal to the number of (Minerva Squad) cards placed with this effect to that enemy Unit.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MILL",
-              "count": 2
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "DEAL_DAMAGE",
-                  "amount": 1,
-                  "scaleBy": {
-                    "metric": "AFFECTED_COUNT",
-                    "traits": [
-                      "Minerva Squad"
-                    ]
-                  },
-                  "target": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1,
-                    "apMax": 4
-                  }
-                }
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Heine Westenfluss]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Heine Westenfluss"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9788,41 +6172,6 @@
       "type": "COMMAND",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Activate this card's 【Action】.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ACTIVATE_MAIN_EFFECT"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Action】Choose 1 to 2 enemy Units that are Lv.3 or lower. Return them to their owners' hands.",
-          "timings": [
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": "UP_TO",
-                "maxCount": 2,
-                "lvMax": 3
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9873,51 +6222,6 @@
       "type": "COMMAND",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】If 2 or more friendly (UN) Units are in play, choose 1 enemy Unit with 5 or less HP. Return it to its owner's hand.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 2,
-            "traits": [
-              "UN"
-            ]
-          },
-          "steps": [
-            {
-              "action": "BOUNCE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "hpMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Alejandro Corner]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Alejandro Corner"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -9983,45 +6287,6 @@
       "type": "COMMAND",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 friendly Unit paired with a (Newtype) Pilot. It can't receive effect damage from enemy Units during this turn.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "It can't receive effect damage from enemy Units during this turn.",
-              "damageType": "EFFECT",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "PILOT",
-                "count": 1,
-                "trait": "Newtype"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Gael Chan]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Gael Chan"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -10081,48 +6346,6 @@
       "type": "COMMAND",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Main】/【Action】Choose 1 friendly (Militia)/(Dianna Counter) Unit. It gets AP+2 during this turn.",
-          "timings": [
-            "MAIN",
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Militia",
-                "traits": [
-                  "Militia",
-                  "Dianna Counter"
-                ]
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[Miashei Kune]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "Miashei Kune"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -10191,45 +6414,6 @@
       "type": "BASE",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, during your turn, if a friendly (League Militaire) Unit is in play, deploy 1 [Parts] Unit token.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            },
-            {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "ap": 2,
-              "hp": 2,
-              "name": "Parts",
-              "traits": [
-                "League Militaire"
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -10293,62 +6477,6 @@
       "type": "BASE",
       "color": "Blue",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】【Once per Turn】Rest 1 of your (Earth Federation) Units：Choose 1 enemy Unit that is Lv.3 or lower. Rest it.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": true,
-          "steps": [
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 3,
-                "trait": "Earth Federation"
-              }
-            },
-            {
-              "action": "REST",
-              "target": {
-                "owner": "ANY",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -10432,60 +6560,6 @@
       "type": "BASE",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "While you have a rested (Zeon) Unit in play, this Base can't receive battle damage from enemy Units that are Lv.4 or lower.",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "BOARD_CARD_COUNT",
-            "owner": "SELF",
-            "cardType": "UNIT",
-            "min": 1,
-            "rested": true,
-            "traits": [
-              "Zeon"
-            ]
-          },
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "this Base can't receive battle damage from enemy Units that are Lv.4 or lower.",
-              "damageType": "BATTLE"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -10566,61 +6640,6 @@
       "type": "BASE",
       "color": "Green",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "When you place an EX Resource, choose 1 friendly (Academy) Unit. It gets AP+2 during this turn.",
-          "timings": [
-            "WHEN_PLACE_EX_RESOURCE"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_PLACE_EX_RESOURCE",
-            "actor": "SELF",
-            "raw": "When you place an EX Resource"
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": 2,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Academy"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -10703,59 +6722,6 @@
       "type": "BASE",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】【Once per Turn】①, rest 1 friendly (CB) Unit：Choose 1 enemy Unit that is Lv.5 or lower. Deal 1 damage to it.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": true,
-          "cost": {
-            "raw": "①, rest 1 friendly (CB) Unit",
-            "resourceCost": 1
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -10836,61 +6802,6 @@
       "type": "BASE",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "When this Base receives battle damage from an enemy Unit with 3 or less AP, deal 1 damage to that Unit.",
-          "timings": [
-            "WHEN_RECEIVE_DAMAGE"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_RECEIVE_DAMAGE",
-            "actor": "SELF",
-            "targetKind": "BASE",
-            "damageType": "BATTLE",
-            "raw": "When this Base receives battle damage from an enemy Unit with 3 or less AP"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -10962,57 +6873,6 @@
       "type": "BASE",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if there are 7 or more (Vulture) cards in your trash, choose 1 enemy Unit with 2 or less AP. Destroy it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "TRASH_COUNT_AT_LEAST",
-                "count": 7,
-                "trait": "Vulture",
-                "traits": [
-                  "Vulture"
-                ]
-              },
-              "thenSteps": [
-                {
-                  "action": "DESTROY",
-                  "target": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1,
-                    "apMax": 2
-                  }
-                }
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -11081,51 +6941,6 @@
       "type": "BASE",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Destroyed】All players draw 1.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DRAW",
-              "count": 1,
-              "bothPlayers": true,
-              "targetOwner": "ALL_PLAYERS"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -11187,71 +7002,6 @@
       "type": "BASE",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, deal 3 damage to this Base.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            },
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 3,
-              "target": {
-                "owner": "ANY",
-                "cardType": "BASE",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Once per Turn】During your turn, when you pay ① or more for a friendly Unit's effect, this Base recovers 2 HP.",
-          "timings": [
-            "WHEN_PAY_EFFECT_COST"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_PAY_EFFECT_COST",
-            "actor": "FRIENDLY",
-            "raw": "when you pay ① or more for a friendly Unit's effect"
-          },
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "RECOVER_HP",
-              "amount": 2,
-              "target": {
-                "owner": "ANY",
-                "cardType": "BASE",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -11333,59 +7083,6 @@
       "type": "BASE",
       "color": "White",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】【Once per Turn】Exile 1 Command card from your trash：Choose 1 enemy Unit. It gets AP-1 during this turn.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": true,
-          "cost": {
-            "raw": "Exile 1 Command card from your trash",
-            "exileFromTrashCount": 1
-          },
-          "steps": [
-            {
-              "action": "MODIFY_AP",
-              "delta": -1,
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",

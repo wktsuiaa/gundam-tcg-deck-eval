@@ -1041,6 +1041,88 @@ describe('Seam 3: Fail-Closed Clause Execution & FAQ Conformance in Sandbox', ()
     expect(after1.players.B.battleArea.map((u) => u.card.cardNo)).toEqual(['TST-LV2']);
     expect(after1.players.B.hand.map((c) => c.cardNo)).toEqual(['TST-1HP']);
   });
+
+  it('recommends PAIR_PILOT for Command-Pilots and omits PLAY_COMMAND for Action-only Command-Pilots in Main Phase', () => {
+    const unit = makeRealCard({
+      printId: 'TST-ACAD',
+      cardNo: 'TST-ACAD',
+      name: 'Dilanza',
+      type: 'UNIT',
+      lv: 2,
+      cost: 1,
+      ap: 3,
+      hp: 3,
+      traits: ['Academy'],
+      link: '[Guel Jeturk]',
+      effect: '',
+    });
+    const guelActionCmd = makeRealCard({
+      printId: 'GD05-108',
+      cardNo: 'GD05-108',
+      name: 'Guel Action Command',
+      type: 'COMMAND',
+      lv: 2,
+      cost: 1,
+      ap: 1,
+      hp: 1,
+      effect: "【Action】Choose 1 friendly rested (Academy) Unit. Change a battling enemy Unit's attack target to it.\n【Pilot】[Guel Jeturk]",
+    });
+    const heineNullApCmd = makeRealCard({
+      printId: 'GD04-116',
+      cardNo: 'GD04-116',
+      name: 'Heine Command',
+      type: 'COMMAND',
+      lv: 3,
+      cost: 1,
+      ap: null,
+      hp: 2,
+      effect: '【Main】Draw 1.\n【Pilot】[Heine Westenfluss]',
+    });
+
+    const deck = {
+      id: 'cmd-pilot-deck',
+      name: 'Cmd Pilot',
+      updatedAt: '2026-01-01',
+      mainDeck: [{ cardNo: unit.cardNo, printId: unit.printId, qty: 10 }],
+      resourceDeck: [],
+    };
+    const byPrint = new Map([
+      [unit.printId, unit],
+      [guelActionCmd.printId, guelActionCmd],
+      [heineNullApCmd.printId, heineNullApCmd],
+    ]);
+    const byNo = new Map([
+      [unit.cardNo, unit],
+      [guelActionCmd.cardNo, guelActionCmd],
+      [heineNullApCmd.cardNo, heineNullApCmd],
+    ]);
+    const state = createInitialSandboxMatch(deck, deck, 'A', byPrint, byNo);
+    state.turn = 3;
+    state.players.A.resourcesTotal = 3;
+    state.players.A.resourcesActive = 3;
+    state.players.A.battleArea = [
+      {
+        instanceId: 'u-acad-1',
+        card: unit,
+        pairedPilot: null,
+        isLinked: false,
+        rested: false,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 3,
+      },
+    ];
+    state.players.A.hand = [guelActionCmd, heineNullApCmd];
+
+    const moves = evaluateSandboxBestMoves(state, 'A');
+    const pairGuel = moves.find((m) => m.actionType === 'PAIR_PILOT' && m.card?.cardNo === 'GD05-108');
+    expect(pairGuel).toBeDefined();
+    expect(moves.some((m) => m.actionType === 'PLAY_COMMAND' && m.card?.cardNo === 'GD05-108')).toBe(false);
+
+    const pairHeine = moves.find((m) => m.actionType === 'PAIR_PILOT' && m.card?.cardNo === 'GD04-116');
+    expect(pairHeine).toBeDefined();
+    expect(Number.isNaN(pairHeine!.priorityScore)).toBe(false);
+  });
 });
 
 

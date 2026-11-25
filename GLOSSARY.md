@@ -56,6 +56,10 @@ _Avoid_: Trigger text, raw condition, inline prefix
 The explicit Pilot-to-Unit pairing criteria attached to a Link-gated **Effect Clause**, identifying the Pilot names or Traits a Unit requires or that a Pilot satisfies when linked.
 _Avoid_: Link label, raw link text, pair filter
 
+**Pair Filter**:
+A Pilot trait, color, or level restriction on a pair-gated **Effect Clause** specifying which Pilots activate that clause when paired with a Unit.
+_Avoid_: Link Requirement, pair condition
+
 **Command Pilot**:
 A Command card carrying a Pilot mode declaration that allows it to pair with a Unit in the Battle Area and satisfy matching **Link Requirements** as a Pilot.
 _Avoid_: Hybrid command, pilot command card
@@ -83,3 +87,8 @@ _Avoid_: Response window, stack phase, priority pass
 **Chain Witness**:
 The explicit player choices, target selections, and top-of-deck card assumptions supplied to verify whether a multi-card play line is legally executable without nondeterministic branching.
 _Avoid_: Replay log, mock RNG, symbolic branch
+
+**Chain Preview**:
+A non-destructive dry-run resolution trace of a pending move or multi-card play line showing cost checks, pre-commit **Replacement Effects**, Turn Player-first **Effect Clauses**, **Action Steps**, and required **Chain Witness** assumptions.
+_Avoid_: Stack preview, response queue, live simulation
+

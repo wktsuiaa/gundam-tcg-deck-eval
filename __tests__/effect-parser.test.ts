@@ -261,7 +261,7 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
 
   it('extracts structured linkRequirement, GRANT_PILOT_MODE, NAME_ALIAS, and secondary LINK prerequisites', () => {
     const st09003 = compileCardEffect(corpus.get('ST09-003')!);
-    expect(st09003.clauses[0].linkRequirement).toEqual({
+    expect(st09003.abilities[0]?.kind === 'EFFECT_CLAUSE' ? st09003.abilities[0].linkRequirement : undefined).toEqual({
       role: 'UNIT_REQUIRES_PILOT',
       names: ['Athrun Zala'],
       traits: [],
@@ -272,8 +272,8 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
     ).toBe(true);
 
     const gd01088 = compileCardEffect(corpus.get('GD01-088')!);
-    const linkClause = gd01088.clauses.find((c) => c.timings.includes('WHEN_LINKED'))!;
-    expect(linkClause.linkRequirement).toMatchObject({
+    const linkClause = gd01088.abilities.find((c) => c.kind === 'EFFECT_CLAUSE' && c.timings.includes('WHEN_LINKED'));
+    expect(linkClause?.kind === 'EFFECT_CLAUSE' ? linkClause.linkRequirement : undefined).toMatchObject({
       role: 'PILOT_MATCHING_UNIT',
       names: ['Banagher Links'],
     });
@@ -281,11 +281,15 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
       gd01088.prerequisites.some((p) => p.kind === 'LINK' && p.cardType === 'UNIT' && p.anyNames?.includes('Banagher Links') && !p.primaryClause)
     ).toBe(true);
 
-    const eb01076 = parseCardEffects(corpus.get('EB01-076')!);
-    expect(eb01076.clauses.some((c) => c.steps.some((s) => s.action === 'GRANT_PILOT_MODE' && s.pilotName === 'Lowe Guele'))).toBe(true);
+    const eb01076 = compileCardEffect(corpus.get('EB01-076')!);
+    expect(
+      eb01076.abilities.some((a) => a.kind === 'CONTINUOUS_MODIFIER' && a.modifier.type === 'GRANT_PILOT_MODE' && a.modifier.pilotName === 'Lowe Guele')
+    ).toBe(true);
 
-    const gd02098 = parseCardEffects(corpus.get('GD02-098')!);
-    expect(gd02098.clauses.some((c) => c.steps.some((s) => s.action === 'NAME_ALIAS' && s.alias === 'Char Aznable'))).toBe(true);
+    const gd02098 = compileCardEffect(corpus.get('GD02-098')!);
+    expect(
+      gd02098.abilities.some((a) => a.kind === 'CONTINUOUS_MODIFIER' && a.modifier.type === 'NAME_ALIAS' && a.modifier.alias === 'Char Aznable')
+    ).toBe(true);
   });
 
   it('audits all unique cards with zero crashes, zero reminder leaks, zero RAW_CONDITIONs, zero residuals, and 100% link coverage', () => {

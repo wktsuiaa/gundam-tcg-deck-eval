@@ -10,66 +10,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Pair･Lv.5 or Higher Pilot】During your turn, when this Unit destroys an enemy Unit with damage, deal 2 damage to all enemy Units with 5 or less AP.",
-          "timings": [
-            "DURING_PAIR",
-            "WHEN_DESTROY_BY_BATTLE"
-          ],
-          "oncePerTurn": false,
-          "triggerEvent": {
-            "kind": "WHEN_DESTROY_BY_BATTLE",
-            "actor": "SELF",
-            "targetKind": "UNIT",
-            "targetFilter": {
-              "owner": "ENEMY",
-              "cardType": "UNIT",
-              "count": 1
-            },
-            "damageType": "ANY",
-            "raw": "when this Unit destroys an enemy Unit with damage"
-          },
-          "pairFilter": {
-            "lvMin": 5
-          },
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": "ALL",
-                "apMax": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Choose 1 enemy Base. Deal 5 damage to it.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 5,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "BASE",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -91,6 +31,9 @@
             },
             "damageType": "ANY",
             "raw": "when this Unit destroys an enemy Unit with damage"
+          },
+          "pairFilter": {
+            "lvMin": 5
           },
           "condition": {
             "kind": "IS_YOUR_TURN"
@@ -144,32 +87,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Deploy】Choose 1 friendly Unit with 5 or more AP. It gains <Breach 3> during this turn.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Breach",
-                "value": 3
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "apMin": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -210,43 +127,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Once per Turn】During your turn, when this Unit destroys an enemy Unit with damage, deal 1 damage to all enemy Units with 3 or less AP.",
-          "timings": [
-            "WHEN_DESTROY_BY_BATTLE"
-          ],
-          "oncePerTurn": true,
-          "triggerEvent": {
-            "kind": "WHEN_DESTROY_BY_BATTLE",
-            "actor": "SELF",
-            "targetKind": "UNIT",
-            "targetFilter": {
-              "owner": "ENEMY",
-              "cardType": "UNIT",
-              "count": 1
-            },
-            "damageType": "ANY",
-            "raw": "when this Unit destroys an enemy Unit with damage"
-          },
-          "condition": {
-            "kind": "IS_YOUR_TURN"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": "ALL",
-                "apMax": 3
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -305,7 +185,6 @@
           "value": 3
         }
       ],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -320,33 +199,6 @@
       "type": "UNIT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Attack】You may discard 1. If you do, draw 1.",
-          "timings": [
-            "ATTACK"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DISCARD",
-              "count": 1,
-              "optional": true
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
-                }
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -390,63 +242,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【During Pair】【Activate･Main】Exile 4 cards in your trash from the game：This Unit gains <First Strike> during this turn.",
-          "timings": [
-            "DURING_PAIR",
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "Exile 4 cards in your trash from the game",
-            "exileFromTrashCount": 4
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "First Strike",
-                "value": null
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Action】Exile 4 cards in your trash from the game：This Unit gains <Suppression> during this battle.",
-          "timings": [
-            "ACTIVATE_ACTION"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "Exile 4 cards in your trash from the game",
-            "exileFromTrashCount": 4
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "Suppression",
-                "value": null
-              },
-              "duration": "THIS_BATTLE",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -519,39 +314,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【When Linked】This Unit gains <First Strike> during this turn.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "M'Quve"
-            ],
-            "traits": [],
-            "raw": "[M'Quve]"
-          },
-          "steps": [
-            {
-              "action": "GRANT_KEYWORD",
-              "keyword": {
-                "name": "First Strike",
-                "value": null
-              },
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -610,7 +372,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -625,42 +386,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Destroyed】If there is a player with 3 or less Shields, choose 1 Unit card that is Lv.6 or higher from your trash. Add it to your hand. If you do, discard 1.",
-          "timings": [
-            "DESTROYED"
-          ],
-          "oncePerTurn": false,
-          "condition": {
-            "kind": "SHIELD_COUNT",
-            "owner": "ANY",
-            "max": 3
-          },
-          "steps": [
-            {
-              "action": "ADD_FROM_TRASH_TO_HAND",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMin": 6,
-                "zone": "TRASH"
-              }
-            },
-            {
-              "action": "IF_PREVIOUS_SUCCEEDED",
-              "thenSteps": [
-                {
-                  "action": "DISCARD",
-                  "count": 1
-                }
-              ]
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -713,7 +438,6 @@
       "type": "UNIT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [],
       "abilities": [],
       "synergy": {
         "requires": [],
@@ -728,56 +452,6 @@
       "type": "PILOT",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "This card's name is also treated as [Zechs Merquise].",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "NAME_ALIAS",
-              "alias": "Zechs Merquise"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Action】【Once per Turn】Choose 1 damaged enemy Unit battling this Unit. Deal 2 damage to it.",
-          "timings": [
-            "ACTIVATE_ACTION"
-          ],
-          "oncePerTurn": true,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT",
-                "count": 1,
-                "state": "DAMAGED"
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -842,83 +516,6 @@
       "type": "PILOT",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "This card's name is also treated as [Marida Cruz].",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "NAME_ALIAS",
-              "alias": "Marida Cruz"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Burst】Add this card to your hand.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SELF_TO_HAND"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【When Linked】Look at the top 2 cards of your deck and return 1 to the top. Place the remaining card into your trash. If there is a player with 3 or less Shields, add the card to your hand instead of returning it to your deck.",
-          "timings": [
-            "WHEN_LINKED"
-          ],
-          "oncePerTurn": false,
-          "linkRequirement": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Ple-Twelve",
-              "Marida Cruz"
-            ],
-            "traits": [
-              "Earth Federation",
-              "Cyber-Newtype"
-            ],
-            "raw": "[Ple-Twelve] / [Marida Cruz]"
-          },
-          "steps": [
-            {
-              "action": "LOOK_TOP",
-              "count": 2,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "MILL",
-              "count": 1
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "SHIELD_COUNT",
-                "owner": "ANY",
-                "max": 3
-              },
-              "thenSteps": [
-                {
-                  "action": "LOOK_TOP",
-                  "count": 1,
-                  "revealSearch": true
-                }
-              ],
-              "replacesPrevious": true
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -1027,50 +624,6 @@
       "type": "COMMAND",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Choose 1 enemy Unit. Deal 1 damage to it.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Main】Choose 1 enemy player. You and that player each choose 1 of your own Units. Begin a battle between them and only perform the damage step.",
-          "timings": [
-            "MAIN"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "FORCE_BATTLE_DAMAGE_STEP",
-              "attacker": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              },
-              "defender": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1132,72 +685,6 @@
       "type": "COMMAND",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Action】Choose 1 friendly Unit. It gains the following effect during this battle： When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
-          "timings": [
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_CLAUSE",
-              "duration": "THIS_BATTLE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              },
-              "clause": {
-                "raw": "When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
-                "timings": [
-                  "WHEN_DESTROY_BY_BATTLE"
-                ],
-                "oncePerTurn": false,
-                "triggerEvent": {
-                  "kind": "WHEN_DESTROY_BY_BATTLE",
-                  "actor": "SELF",
-                  "targetKind": "UNIT",
-                  "targetFilter": {
-                    "owner": "ENEMY",
-                    "cardType": "UNIT",
-                    "count": 1
-                  },
-                  "damageType": "BATTLE",
-                  "raw": "When this Unit destroys an enemy Unit with battle damage"
-                },
-                "steps": [
-                  {
-                    "action": "DESTROY",
-                    "target": {
-                      "owner": "ENEMY",
-                      "cardType": "UNIT",
-                      "count": 1,
-                      "apMax": 2
-                    }
-                  }
-                ],
-                "unparsedResidual": ""
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Pilot】[M'Quve]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "M'Quve"
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1251,23 +738,8 @@
           ]
         },
         {
-          "kind": "EFFECT_CLAUSE",
-          "clauseIndex": 1,
-          "raw": "【Pilot】[M'Quve]",
-          "timings": [
-            "CONTINUOUS"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_PILOT_MODE",
-              "pilotName": "M'Quve"
-            }
-          ]
-        },
-        {
           "kind": "CONTINUOUS_MODIFIER",
-          "clauseIndex": 2,
+          "clauseIndex": 1,
           "raw": "【Pilot】[M'Quve]",
           "layer": 2,
           "activeIn": "HAND",
@@ -1290,47 +762,6 @@
       "type": "COMMAND",
       "color": "Purple",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Action】 Choose 1 enemy Unit that is Lv.2 or lower. Destroy it.",
-          "timings": [
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DESTROY",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 2
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Action】 Choose 1 friendly Unit and 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to them.",
-          "timings": [
-            "ACTION"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 2,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMin": 5
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
@@ -1389,63 +820,6 @@
       "type": "BASE",
       "color": "Red",
       "keywords": [],
-      "clauses": [
-        {
-          "raw": "【Burst】Deploy this card.",
-          "timings": [
-            "BURST"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "DEPLOY_SELF"
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Deploy】Add 1 of your Shields to your hand.",
-          "timings": [
-            "DEPLOY"
-          ],
-          "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "ADD_SHIELD_TO_HAND",
-              "count": 1
-            }
-          ],
-          "unparsedResidual": ""
-        },
-        {
-          "raw": "【Activate･Main】Rest this Base：If a friendly Unit paired with a Pilot has destroyed an enemy Unit with battle damage this turn, choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it.",
-          "timings": [
-            "ACTIVATE_MAIN"
-          ],
-          "oncePerTurn": false,
-          "cost": {
-            "raw": "Rest this Base",
-            "restSelf": true
-          },
-          "condition": {
-            "kind": "TURN_HISTORY",
-            "event": "PAIRED_UNIT_DESTROYED_ENEMY_BY_BATTLE"
-          },
-          "steps": [
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 4
-              }
-            }
-          ],
-          "unparsedResidual": ""
-        }
-      ],
       "abilities": [
         {
           "kind": "EFFECT_CLAUSE",
