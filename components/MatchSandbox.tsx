@@ -292,9 +292,6 @@ export function MatchSandbox({
     );
   }
 
-  const playerA = match.players.A;
-  const playerB = match.players.B;
-
   const renderSideBoard = (side: SandboxSide) => {
     const player = match.players[side];
     const opp = match.players[side === 'A' ? 'B' : 'A'];

@@ -16,7 +16,6 @@ import type {
   OpeningHandQuality,
   PacingTier,
   SavedDeck,
-  StartingHandScenario,
   StrategyBlueprint,
   TacticalStyleTag,
   TurnActionInsight,
@@ -30,6 +29,7 @@ import {
   type EffectCondition,
   type EffectPrerequisite,
   type EffectStep,
+  type EffectTiming,
   type SynergyNodeKey,
 } from '@/lib/effect-parser';
 import { getAbilitySteps, getAbilityTimings } from '@/lib/cfg-parser';
@@ -50,44 +50,34 @@ export interface StrategyStyleMeta {
 
 export const TACTICAL_STYLE_META: StrategyStyleMeta[] = [
   {
-    tag: 'Link-Strike',
-    description: 'Maximizes Pilot–Unit Link pairs for immediate 【When Linked】 triggers and combined AP/HP spikes.',
-    targetBias: { synergy: 88, aggro: 70, tempo: 68 },
+    tag: 'Rush / Aggro',
+    description: 'Low-cost attackers, <Breach> and <First Strike> burn Shields before opponents stabilize.',
+    targetBias: { aggro: 90, attack: 72, synergy: 50 },
   },
   {
-    tag: 'High-Liquidity Draw',
-    description: 'Stacks draw, top-deck look, and search effects so your hand stays full past Turn 5.',
-    targetBias: { liquidity: 88, tempo: 68, control: 60 },
-  },
-  {
-    tag: 'Repair Fortress',
-    description: 'Anchors the board with <Blocker>, <Repair>, and high-HP Bases to win long attrition wars.',
-    targetBias: { defense: 90, synergy: 62, control: 65 },
-  },
-  {
-    tag: 'Shield Breach',
-    description: 'Prioritizes low-cost attackers, <Breach>, and <First Strike> to burn Shields early.',
-    targetBias: { aggro: 90, tempo: 82 },
-  },
-  {
-    tag: 'Wide Swarm',
-    description: 'Floods Cost 1–2 Units and Token generators to overwhelm single-target removal.',
-    targetBias: { aggro: 82, tempo: 85, synergy: 65 },
-  },
-  {
-    tag: 'Command Control',
-    description: 'Focuses on Rest, Direct Damage, AP Deduction, Bounce, and Destroy Commands.',
-    targetBias: { control: 90, defense: 70, liquidity: 65 },
-  },
-  {
-    tag: 'Resource Ramp',
-    description: 'Accelerates Resources and EX Resources to deploy Lv.5–7 boss Units ahead of curve.',
-    targetBias: { tempo: 88, defense: 62, aggro: 66 },
-  },
-  {
-    tag: 'Balanced Midrange',
+    tag: 'Midrange / Value',
     description: 'Blends curve efficiency, solid Unit bodies, Link threats, and flexible removal.',
-    targetBias: { aggro: 65, defense: 65, tempo: 70, liquidity: 60, synergy: 70, control: 60 },
+    targetBias: { aggro: 65, defense: 65, attack: 58, liquidity: 62, synergy: 68, control: 60 },
+  },
+  {
+    tag: 'Control / Attrition',
+    description: 'Rest, bounce, AP deduction and <Blocker> / <Repair> walls grind opponents out of threats.',
+    targetBias: { control: 90, defense: 78, liquidity: 65 },
+  },
+  {
+    tag: 'Ramp / Big Unit',
+    description: 'Accelerates Resources and EX Resources to deploy Lv.5–7 boss Units ahead of curve.',
+    targetBias: { liquidity: 72, defense: 62, aggro: 66 },
+  },
+  {
+    tag: 'Link / Synergy Combo',
+    description: 'Maximizes Pilot–Unit Link pairs for immediate 【When Linked】 triggers and combined AP/HP spikes.',
+    targetBias: { synergy: 90, aggro: 66, attack: 60 },
+  },
+  {
+    tag: 'Burn / Ping',
+    description: 'Direct damage, attack triggers and evasive keywords chip Shields and Units outside normal combat.',
+    targetBias: { attack: 90, control: 62, aggro: 60 },
   },
 ];
 
@@ -100,76 +90,40 @@ export interface EffectStyleMeta {
 
 export const EFFECT_STYLE_META: EffectStyleMeta[] = [
   {
-    tag: 'AP Deduction',
-    label: 'AP Deduction',
-    description: 'Reduces opposing Unit AP (AP-X) to win combat trades and neutralize attackers.',
-    primaryAxis: 'control',
+    tag: 'Attack / Ping',
+    label: 'Attack / Ping',
+    description: 'Deals direct damage, boosts AP, or packs <Breach>, <First Strike>, <High-Maneuver>, <Suppression>.',
+    primaryAxis: 'attack',
   },
   {
-    tag: 'Destroy',
-    label: 'Destroy / Hard Removal',
-    description: 'Directly destroys enemy Units or Shields to clear high-HP threats.',
-    primaryAxis: 'control',
-  },
-  {
-    tag: 'Damage Proof',
-    label: 'Damage Proof / Reduction',
-    description: 'Reduces incoming battle/effect damage or shields Units from destruction and targeting.',
+    tag: 'Board / Deploy',
+    label: 'Board / Deploy',
+    description: 'Deploys tokens or extra bodies, and holds the board with <Blocker>, <Repair> and damage proofing.',
     primaryAxis: 'defense',
   },
   {
-    tag: 'Repair',
-    label: 'Repair / Recovery',
-    description: 'Heals Unit/Base HP at end of turn (<Repair X>) or recovers Shield durability.',
-    primaryAxis: 'defense',
-  },
-  {
-    tag: 'Bounce',
-    label: 'Back to Hand (Bounce)',
-    description: 'Returns opposing Units or Bases to hand to reset paired Pilots and stall tempo.',
+    tag: 'Removal / Disrupt',
+    label: 'Removal / Disrupt',
+    description: 'Destroys, bounces, rests or shrinks (AP-X) enemy Units to clear threats.',
     primaryAxis: 'control',
   },
   {
-    tag: 'Rest Lock',
-    label: 'Rest / Freeze Lock',
-    description: 'Rests enemy Units or keeps them from setting active during Start Phase.',
-    primaryAxis: 'control',
-  },
-  {
-    tag: 'Direct Damage',
-    label: 'Direct Effect Damage',
-    description: 'Deals ping or burst damage directly to enemy Units or Shields outside combat.',
-    primaryAxis: 'aggro',
-  },
-  {
-    tag: 'Draw & Search',
-    label: 'Draw & Deck Filter',
-    description: 'Draws extra cards or reveals/searches top cards to stabilize curve and Link pieces.',
+    tag: 'Draw / Recursion',
+    label: 'Draw / Recursion',
+    description: 'Draws or searches cards and recovers Units, Pilots or Commands from the Trash.',
     primaryAxis: 'liquidity',
   },
   {
-    tag: 'Trash Recursion',
-    label: 'Trash Recursion',
-    description: 'Recovers Units, Pilots, or Commands from the Trash back to hand or play.',
+    tag: 'Resource / Ramp',
+    label: 'Resource / Ramp',
+    description: 'Adds active/EX Resources or reduces play costs to accelerate Lv.5+ threats.',
     primaryAxis: 'liquidity',
   },
   {
-    tag: 'Resource Ramp',
-    label: 'Resource Ramp / Cost Cheat',
-    description: 'Adds active/EX Resources or reduces card play costs to accelerate Lv.5+ threats.',
-    primaryAxis: 'tempo',
-  },
-  {
-    tag: 'Combat Keywords',
-    label: 'Combat Keywords',
-    description: 'Packs <Blocker>, <Breach>, <First Strike>, <High-Maneuver>, <Support>, or <Suppression>.',
-    primaryAxis: 'aggro',
-  },
-  {
-    tag: 'Token Deploy',
-    label: 'Token & Extra Deploy',
-    description: 'Deploys Unit tokens or extra bodies onto the Battle Area for wider boards.',
-    primaryAxis: 'tempo',
+    tag: 'Link / Synergy',
+    label: 'Link / Synergy',
+    description: 'Rewards Pilot–Unit pairing with 【When Paired】 / 【When Linked】 triggers, <Support> and re-pairing.',
+    primaryAxis: 'synergy',
   },
 ];
 
@@ -205,19 +159,78 @@ export function normalizeTraitFocus(raw?: string | string[] | null): string[] {
 export const DEFAULT_BLUEPRINT: StrategyBlueprint = {
   colors: ['Blue', 'White'],
   pacing: 'Midrange Tempo',
-  styles: ['Link-Strike'],
+  styles: ['Link / Synergy Combo'],
   effectStyles: [],
   traitFocus: [],
   targetHexagon: {
     aggro: 65,
     defense: 60,
-    tempo: 70,
+    attack: 60,
     liquidity: 65,
     synergy: 85,
     control: 55,
   },
   constraints: DEFAULT_CONSTRAINTS,
 };
+
+const LEGACY_STRATEGY_MAP: Record<string, TacticalStyleTag> = {
+  'Link-Strike': 'Link / Synergy Combo',
+  'High-Liquidity Draw': 'Midrange / Value',
+  'Repair Fortress': 'Control / Attrition',
+  'Shield Breach': 'Rush / Aggro',
+  'Wide Swarm': 'Rush / Aggro',
+  'Command Control': 'Control / Attrition',
+  'Resource Ramp': 'Ramp / Big Unit',
+  'Balanced Midrange': 'Midrange / Value',
+};
+
+const LEGACY_EFFECT_STYLE_MAP: Record<string, EffectStyleTag> = {
+  'AP Deduction': 'Removal / Disrupt',
+  Destroy: 'Removal / Disrupt',
+  'Damage Proof': 'Board / Deploy',
+  Repair: 'Board / Deploy',
+  Bounce: 'Removal / Disrupt',
+  'Rest Lock': 'Removal / Disrupt',
+  'Direct Damage': 'Attack / Ping',
+  'Draw & Search': 'Draw / Recursion',
+  'Trash Recursion': 'Draw / Recursion',
+  'Resource Ramp': 'Resource / Ramp',
+  'Combat Keywords': 'Attack / Ping',
+  'Token Deploy': 'Board / Deploy',
+};
+
+/** Reads a persisted blueprint, upgrading legacy strategy / effect-style names and the old `tempo` axis. */
+export function normalizeBlueprint(raw?: StrategyBlueprint): StrategyBlueprint {
+  if (!raw) return DEFAULT_BLUEPRINT;
+  const isStrategy = (t: string): t is TacticalStyleTag => TACTICAL_STYLE_META.some((m) => m.tag === t);
+  const isEffectStyle = (t: string): t is EffectStyleTag => EFFECT_STYLE_META.some((m) => m.tag === t);
+  const legacyPrimary = (raw as unknown as { primaryStyle?: string }).primaryStyle;
+
+  const strategies = [...(Array.isArray(raw.styles) ? raw.styles : []), legacyPrimary ?? '']
+    .map((t) => (isStrategy(t) ? t : LEGACY_STRATEGY_MAP[t]))
+    .filter((t): t is TacticalStyleTag => Boolean(t));
+  const effectStyles = [
+    ...new Set(
+      (Array.isArray(raw.effectStyles) ? raw.effectStyles : [])
+        .map((t) => (isEffectStyle(t) ? t : LEGACY_EFFECT_STYLE_MAP[t]))
+        .filter((t): t is EffectStyleTag => Boolean(t))
+    ),
+  ].slice(0, 2);
+
+  // Legacy `tempo` measured curve and ramp, not ping damage, so it is dropped rather than carried into `attack`.
+  const { tempo: _legacyTempo, ...savedAxes } = (raw.targetHexagon ?? {}) as Partial<HexagonAxes> & { tempo?: number };
+  const targetHexagon: HexagonAxes = { ...DEFAULT_BLUEPRINT.targetHexagon, ...savedAxes };
+
+  return {
+    colors: Array.isArray(raw.colors) ? raw.colors : DEFAULT_BLUEPRINT.colors,
+    pacing: raw.pacing ?? DEFAULT_BLUEPRINT.pacing,
+    styles: [strategies[0] ?? DEFAULT_BLUEPRINT.styles[0]],
+    effectStyles,
+    traitFocus: normalizeTraitFocus((raw as unknown as { traitFocus?: string | string[] }).traitFocus),
+    targetHexagon,
+    constraints: { ...DEFAULT_CONSTRAINTS, ...(raw.constraints ?? {}) },
+  };
+}
 
 /** Hypergeometric probability of drawing >= minSuccesses in drawCount draws */
 export function hypergeometricAtLeast(
@@ -373,86 +386,73 @@ function hasDensityGateCondition(cond: EffectCondition | undefined): boolean {
   return false;
 }
 
-function collectStepsAndResiduals(card: GundamCardPrint) {
+/** Flattens a card's lowered ability AST into steps, flagging steps that sit behind a density gate. */
+function collectLoweredSteps(card: GundamCardPrint) {
   const parsed = card.compiledEffect ?? { keywords: [], abilities: [] };
   const steps: { step: EffectStep; gated: boolean }[] = [];
 
   for (const ab of parsed.abilities) {
-    const cond = ab.kind === 'CUSTOM_HOOK' ? undefined : ab.condition;
-    const gated = hasDensityGateCondition(cond);
+    const gated = hasDensityGateCondition('condition' in ab ? ab.condition : undefined);
     for (const step of flattenEffectSteps(getAbilitySteps(ab))) steps.push({ step, gated });
   }
-  return { parsed, steps, residualText: '' };
+  return { parsed, steps };
+}
+
+const PAIR_TIMINGS: EffectTiming[] = ['WHEN_PAIRED', 'WHEN_LINKED', 'DURING_PAIR', 'DURING_LINK'];
+const ATTACK_KEYWORDS = new Set(['Breach', 'First Strike', 'High-Maneuver', 'Suppression']);
+
+/** Maps each lowered step to the single Effect Style it belongs to (undefined = no style). */
+function effectStyleOfStep(step: EffectStep): EffectStyleTag | undefined {
+  switch (step.action) {
+    case 'DEAL_DAMAGE':
+      return 'Attack / Ping';
+    case 'MODIFY_AP':
+      return step.delta < 0 ? 'Removal / Disrupt' : undefined;
+    case 'DESTROY':
+    case 'BOUNCE':
+    case 'REST':
+    case 'FREEZE':
+      return 'Removal / Disrupt';
+    case 'DAMAGE_PROOF':
+    case 'RECOVER_HP':
+    case 'DEPLOY_TOKEN':
+      return 'Board / Deploy';
+    case 'DRAW':
+    case 'LOOK_TOP':
+    case 'REVEAL_TOP':
+    case 'ADD_FROM_TRASH_TO_HAND':
+    case 'DEPLOY_FROM_TRASH':
+      return 'Draw / Recursion';
+    case 'ADD_RESOURCE':
+    case 'COST_REDUCTION':
+      return 'Resource / Ramp';
+    case 'PAIR_SELF_FROM_TRASH':
+    case 'PAIR_FROM_HAND':
+      return 'Link / Synergy';
+    case 'GRANT_KEYWORD':
+      return effectStyleOfKeyword(step.keyword.name);
+    default:
+      return undefined;
+  }
+}
+
+function effectStyleOfKeyword(name: string): EffectStyleTag {
+  if (ATTACK_KEYWORDS.has(name)) return 'Attack / Ping';
+  if (name === 'Support') return 'Link / Synergy';
+  return 'Board / Deploy'; // Blocker, Repair
 }
 
 export function detectEffectStyles(card: GundamCardPrint): EffectStyleTag[] {
-  const { parsed, steps, residualText } = collectStepsAndResiduals(card);
+  const { parsed, steps } = collectLoweredSteps(card);
   const tags = new Set<EffectStyleTag>();
 
-  for (const kw of parsed.keywords) {
-    if (kw.name === 'Repair') tags.add('Repair');
-    else tags.add('Combat Keywords');
-  }
-
+  for (const kw of parsed.keywords) tags.add(effectStyleOfKeyword(kw.name));
   for (const { step } of steps) {
-    switch (step.action) {
-      case 'MODIFY_AP':
-        if (step.delta < 0) tags.add('AP Deduction');
-        break;
-      case 'DESTROY':
-        tags.add('Destroy');
-        break;
-      case 'DAMAGE_PROOF':
-        tags.add('Damage Proof');
-        break;
-      case 'RECOVER_HP':
-        tags.add('Repair');
-        break;
-      case 'BOUNCE':
-        tags.add('Bounce');
-        break;
-      case 'REST':
-      case 'FREEZE':
-        tags.add('Rest Lock');
-        break;
-      case 'DEAL_DAMAGE':
-        tags.add('Direct Damage');
-        break;
-      case 'DRAW':
-      case 'LOOK_TOP':
-      case 'REVEAL_TOP':
-        tags.add('Draw & Search');
-        break;
-      case 'ADD_FROM_TRASH_TO_HAND':
-      case 'DEPLOY_FROM_TRASH':
-        tags.add('Trash Recursion');
-        break;
-      case 'ADD_RESOURCE':
-      case 'COST_REDUCTION':
-        tags.add('Resource Ramp');
-        break;
-      case 'GRANT_KEYWORD':
-        tags.add(step.keyword.name === 'Repair' ? 'Repair' : 'Combat Keywords');
-        break;
-      case 'DEPLOY_TOKEN':
-        tags.add('Token Deploy');
-        break;
-    }
+    const tag = effectStyleOfStep(step);
+    if (tag) tags.add(tag);
   }
-
-  // Fallback only on unparsed residual prose (never on reminder text or parsed condition gates)
-  if (residualText) {
-    if (/ap-|ap\s*-\d|gets\s*-\d+\s*ap|ap is reduced/i.test(residualText)) tags.add('AP Deduction');
-    if (/\bdestroy\b/i.test(residualText)) tags.add('Destroy');
-    if (/reduce.*damage|cannot be damaged|take no damage|cannot be destroyed|cannot be chosen/i.test(residualText)) tags.add('Damage Proof');
-    if (/recover\s+\d+\s+hp/i.test(residualText)) tags.add('Repair');
-    if (/return.*to.*hand/i.test(residualText)) tags.add('Bounce');
-    if (/\brest\b|won't be set as active/i.test(residualText)) tags.add('Rest Lock');
-    if (/\bdeal \d+ damage/i.test(residualText)) tags.add('Direct Damage');
-    if (/\bdraw\s+\d+|look at the top|reveal|search/i.test(residualText)) tags.add('Draw & Search');
-    if (/(?:choose|return|add|deploy|play).*from your trash/i.test(residualText)) tags.add('Trash Recursion');
-    if (/resource area|ex resource|reduce the cost|cost -/i.test(residualText)) tags.add('Resource Ramp');
-    if (/\btoken\b|deploy 1/i.test(residualText)) tags.add('Token Deploy');
+  if (parsed.abilities.some((ab) => getAbilityTimings(ab).some((t) => PAIR_TIMINGS.includes(t)))) {
+    tags.add('Link / Synergy');
   }
 
   return [...tags];
@@ -461,7 +461,7 @@ export function detectEffectStyles(card: GundamCardPrint): EffectStyleTag[] {
 export interface CardSignalScores {
   aggro: number;
   defense: number;
-  tempo: number;
+  attack: number;
   liquidity: number;
   synergy: number;
   control: number;
@@ -475,16 +475,15 @@ export interface CardSignalScores {
   hasBreach: boolean;
   hasFirstStrike: boolean;
   hasSupport: boolean;
+  hasPing: boolean;
   hasPairTrigger: boolean;
   hasConditionalGate: boolean;
   effectStyles: EffectStyleTag[];
 }
 
 export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores {
-  const { parsed, steps, residualText } = collectStepsAndResiduals(card);
-  const resLower = residualText.toLowerCase();
+  const { parsed, steps } = collectLoweredSteps(card);
   const cost = card.cost ?? 2;
-  const lv = card.lv ?? 2;
   const ap = card.ap ?? 0;
   const hp = card.hp ?? 0;
   const effectStyles = detectEffectStyles(card);
@@ -494,25 +493,20 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
     parsed.keywords.some((k) => k.name === name) ||
     hasStep((s) => s.action === 'GRANT_KEYWORD' && s.keyword.name === name);
 
-  const hasDraw =
-    hasStep((s) => s.action === 'DRAW') ||
-    /\bdraw\s+\d+/i.test(resLower);
-  const hasSearch =
-    hasStep((s) => s.action === 'LOOK_TOP' || s.action === 'REVEAL_TOP' || s.action === 'ADD_FROM_TRASH_TO_HAND' || s.action === 'DEPLOY_FROM_TRASH') ||
-    resLower.includes('look at the top') ||
-    resLower.includes('reveal') ||
-    resLower.includes('search');
-  const hasRamp =
-    hasStep((s) => s.action === 'ADD_RESOURCE' || s.action === 'COST_REDUCTION') ||
-    resLower.includes('resource area') ||
-    resLower.includes('ex resource') ||
-    resLower.includes('reduce the cost');
-  const hasRest =
-    hasStep((s) => s.action === 'REST' || s.action === 'FREEZE') ||
-    /\brest\b/.test(resLower);
-  const hasRemoval =
-    hasStep((s) => s.action === 'DEAL_DAMAGE' || s.action === 'DESTROY' || s.action === 'BOUNCE' || (s.action === 'MODIFY_AP' && s.delta < 0)) ||
-    /\b(deal \d+ damage|destroy|return .* hand|ap-)\b/.test(resLower);
+  const hasDraw = hasStep((s) => s.action === 'DRAW');
+  const hasSearch = hasStep(
+    (s) =>
+      s.action === 'LOOK_TOP' ||
+      s.action === 'REVEAL_TOP' ||
+      s.action === 'ADD_FROM_TRASH_TO_HAND' ||
+      s.action === 'DEPLOY_FROM_TRASH'
+  );
+  const hasRamp = hasStep((s) => s.action === 'ADD_RESOURCE' || s.action === 'COST_REDUCTION');
+  const hasRest = hasStep((s) => s.action === 'REST' || s.action === 'FREEZE');
+  const hasPing = hasStep((s) => s.action === 'DEAL_DAMAGE');
+  const hasRemoval = hasStep(
+    (s) => s.action === 'DEAL_DAMAGE' || s.action === 'DESTROY' || s.action === 'BOUNCE' || (s.action === 'MODIFY_AP' && s.delta < 0)
+  );
 
   const hasRepair = hasKeywordNamed('Repair');
   const hasBlocker = hasKeywordNamed('Blocker');
@@ -520,17 +514,14 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   const hasFirstStrike = hasKeywordNamed('First Strike');
   const hasHighManeuver = hasKeywordNamed('High-Maneuver');
   const hasSupport = hasKeywordNamed('Support');
-  const hasPairTrigger = parsed.abilities.some((ab) =>
-    getAbilityTimings(ab).some(
-      (t) => t === 'WHEN_PAIRED' || t === 'WHEN_LINKED' || t === 'DURING_PAIR' || t === 'DURING_LINK'
-    )
-  );
+  const hasPairTrigger = parsed.abilities.some((ab) => getAbilityTimings(ab).some((t) => PAIR_TIMINGS.includes(t)));
+  const hasAttackTrigger = parsed.abilities.some((ab) => getAbilityTimings(ab).includes('ATTACK'));
   const hasConditionalGate = steps.length > 0 && steps.every((x) => x.gated);
   const gateMult = hasConditionalGate ? 0.5 : 1;
 
   let aggro = 0;
   let defense = 0;
-  let tempo = 0;
+  let attack = 0;
   let liquidity = 0;
   let synergy = 0;
   let control = 0;
@@ -549,7 +540,7 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (hasBreach) aggro += 28;
   if (hasFirstStrike) aggro += 22;
   if (hasHighManeuver) aggro += 22;
-  if (parsed.abilities.some((ab) => getAbilityTimings(ab).includes('ATTACK'))) aggro += 16;
+  if (hasAttackTrigger) aggro += 16;
   if (hasStep((s) => s.action === 'MODIFY_AP' && s.delta > 0)) aggro += 12;
 
   // Defense / Durability
@@ -563,18 +554,23 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (card.type === 'PILOT' && hp >= 2) defense += 22;
   if (hasBlocker) defense += 34;
   if (hasRepair) defense += 32;
-  if (effectStyles.includes('Damage Proof')) defense += 28;
+  if (hasStep((s) => s.action === 'DAMAGE_PROOF')) defense += 28;
   if (hasStep((s) => s.action === 'RECOVER_HP' || s.action === 'ADD_SHIELD_TO_HAND')) defense += 14;
 
-  // Tempo / Resource
-  if (lv <= 3 && cost <= 2) tempo += 34;
-  else if (lv <= 4 && cost <= 3) tempo += 20;
-  if (hasRamp) tempo += 42;
-  if (hasStep((s) => s.action === 'DEPLOY_TOKEN' || s.action === 'DEPLOY_FROM_TRASH')) tempo += 25;
-  if (hasStep((s) => s.action === 'SET_ACTIVE' && s.target.owner === 'SELF')) tempo += 24;
+  // Attack / Ping: effect-driven damage, evasion keywords and attack triggers, plus heavy hitters
+  if (hasPing) attack += 40 * gateMult;
+  if (hasBreach) attack += 26;
+  if (hasFirstStrike) attack += 16;
+  if (hasHighManeuver) attack += 22;
+  if (hasKeywordNamed('Suppression')) attack += 22;
+  if (hasAttackTrigger) attack += 20;
+  if (hasStep((s) => s.action === 'MODIFY_AP' && s.delta > 0)) attack += 14;
+  if (card.type === 'UNIT' && ap >= 4) attack += 14;
+  else if (card.type === 'PILOT' && ap >= 2) attack += 10;
 
   // Card Liquidity
   if (hasDraw) liquidity += 48 * gateMult;
+  if (hasRamp) liquidity += 30;
   if (hasSearch) liquidity += 34 * gateMult;
   if (
     parsed.abilities.some(
@@ -594,15 +590,15 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   if (hasPairTrigger) synergy += 28;
   if (hasSupport) synergy += 24;
   if (hasStep((s) => s.action === 'PAIR_SELF_FROM_TRASH')) synergy += 14;
-  if (card.traits.length > 0 && /\([a-z0-9 '&-]+\)\s*unit/i.test(card.effect)) synergy += 22;
+  if (hasStep((s) => 'target' in s && Boolean(s.target?.trait || s.target?.traits?.length))) synergy += 22;
 
   // Control / Disruption (with conditional discount on gated effects like ST09-006)
   if (card.type === 'COMMAND') control += 26;
   if (hasRest) control += 26 * gateMult;
   if (hasRemoval) control += 32 * gateMult;
-  if (effectStyles.includes('AP Deduction')) control += 18 * gateMult;
-  if (effectStyles.includes('Destroy')) control += 20 * gateMult;
-  if (effectStyles.includes('Bounce')) control += 20 * gateMult;
+  if (hasStep((s) => s.action === 'MODIFY_AP' && s.delta < 0)) control += 18 * gateMult;
+  if (hasStep((s) => s.action === 'DESTROY')) control += 20 * gateMult;
+  if (hasStep((s) => s.action === 'BOUNCE')) control += 20 * gateMult;
   if (
     parsed.abilities.some(
       (ab) =>
@@ -624,7 +620,7 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   return {
     aggro: clamp(aggro),
     defense: clamp(defense),
-    tempo: clamp(tempo),
+    attack: clamp(attack),
     liquidity: clamp(liquidity),
     synergy: clamp(synergy),
     control: clamp(control),
@@ -638,6 +634,7 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
     hasBreach,
     hasFirstStrike,
     hasSupport,
+    hasPing,
     hasPairTrigger,
     hasConditionalGate,
     effectStyles,
@@ -658,7 +655,7 @@ export function computeHexagonAndBreakdowns(
     const empty: HexagonAxes = {
       aggro: 0,
       defense: 0,
-      tempo: 0,
+      attack: 0,
       liquidity: 0,
       synergy: 0,
       control: 0,
@@ -668,7 +665,7 @@ export function computeHexagonAndBreakdowns(
       breakdowns: [
         { key: 'aggro', label: 'Aggro / Pressure', score: 0, summary: 'Add cards to measure attack pressure.', drivers: [] },
         { key: 'defense', label: 'Defense / Durability', score: 0, summary: 'Add cards to measure board survival.', drivers: [] },
-        { key: 'tempo', label: 'Tempo / Resource', score: 0, summary: 'Add cards to measure curve & ramp.', drivers: [] },
+        { key: 'attack', label: 'Attack / Ping', score: 0, summary: 'Add cards to measure ping damage & attack triggers.', drivers: [] },
         { key: 'liquidity', label: 'Card Liquidity', score: 0, summary: 'Add cards to measure draw & filtering.', drivers: [] },
         { key: 'synergy', label: 'Synergy / Link', score: 0, summary: 'Add cards to measure Link & trait synergy.', drivers: [] },
         { key: 'control', label: 'Control / Disruption', score: 0, summary: 'Add cards to measure removal & Commands.', drivers: [] },
@@ -681,7 +678,8 @@ export function computeHexagonAndBreakdowns(
 
   let aggroSum = 0;
   let defenseSum = 0;
-  let tempoSum = 0;
+  let attackSum = 0;
+  let pingCount = 0;
   let liquidityCount = 0;
   let searchCount = 0;
   let rampCount = 0;
@@ -706,7 +704,8 @@ export function computeHexagonAndBreakdowns(
     const sig = scoreSingleCardSignals(card);
     aggroSum += sig.aggro * qty;
     defenseSum += sig.defense * qty;
-    tempoSum += sig.tempo * qty;
+    attackSum += sig.attack * qty;
+    if (sig.hasPing) pingCount += qty;
 
     if (sig.hasDraw) liquidityCount += qty;
     if (sig.hasSearch) searchCount += qty;
@@ -755,14 +754,11 @@ export function computeHexagonAndBreakdowns(
   const defense = clamp(
     (defenseSum / norm) * 1.45 + ((blockerCount + repairCount) / norm) * 45 + (baseCount / norm) * 35
   );
-  const tempo = clamp(
-    (tempoSum / norm) * 1.3 +
-      (earlyDropCount / norm) * 45 +
-      (rampCount / norm) * 55 +
-      Math.max(0, 32 - Math.abs(avgCost - 2.3) * 16)
+  const attack = clamp(
+    (attackSum / norm) * 1.5 + ((pingCount + breachCount + firstStrikeCount) / norm) * 45
   );
   const liquidity = clamp(
-    (liquidityCount / norm) * 160 + (searchCount / norm) * 120 + (supportCount / norm) * 20
+    (liquidityCount / norm) * 160 + (searchCount / norm) * 120 + (supportCount / norm) * 20 + (rampCount / norm) * 40
   );
   const synergy = clamp(
     linkCoveragePct * 0.45 +
@@ -772,7 +768,7 @@ export function computeHexagonAndBreakdowns(
   );
   const control = clamp((disruptionCount / norm) * 155 + (commandCount / norm) * 70);
 
-  const hexagon: HexagonAxes = { aggro, defense, tempo, liquidity, synergy, control };
+  const hexagon: HexagonAxes = { aggro, defense, attack, liquidity, synergy, control };
 
   const breakdowns: AxisBreakdown[] = [
     {
@@ -806,18 +802,18 @@ export function computeHexagonAndBreakdowns(
       ],
     },
     {
-      key: 'tempo',
-      label: 'Tempo / Resource',
-      score: tempo,
+      key: 'attack',
+      label: 'Attack / Ping',
+      score: attack,
       summary:
-        tempo >= 70
-          ? 'Smooth curve with strong early deployments or resource acceleration.'
-          : tempo >= 45
-          ? 'Standard turn-by-turn resource deployment.'
-          : 'Heavy top-end curve risks clunky early turns.',
+        attack >= 70
+          ? 'Constant ping damage, attack triggers and evasive threats chip through defenses.'
+          : attack >= 45
+          ? 'Some effect-based damage and attack payoffs alongside normal combat.'
+          : 'Little effect damage or attack-trigger value; relies on plain combat.',
       drivers: [
-        `Avg Cost ${avgCost} · Avg Lv. ${avgLv}`,
-        `${rampCount} Resource ramp / cost-cheat cards`,
+        `${pingCount} direct damage / ping cards`,
+        `${breachCount} <Breach> / ${firstStrikeCount} <First Strike> threats`,
       ],
     },
     {
@@ -832,7 +828,7 @@ export function computeHexagonAndBreakdowns(
           : 'Low draw power — vulnerable to running out of gas after Turn 5.',
       drivers: [
         `${liquidityCount} direct draw / hand-add cards`,
-        `${searchCount} deck look / search / trash-recursion cards`,
+        `${searchCount} deck look / search / trash-recursion cards · ${rampCount} Resource ramp / cost-cheat`,
       ],
     },
     {
@@ -901,14 +897,14 @@ function classifyPacingAndStyle(
     .filter((x) => scoreSingleCardSignals(x.card).hasRepair)
     .reduce((s, x) => s + x.qty, 0);
 
-  if (hexagon.synergy >= 62) styles.push('Link-Strike');
-  if (hexagon.liquidity >= 58) styles.push('High-Liquidity Draw');
-  if (repairCount >= 6 || hexagon.defense >= 65) styles.push('Repair Fortress');
-  if (breachCount >= 6 || (hexagon.aggro >= 65 && avgCost <= 2.4)) styles.push('Shield Breach');
-  if (earlyUnits >= 14 && avgLv <= 3.3) styles.push('Wide Swarm');
-  if (hexagon.control >= 60) styles.push('Command Control');
-  if (rampCount >= 6) styles.push('Resource Ramp');
-  if (styles.length === 0) styles.push('Balanced Midrange');
+  const isRush = breachCount >= 6 || (hexagon.aggro >= 65 && avgCost <= 2.4) || (earlyUnits >= 14 && avgLv <= 3.3);
+  const isControl = repairCount >= 6 || hexagon.defense >= 65 || hexagon.control >= 60;
+  if (hexagon.synergy >= 62) styles.push('Link / Synergy Combo');
+  if (isRush) styles.push('Rush / Aggro');
+  if (isControl) styles.push('Control / Attrition');
+  if (hexagon.attack >= 62) styles.push('Burn / Ping');
+  if (rampCount >= 6) styles.push('Ramp / Big Unit');
+  if (hexagon.liquidity >= 58 || styles.length === 0) styles.push('Midrange / Value');
 
   return { pacing, styles: styles.slice(0, 3) };
 }
@@ -926,42 +922,42 @@ export const META_ARCHETYPES: MetaArchetype[] = [
     name: 'Red/Green Zeon Aggro Rush',
     colors: ['Red', 'Green'],
     pacing: 'Early Rush',
-    hexagon: { aggro: 88, defense: 38, tempo: 84, liquidity: 36, synergy: 62, control: 42 },
+    hexagon: { aggro: 88, defense: 38, attack: 70, liquidity: 36, synergy: 62, control: 42 },
     threatNote: 'Floods low-cost Units on Turns 1–3 and pushes lethal before slow hands stabilize.',
   },
   {
     name: 'Blue/White Link Control',
     colors: ['Blue', 'White'],
     pacing: 'Late-Game Control',
-    hexagon: { aggro: 44, defense: 78, tempo: 56, liquidity: 76, synergy: 82, control: 84 },
+    hexagon: { aggro: 44, defense: 78, attack: 40, liquidity: 76, synergy: 82, control: 84 },
     threatNote: 'Stacks <Repair> / <Blocker>, draws deeply, and locks combat with Rest Commands.',
   },
   {
     name: 'Green Resource Ramp & Titans',
     colors: ['Green'],
     pacing: 'Ramp / Combo',
-    hexagon: { aggro: 62, defense: 60, tempo: 86, liquidity: 48, synergy: 58, control: 46 },
+    hexagon: { aggro: 62, defense: 60, attack: 50, liquidity: 70, synergy: 58, control: 46 },
     threatNote: 'Accelerates Resources to deploy Lv.5–7 boss Units 1–2 turns ahead of curve.',
   },
   {
     name: 'White/Red SEED Midrange',
     colors: ['White', 'Red'],
     pacing: 'Midrange Tempo',
-    hexagon: { aggro: 70, defense: 62, tempo: 68, liquidity: 58, synergy: 76, control: 62 },
+    hexagon: { aggro: 70, defense: 62, attack: 55, liquidity: 58, synergy: 76, control: 62 },
     threatNote: 'Combines efficient Linked Units with flexible combat tricks and Burst shields.',
   },
   {
     name: 'Blue/Green Repair Fortress',
     colors: ['Blue', 'Green'],
     pacing: 'Late-Game Control',
-    hexagon: { aggro: 40, defense: 90, tempo: 58, liquidity: 68, synergy: 64, control: 64 },
+    hexagon: { aggro: 40, defense: 90, attack: 30, liquidity: 68, synergy: 64, control: 64 },
     threatNote: 'Grinds out attackers with <Repair>, high-HP Bases, and end-of-turn recovery.',
   },
   {
     name: 'Purple/Red Disruption Engine',
     colors: ['Purple', 'Red'],
     pacing: 'Midrange Tempo',
-    hexagon: { aggro: 66, defense: 45, tempo: 60, liquidity: 62, synergy: 60, control: 86 },
+    hexagon: { aggro: 66, defense: 45, attack: 62, liquidity: 62, synergy: 60, control: 86 },
     threatNote: 'Punishes wide boards with direct damage, AP debuffs, and Trash recursion.',
   },
 ];
@@ -980,7 +976,7 @@ export function evaluateMatchupBetween(
   edge += (myHex.aggro - oppHex.defense) * 0.22;
   edge += (myHex.defense - oppHex.aggro) * 0.22;
   edge += (myHex.liquidity - oppHex.liquidity) * 0.25;
-  edge += (myHex.tempo - oppHex.tempo) * 0.16;
+  edge += (myHex.attack - oppHex.attack) * 0.16;
   edge += (myHex.synergy - oppHex.control) * 0.18;
   edge += (myHex.control - oppHex.synergy) * 0.18;
 
@@ -1224,10 +1220,10 @@ export function computeTurnWinChances(
 
     // Pacing power curve across turns 1..6
     const pacingCurve = (p: PacingTier, hex: HexagonAxes, turn: number) => {
-      if (p === 'Early Rush') return hex.aggro * (turn <= 3 ? 1.15 : 0.85) + hex.tempo * 0.4;
-      if (p === 'Ramp / Combo') return hex.tempo * 0.65 + (turn >= 4 ? hex.aggro * 1.1 + hex.defense * 0.6 : hex.defense * 0.4);
+      if (p === 'Early Rush') return hex.aggro * (turn <= 3 ? 1.15 : 0.85) + hex.attack * 0.4;
+      if (p === 'Ramp / Combo') return hex.liquidity * 0.65 + (turn >= 4 ? hex.aggro * 1.1 + hex.defense * 0.6 : hex.defense * 0.4);
       if (p === 'Late-Game Control') return hex.control * 0.6 + hex.defense * 0.6 + (turn >= 4 ? hex.liquidity * 0.9 : 20);
-      return (hex.aggro + hex.tempo + hex.synergy) * 0.48 + (turn >= 3 ? hex.liquidity * 0.3 : 10);
+      return (hex.aggro + hex.attack + hex.synergy) * 0.48 + (turn >= 3 ? hex.liquidity * 0.3 : 10);
     };
 
     const myPower = pacingCurve(analysis.pacing, analysis.hexagon, t) + (earlyUnitCount >= 10 && t <= 2 ? 12 : 0);
@@ -1432,21 +1428,21 @@ function generateDeckPlaybook(
 
   let primaryObjective = 'Control board tempo through efficient trades and Linked Unit spikes, then close out Shields.';
   let advantageMechanism = 'Balanced card-for-card value and timely Pilot pairings.';
-  if (styles.includes('Shield Breach') || pacing === 'Early Rush') {
+  if (styles.includes('Rush / Aggro') || pacing === 'Early Rush') {
     primaryObjective = 'Apply relentless Turn 1–4 Shield pressure using low-cost attackers and <Breach> / <First Strike>.';
     advantageMechanism = 'Forces opponents into unfavorable blocks before their high-Lv Units come online.';
-  } else if (styles.includes('High-Liquidity Draw')) {
+  } else if (styles.includes('Burn / Ping')) {
+    primaryObjective = 'Chip Shields and Units with direct damage and attack triggers while staying ahead on board.';
+    advantageMechanism = 'Effect damage bypasses blockers and turns every attack into extra value.';
+  } else if (styles.includes('Midrange / Value')) {
     primaryObjective = 'Out-resource the opponent via superior Card Liquidity, never missing curve drops.';
     advantageMechanism = 'Continuous draw & deck filtering generates +2 to +4 card advantage by midgame.';
-  } else if (styles.includes('Repair Fortress')) {
-    primaryObjective = 'Stabilize the board with <Blocker> and <Repair> Units, turning combat damage into free attrition.';
-    advantageMechanism = 'Opponent runs out of attackers while your Units heal back to full HP every end step.';
-  } else if (styles.includes('Link-Strike')) {
+  } else if (styles.includes('Control / Attrition')) {
+    primaryObjective = 'Stabilize with <Blocker>, <Repair> and removal, turning combat into free attrition.';
+    advantageMechanism = 'Opponent runs out of attackers while your Units heal back and Link payoffs are denied.';
+  } else if (styles.includes('Link / Synergy Combo')) {
     primaryObjective = 'Assemble Link Unit + Pilot pairs to trigger massive 【When Linked】 swing turns.';
     advantageMechanism = 'Combined Unit+Pilot stats and dual triggers create 2-for-1 tempo swings.';
-  } else if (styles.includes('Command Control')) {
-    primaryObjective = 'Neutralize opposing Units with Rest, Damage, and removal Commands before deploying finishers.';
-    advantageMechanism = 'Denies opponent Link payoffs and clears defenders for safe lethal pushes.';
   }
 
   const turnInsights = generateTurnActionInsights(mainExpanded, pacing, linkCombos);
@@ -1653,14 +1649,14 @@ export function analyzeDeck(
 
 export function blendTargetHexagon(blueprint: StrategyBlueprint): HexagonAxes {
   const base = { ...blueprint.targetHexagon };
-  const activeStyles = blueprint.styles.length > 0 ? blueprint.styles : ['Balanced Midrange'];
+  const activeStyles = blueprint.styles.length > 0 ? blueprint.styles : DEFAULT_BLUEPRINT.styles;
   const styleBiases = activeStyles
     .map((s) => TACTICAL_STYLE_META.find((m) => m.tag === s)?.targetBias)
     .filter(Boolean) as Partial<HexagonAxes>[];
 
   if (styleBiases.length === 0) return base;
 
-  const keys: (keyof HexagonAxes)[] = ['aggro', 'defense', 'tempo', 'liquidity', 'synergy', 'control'];
+  const keys: (keyof HexagonAxes)[] = ['aggro', 'defense', 'attack', 'liquidity', 'synergy', 'control'];
   for (const key of keys) {
     const vals = styleBiases.map((b) => b[key]).filter((v): v is number => typeof v === 'number');
     if (vals.length > 0) {
@@ -1812,11 +1808,58 @@ export function evaluateConstraintFeasibility(
 const AXIS_LABELS: Record<keyof HexagonAxes, string> = {
   aggro: 'Aggro / Pressure',
   defense: 'Defense / Durability',
-  tempo: 'Tempo / Resource',
+  attack: 'Attack / Ping',
   liquidity: 'Card Liquidity',
   synergy: 'Synergy / Link',
   control: 'Control / Disruption',
 };
+
+interface StrategyFitRule {
+  tag: TacticalStyleTag;
+  bonus: number;
+  reason?: string;
+  matches: (card: GundamCardPrint, sig: CardSignalScores) => boolean;
+}
+
+/** Per-strategy card bonuses applied when ranking recommendations. */
+const STRATEGY_FIT_RULES: StrategyFitRule[] = [
+  {
+    tag: 'Link / Synergy Combo',
+    bonus: 14,
+    reason: 'Triggers Link / Synergy payoffs',
+    matches: (c, sig) => Boolean(c.link) || c.type === 'PILOT' || isCommandPilot(c) || sig.hasPairTrigger,
+  },
+  {
+    tag: 'Rush / Aggro',
+    bonus: 16,
+    reason: 'Applies Rush pressure',
+    matches: (c, sig) => sig.hasBreach || sig.hasFirstStrike || (c.type === 'UNIT' && (c.cost ?? 2) <= 2),
+  },
+  {
+    tag: 'Burn / Ping',
+    bonus: 16,
+    reason: 'Adds Burn / Ping damage',
+    matches: (_c, sig) => sig.hasPing || sig.attack >= 40,
+  },
+  {
+    tag: 'Control / Attrition',
+    bonus: 16,
+    reason: 'Fortifies Control / Attrition shell',
+    matches: (c, sig) =>
+      c.type === 'COMMAND' || c.type === 'BASE' || sig.hasRemoval || sig.hasRest || sig.hasRepair || sig.hasBlocker,
+  },
+  {
+    tag: 'Ramp / Big Unit',
+    bonus: 16,
+    matches: (c, sig) => sig.hasRamp || (c.cost ?? 2) >= 5,
+  },
+  {
+    tag: 'Midrange / Value',
+    bonus: 16,
+    reason: 'Feeds Midrange / Value card flow',
+    matches: (_c, sig) => sig.hasDraw || sig.hasSearch,
+  },
+];
 
 function matchesEffectPrerequisite(card: GundamCardPrint, prereq: EffectPrerequisite): boolean {
   if (prereq.kind === 'LINK') {
@@ -1981,7 +2024,7 @@ function rankCandidatesForStrategy(
     1,
     blendedTarget.aggro +
       blendedTarget.defense +
-      blendedTarget.tempo +
+      blendedTarget.attack +
       blendedTarget.liquidity +
       blendedTarget.synergy +
       blendedTarget.control
@@ -1989,7 +2032,7 @@ function rankCandidatesForStrategy(
 
   const selectedStyles = new Set(blueprint.styles);
   const selectedEffects = new Set(blueprint.effectStyles ?? []);
-  const wantsTrashFuel = selectedEffects.has('Trash Recursion') || deckEnablers.has('DEPLOY_FROM_TRASH');
+  const wantsTrashFuel = selectedEffects.has('Draw / Recursion') || deckEnablers.has('DEPLOY_FROM_TRASH');
 
   const scored: RankedInternal[] = [];
 
@@ -2000,7 +2043,7 @@ function rankCandidatesForStrategy(
     const axisContribs: { axis: keyof HexagonAxes; val: number }[] = [
       { axis: 'aggro', val: sig.aggro * blendedTarget.aggro },
       { axis: 'defense', val: sig.defense * blendedTarget.defense },
-      { axis: 'tempo', val: sig.tempo * blendedTarget.tempo },
+      { axis: 'attack', val: sig.attack * blendedTarget.attack },
       { axis: 'liquidity', val: sig.liquidity * blendedTarget.liquidity },
       { axis: 'synergy', val: sig.synergy * blendedTarget.synergy },
       { axis: 'control', val: sig.control * blendedTarget.control },
@@ -2014,30 +2057,11 @@ function rankCandidatesForStrategy(
 
     // 1. Multi-Strategy tactical bonuses
     const cost = card.cost ?? 2;
-    if (selectedStyles.has('Link-Strike') && (card.link || card.type === 'PILOT' || isCommandPilot(card) || sig.hasPairTrigger)) {
-      fit += 14;
-      reasons.push('Triggers Link-Strike synergy');
-    }
-    if (selectedStyles.has('High-Liquidity Draw') && (sig.hasDraw || sig.hasSearch)) {
-      fit += 18;
-      reasons.push('Feeds High-Liquidity Draw engine');
-    }
-    if (selectedStyles.has('Repair Fortress') && (sig.hasRepair || sig.hasBlocker || card.type === 'BASE')) {
-      fit += 18;
-      reasons.push('Fortifies Repair/Blocker shell');
-    }
-    if (selectedStyles.has('Shield Breach') && (sig.hasBreach || sig.hasFirstStrike || (card.type === 'UNIT' && cost <= 2))) {
-      fit += 16;
-      reasons.push('Applies Shield Breach pressure');
-    }
-    if (selectedStyles.has('Wide Swarm') && ((card.type === 'UNIT' && cost <= 2) || sig.effectStyles.includes('Token Deploy'))) {
-      fit += 16;
-    }
-    if (selectedStyles.has('Command Control') && (card.type === 'COMMAND' || sig.hasRemoval || sig.hasRest)) {
-      fit += 16;
-    }
-    if (selectedStyles.has('Resource Ramp') && (sig.hasRamp || cost >= 5)) {
-      fit += 16;
+    for (const rule of STRATEGY_FIT_RULES) {
+      if (selectedStyles.has(rule.tag) && rule.matches(card, sig)) {
+        fit += rule.bonus;
+        if (rule.reason) reasons.push(rule.reason);
+      }
     }
 
     // 2. Effect Style factor bonuses & Self-mill/Discard Trash fuel enablers
@@ -2253,8 +2277,8 @@ export function generateStrategyDeck(
       : effectiveBlueprint.pacing === 'Late-Game Control'
       ? 24
       : 26;
-  const targetPilots = activeStyles.has('Link-Strike') ? 10 : 8;
-  const targetBases = activeStyles.has('Repair Fortress') ? 6 : 4;
+  const targetPilots = activeStyles.has('Link / Synergy Combo') ? 10 : 8;
+  const targetBases = activeStyles.has('Control / Attrition') ? 6 : 4;
   const targetCommands = 50 - targetUnits - targetPilots - targetBases;
 
   const chosen = new Map<string, { card: GundamCardPrint; qty: number }>();

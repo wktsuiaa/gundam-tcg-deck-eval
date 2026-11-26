@@ -163,11 +163,23 @@ export interface CustomHookAst {
   prerequisites: EffectPrerequisite[];
 }
 
+export type DiagnosticCode = 'LEX_ERROR' | 'PARSE_ERROR' | 'NO_LOWERING' | 'UNPARSED_RESIDUAL';
+
+/** Explicit marker for a clause the grammar or lowering could not fully understand; never silently dropped. */
+export interface DiagnosticAst {
+  kind: 'DIAGNOSTIC';
+  clauseIndex: number;
+  code: DiagnosticCode;
+  message: string;
+  raw: string;
+}
+
 export type AbilityAst =
   | EffectClauseAst
   | ReplacementEffectAst
   | ContinuousModifierAst
-  | CustomHookAst;
+  | CustomHookAst
+  | DiagnosticAst;
 
 export interface CustomHookDefinition {
   hookId: string;
@@ -1014,13 +1026,13 @@ function liftReplacementEffect(
 }
 
 // ---------------------------------------------------------------------------
-// 5. Public Seam 1 Entry Point: parseCardAbilities(card, legacyClauses?)
+// 5. Public Seam 1 Entry Point: parseCardAbilities(card, loweredClauses)
 // ---------------------------------------------------------------------------
 
 export function parseCardAbilities(
   card: Pick<GundamCardPrint, 'cardNo' | 'effect'> &
     Partial<Pick<GundamCardPrint, 'traits' | 'link'>>,
-  legacyClauses: EffectClause[] = []
+  legacyClauses: EffectClause[]
 ): CfgParseResult {
   const normalized = normalizeCardEffectText(card.effect ?? '');
   if (!normalized) {
@@ -1037,9 +1049,9 @@ export function parseCardAbilities(
   for (const line of lines) {
     const lexed = GundamLexer.tokenize(line);
     if (lexed.errors.length > 0) {
-      errors.push(
-        `[${card.cardNo}#${clauseIdx}] Lex error: ${lexed.errors.map((e) => e.message).join('; ')}`
-      );
+      const message = `[${card.cardNo}#${clauseIdx}] Lex error: ${lexed.errors.map((e) => e.message).join('; ')}`;
+      errors.push(message);
+      abilities.push({ kind: 'DIAGNOSTIC', clauseIndex: clauseIdx, code: 'LEX_ERROR', message, raw: line });
       clauseIdx += 1;
       continue;
     }
@@ -1047,9 +1059,9 @@ export function parseCardAbilities(
     clauseParser.input = lexed.tokens;
     const cst: CstNode = clauseParser.clauseLine();
     if (clauseParser.errors.length > 0) {
-      errors.push(
-        `[${card.cardNo}#${clauseIdx}] Parse error: ${clauseParser.errors.map((e) => e.message).join('; ')}`
-      );
+      const message = `[${card.cardNo}#${clauseIdx}] Parse error: ${clauseParser.errors.map((e) => e.message).join('; ')}`;
+      errors.push(message);
+      abilities.push({ kind: 'DIAGNOSTIC', clauseIndex: clauseIdx, code: 'PARSE_ERROR', message, raw: line });
       clauseIdx += 1;
       continue;
     }
@@ -1095,28 +1107,36 @@ export function parseCardAbilities(
       continue;
     }
 
-    // Triggered / Activated Effect Clause
+    // Triggered / Activated Effect Clause: lowered from the effect-parser's typed clause for this line.
+    if (!legacyClause) {
+      const message = `[${card.cardNo}#${currentIdx}] No lowered clause available for this line.`;
+      errors.push(message);
+      abilities.push({ kind: 'DIAGNOSTIC', clauseIndex: currentIdx, code: 'NO_LOWERING', message, raw: line });
+      continue;
+    }
+    if (legacyClause.unparsedResidual) {
+      abilities.push({
+        kind: 'DIAGNOSTIC',
+        clauseIndex: currentIdx,
+        code: 'UNPARSED_RESIDUAL',
+        message: `[${card.cardNo}#${currentIdx}] Unparsed residual text: ${legacyClause.unparsedResidual}`,
+        raw: legacyClause.unparsedResidual,
+      });
+    }
     const insteadMatch = line.match(/\bIf\s+([^,]+),\s*(.+?\binstead)\.?$/i);
-    const timings: EffectTiming[] = legacyClause?.timings ?? inferFallbackTimings(line);
     abilities.push({
       kind: 'EFFECT_CLAUSE',
       clauseIndex: currentIdx,
-      raw: legacyClause?.raw ?? line,
-      timings,
-      oncePerTurn: /【Once per Turn】/.test(line) || (legacyClause?.oncePerTurn ?? false),
-      ...(legacyClause?.triggerEvent ? { triggerEvent: legacyClause.triggerEvent } : {}),
-      ...(legacyClause?.pairFilter ? { pairFilter: legacyClause.pairFilter } : {}),
-      ...(legacyClause?.linkRequirement ? { linkRequirement: legacyClause.linkRequirement } : {}),
-      ...(legacyClause?.cost ? { cost: legacyClause.cost } : {}),
-      ...(legacyClause?.condition ? { condition: legacyClause.condition } : {}),
-      steps: legacyClause?.steps ?? [],
-      ...(insteadMatch
-        ? {
-            insteadUpgrade: {
-              rawUpgrade: insteadMatch[2].trim(),
-            },
-          }
-        : {}),
+      raw: legacyClause.raw,
+      timings: legacyClause.timings,
+      oncePerTurn: /【Once per Turn】/.test(line) || legacyClause.oncePerTurn,
+      ...(legacyClause.triggerEvent ? { triggerEvent: legacyClause.triggerEvent } : {}),
+      ...(legacyClause.pairFilter ? { pairFilter: legacyClause.pairFilter } : {}),
+      ...(legacyClause.linkRequirement ? { linkRequirement: legacyClause.linkRequirement } : {}),
+      ...(legacyClause.cost ? { cost: legacyClause.cost } : {}),
+      ...(legacyClause.condition ? { condition: legacyClause.condition } : {}),
+      steps: legacyClause.steps,
+      ...(insteadMatch ? { insteadUpgrade: { rawUpgrade: insteadMatch[2].trim() } } : {}),
     });
   }
 
@@ -1126,23 +1146,6 @@ export function parseCardAbilities(
     abilities,
     errors,
   };
-}
-
-function inferFallbackTimings(line: string): EffectTiming[] {
-  const out: EffectTiming[] = [];
-  if (/【Deploy/i.test(line)) out.push('DEPLOY');
-  if (/【Attack】/i.test(line)) out.push('ATTACK');
-  if (/【Destroyed】/i.test(line)) out.push('DESTROYED');
-  if (/【When Paired】/i.test(line)) out.push('WHEN_PAIRED');
-  if (/【When Linked】/i.test(line)) out.push('WHEN_LINKED');
-  if (/【Burst】/i.test(line)) out.push('BURST');
-  if (/【Activate<DOT>Main】/i.test(line)) out.push('ACTIVATE_MAIN');
-  if (/【Activate<DOT>Action】/i.test(line)) out.push('ACTIVATE_ACTION');
-  if (/【Main】/i.test(line)) out.push('MAIN');
-  if (/【Action】/i.test(line)) out.push('ACTION');
-  if (/When this Unit is attacked/i.test(line)) out.push('WHEN_ATTACKED');
-  if (out.length === 0) out.push('CONTINUOUS');
-  return out;
 }
 
 export function getAbilityTimings(ab: AbilityAst): EffectTiming[] {
@@ -1165,6 +1168,8 @@ export function getAbilityTimings(ab: AbilityAst): EffectTiming[] {
     }
     case 'CUSTOM_HOOK':
       return ab.hookId === 'ST01-015#2' ? ['ACTIVATE_MAIN'] : ['CONTINUOUS'];
+    case 'DIAGNOSTIC':
+      return [];
   }
 }
 
@@ -1245,5 +1250,7 @@ export function getAbilitySteps(ab: AbilityAst): EffectStep[] {
       return ab.hookId === 'ST01-015#2'
         ? [{ action: 'DEPLOY_TOKEN', count: 1, name: 'White Base Token' }]
         : [];
+    case 'DIAGNOSTIC':
+      return [];
   }
 }

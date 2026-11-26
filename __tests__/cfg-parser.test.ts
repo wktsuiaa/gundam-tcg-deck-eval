@@ -5,9 +5,12 @@ import type { GundamCardPrint } from '@/types/gundam';
 import {
   CUSTOM_HOOK_REGISTRY,
   normalizeCardEffectText,
-  parseCardAbilities,
+  parseCardAbilities as lowerAbilities,
 } from '@/lib/cfg-parser';
-import { compileCardEffect } from '@/lib/effect-parser';
+import { compileCardEffect, parseCardEffects } from '@/lib/effect-parser';
+
+type CardText = Parameters<typeof lowerAbilities>[0];
+const parseCardAbilities = (card: CardText) => lowerAbilities(card, parseCardEffects(card).clauses);
 
 function loadCorpus(): Map<string, GundamCardPrint> {
   const dir = path.join(process.cwd(), 'data', 'collections');
@@ -135,6 +138,14 @@ describe('Seam 1: Chevrotain CFG Parser & Structural Normalizer', () => {
     }
   });
 
+  it('lowers lexer failures to explicit DIAGNOSTIC nodes instead of dropping the line', () => {
+    const res = parseCardAbilities({ cardNo: 'X-1', effect: '】【 ???' });
+    expect(res.errors).toHaveLength(1);
+    expect(res.abilities).toEqual([
+      expect.objectContaining({ kind: 'DIAGNOSTIC', code: 'LEX_ERROR', clauseIndex: 0, raw: expect.any(String) }),
+    ]);
+  });
+
   it('achieves 100% Chevrotain CFG coverage across all 1,290+ unique cards with 0 unregistered CustomHooks', () => {
     expect(corpus.size).toBeGreaterThanOrEqual(1290);
     const allErrors: string[] = [];
@@ -144,6 +155,7 @@ describe('Seam 1: Chevrotain CFG Parser & Structural Normalizer', () => {
       const res = parseCardAbilities(card);
       allErrors.push(...res.errors);
       for (const ab of res.abilities) {
+        if (ab.kind === 'DIAGNOSTIC') allErrors.push(ab.message);
         if (ab.kind === 'CUSTOM_HOOK' && !CUSTOM_HOOK_REGISTRY[ab.hookId]) {
           unregisteredHooks.push(ab.hookId);
         }

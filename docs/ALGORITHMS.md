@@ -5,17 +5,35 @@
 Every deck is evaluated across six normalized `0–100` axes derived from individual card signals (`scoreSingleCardSignals`):
 
 - **Aggro / Pressure**: Rewards Cost ≤ 2 Units, high `AP / Cost` ratios (`≥ 1.5`), `<Breach>`, `<First Strike>`, `<High-Maneuver>`, and `【Attack】` triggers.
-- **Defense / Durability**: Rewards high `HP / Cost` ratios, `<Blocker>`, `<Repair>`, Damage Proof effects (`reduce ... damage`, `cannot be destroyed`), and Base cards.
-- **Tempo / Resource**: Rewards smooth early curve (`Lv ≤ 3, Cost ≤ 2`), Resource Ramp / cost reduction, Token/Extra Deploy, and proximity to an efficient average cost (`2.3`).
-- **Card Liquidity**: Rewards direct card draw (`draw N`, `add to hand`), deck filtering/search (`look at top`, `reveal`, `search`), and Trash recursion.
+- **Defense / Durability**: Rewards high `HP / Cost` ratios, `<Blocker>`, `<Repair>`, `DAMAGE_PROOF` steps, and Base cards.
+- **Attack / Ping**: Rewards lowered `DEAL_DAMAGE` steps (direct damage), `<Breach>`, `<First Strike>`, `<High-Maneuver>`, `<Suppression>`, `【Attack】` triggers, positive `MODIFY_AP`, and high-AP Units / Pilots. Driven by lowered AST nodes and card attributes, never by raw card text.
+- **Card Liquidity**: Rewards direct card draw (`DRAW`), deck filtering/search (`LOOK_TOP`, `REVEAL_TOP`), Trash recursion, and Resource ramp / cost reduction (`ADD_RESOURCE`, `COST_REDUCTION`).
 - **Synergy / Link**: Combines **Link Coverage %** (percentage of Link Units in the deck with a matching Pilot via `doesPilotLinkUnit`), Pilot density, shared Trait density, and `<Support>`.
-- **Control / Disruption**: Rewards Command density, Rest effects, AP Deduction, Bounce, Direct Damage, and Destroy effects.
+- **Control / Disruption**: Rewards Command density, `REST` / `FREEZE`, negative `MODIFY_AP`, `BOUNCE`, `DEAL_DAMAGE`, and `DESTROY` steps.
 
-## 2. Effect Style Detection (`detectEffectStyles` & `parseCardEffects`)
+## 2. Effect Style Detection (`detectEffectStyles` & lowered AST)
 
-Card effect text is compiled by `parseCardEffects` (`lib/effect-parser.ts`) into typed `EffectClause` structures (timings, activation costs, conditions, typed steps, and fail-closed `unparsedResidual`) and innate `KeywordAbility[]`, stripping parenthetical reminder text while preserving `(Trait)` tokens.
-- `PAIR_SELF_FROM_TRASH` compiles Command clauses such as *"pair this card from your trash with one of your (MF) Units"* with `owner: 'SELF', cardType: 'UNIT', zone: 'BATTLE_AREA'` instead of misclassifying them as `Trash Recursion` or deck search.
-- `detectEffectStyles` and `scoreSingleCardSignals` read the parsed action steps rather than prerequisite conditions (giving gated payoffs like `ST09-006` a `0.5×` baseline discount unless an Enabler from `extractSynergyProfile` is present). Selecting up to 2 Effect Styles in `StrategyBlueprint` awards `+18` fit points per matched effect style on candidate cards; self-mill / discard `TRASH_COUNT_FUEL` enablers (such as `GD04-116`) also earn `+18` fit points when `Trash Recursion` is selected or `DEPLOY_FROM_TRASH` payoffs exist in the deck.
+Card effect text is lowered offline (see [architecture](architecture.md#effect-lowering-pipeline)) into typed abilities. `detectEffectStyles` and `scoreSingleCardSignals` read only the lowered steps, keywords, and timings. They never regex the prose; text the lowering could not understand appears as a `DIAGNOSTIC` ability and contributes nothing.
+
+Each lowered step maps to at most one Effect Style (`effectStyleOfStep`):
+
+| Effect Style | Lowered source |
+| --- | --- |
+| `Attack / Ping` | `DEAL_DAMAGE`; keywords `<Breach>`, `<First Strike>`, `<High-Maneuver>`, `<Suppression>` |
+| `Board / Deploy` | `DEPLOY_TOKEN`, `DAMAGE_PROOF`, `RECOVER_HP`; keywords `<Blocker>`, `<Repair>` |
+| `Removal / Disrupt` | `DESTROY`, `BOUNCE`, `REST`, `FREEZE`, `MODIFY_AP` with negative delta |
+| `Draw / Recursion` | `DRAW`, `LOOK_TOP`, `REVEAL_TOP`, `ADD_FROM_TRASH_TO_HAND`, `DEPLOY_FROM_TRASH` |
+| `Resource / Ramp` | `ADD_RESOURCE`, `COST_REDUCTION` |
+| `Link / Synergy` | pair or link timings, `PAIR_SELF_FROM_TRASH`, `PAIR_FROM_HAND`, `<Support>` |
+
+- Steps behind a density gate (for example `ST09-006`) get a `0.5×` baseline discount unless an Enabler from `extractSynergyProfile` is present.
+- Selecting up to 2 Effect Styles in `StrategyBlueprint` awards `+18` fit points per matched style on candidate cards. Self-mill / discard `TRASH_COUNT_FUEL` enablers (such as `GD04-116`) also earn `+18` when `Draw / Recursion` is selected or `DEPLOY_FROM_TRASH` payoffs exist in the deck.
+
+## 2b. Build Deck Strategies
+
+`Rush / Aggro`, `Midrange / Value`, `Control / Attrition`, `Ramp / Big Unit`, `Link / Synergy Combo`, `Burn / Ping`. Each blends a `targetBias` into the target hexagon (`blendTargetHexagon`) and adds a per-card bonus from `STRATEGY_FIT_RULES`. `analyzeDeck` infers up to three of them as the **Deck Tactical Profile** from the finished deck.
+
+Saved blueprints written before this vocabulary are upgraded on load by `normalizeBlueprint` (legacy strategy and effect-style names map to the nearest new one; `targetHexagon.tempo` is dropped and `attack` takes its default, because the two axes measure different things).
 
 ## 3. Trait Coherence, Effect Prerequisites & Knowledge Map Enablers (Series & FAQs Excluded)
 

@@ -33,7 +33,6 @@ import type {
   RulesPayload,
   SavedDeck,
   StrategyBlueprint,
-  TacticalStyleTag,
   TurnOrderSetting,
 } from '@/types/gundam';
 import {
@@ -41,9 +40,6 @@ import {
   buildStarterDeckFromCatalog,
   computeTurnWinChances,
   createBlankCustomDeck,
-  DEFAULT_BLUEPRINT,
-  DEFAULT_CONSTRAINTS,
-  EFFECT_STYLE_META,
   encodeDeckShareParam,
   evaluateConstraintFeasibility,
   evaluateMatchupBetween,
@@ -52,11 +48,10 @@ import {
   getRecommendedCardsForStrategy,
   gradeSimulatedHand,
   META_ARCHETYPES,
-  normalizeTraitFocus,
+  normalizeBlueprint,
   parseDeckFromText,
   resolveCardMap,
   STARTER_PRESETS,
-  TACTICAL_STYLE_META,
 } from '@/lib/deck-engine';
 import { CARD_COLOR_META } from '@/lib/gundam-keywords';
 import { buildDeckChainPreviews, verifyCustomDeckChain } from '@/lib/chain-verifier';
@@ -76,39 +71,6 @@ interface DeckWorkspaceProps {
   onCreateDeck: (deck: SavedDeck) => void;
   onDeleteDeck: (id: string) => void;
   onInspectCard: (cardNo: string, printId?: string) => void;
-}
-
-function normalizeBlueprint(raw?: StrategyBlueprint): StrategyBlueprint {
-  if (!raw) return DEFAULT_BLUEPRINT;
-  const legacyPrimary = (raw as unknown as { primaryStyle?: TacticalStyleTag }).primaryStyle;
-  const rawStyles = Array.isArray(raw.styles) ? raw.styles : [];
-  const chosenStyle =
-    rawStyles.find((s) => TACTICAL_STYLE_META.some((m) => m.tag === s)) ??
-    (legacyPrimary && TACTICAL_STYLE_META.some((m) => m.tag === legacyPrimary)
-      ? legacyPrimary
-      : undefined) ??
-    DEFAULT_BLUEPRINT.styles[0];
-
-  const validEffects = Array.isArray(raw.effectStyles)
-    ? raw.effectStyles
-        .filter((e) => EFFECT_STYLE_META.some((m) => m.tag === e))
-        .slice(0, 2)
-    : [];
-
-  return {
-    colors: Array.isArray(raw.colors) ? raw.colors : DEFAULT_BLUEPRINT.colors,
-    pacing: raw.pacing ?? DEFAULT_BLUEPRINT.pacing,
-    styles: [chosenStyle],
-    effectStyles: validEffects,
-    traitFocus: normalizeTraitFocus(
-      (raw as unknown as { traitFocus?: string | string[] }).traitFocus
-    ),
-    targetHexagon: raw.targetHexagon ?? DEFAULT_BLUEPRINT.targetHexagon,
-    constraints: {
-      ...DEFAULT_CONSTRAINTS,
-      ...(raw.constraints ?? {}),
-    },
-  };
 }
 
 export function DeckWorkspace({

@@ -9,7 +9,7 @@ The complete set of player preferences and restrictions—target colors, pacing,
 _Avoid_: Filter preset, generator config
 
 **Build Deck Strategy**:
-The single primary tactical identity chosen by the player to guide how a generated deck wins (for example, Link-Strike or Repair Fortress).
+The single primary tactical identity chosen by the player to guide how a generated deck wins (one of Rush / Aggro, Midrange / Value, Control / Attrition, Ramp / Big Unit, Link / Synergy Combo, or Burn / Ping).
 _Avoid_: Tactical style, archetype tag (when referring to the player's generator selection rather than post-build deck analysis)
 
 **Deck Tactical Profile**:
@@ -17,7 +17,7 @@ The one to three emergent tactical identities automatically inferred from the ca
 _Avoid_: Build Deck Strategy
 
 **Effect Style**:
-An optional card-effect mechanic category (up to two selected) used to weight recommendations and generated card picks toward specific gameplay effects.
+An optional card-effect mechanic category (Attack / Ping, Board / Deploy, Removal / Disrupt, Draw / Recursion, Resource / Ramp, or Link / Synergy; up to two selected) used to weight recommendations and generated card picks toward specific gameplay effects.
 _Avoid_: Keyword filter, mechanic tag
 
 **Generation Constraint**:
@@ -92,3 +92,14 @@ _Avoid_: Replay log, mock RNG, symbolic branch
 A non-destructive dry-run resolution trace of a pending move or multi-card play line showing cost checks, pre-commit **Replacement Effects**, Turn Player-first **Effect Clauses**, **Action Steps**, and required **Chain Witness** assumptions.
 _Avoid_: Stack preview, response queue, live simulation
 
+**Attack / Ping Axis**:
+The Hexagon axis that replaced Tempo. It scores effect-driven damage, evasive or breaching **Keyword Abilities**, attack triggers, and high-AP bodies, read from lowered **Effect Clause** steps and card attributes.
+_Avoid_: Tempo, Aggro (Aggro scores raw curve and combat stats, not effect damage)
+
+**Lowering**:
+The offline pass that turns an **Effect Clause**'s Chevrotain concrete syntax tree into typed ability AST nodes stored in a **Compiled Card Effect**.
+_Avoid_: Regex fallback, text parsing at runtime
+
+**Lowering Diagnostic**:
+An explicit `DIAGNOSTIC` ability node recording a line that **Lowering** could not lex, parse, or fully resolve (`LEX_ERROR`, `PARSE_ERROR`, `NO_LOWERING`, `UNPARSED_RESIDUAL`), so gaps are visible in data and tests instead of silently dropped.
+_Avoid_: Parse warning, error log

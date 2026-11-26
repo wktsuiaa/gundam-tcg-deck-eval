@@ -1208,12 +1208,25 @@
         "prerequisites": { "type": "array", "items": { "$ref": "#/$defs/EffectPrerequisite" } }
       }
     },
+    "DiagnosticAst": {
+      "type": "object",
+      "required": ["kind", "clauseIndex", "code", "message", "raw"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "DIAGNOSTIC" },
+        "clauseIndex": { "type": "integer", "minimum": 0 },
+        "code": { "enum": ["LEX_ERROR", "PARSE_ERROR", "NO_LOWERING", "UNPARSED_RESIDUAL"] },
+        "message": { "type": "string" },
+        "raw": { "type": "string" }
+      }
+    },
     "AbilityAst": {
       "oneOf": [
         { "$ref": "#/$defs/EffectClauseAst" },
         { "$ref": "#/$defs/ReplacementEffectAst" },
         { "$ref": "#/$defs/ContinuousModifierAst" },
-        { "$ref": "#/$defs/CustomHookAst" }
+        { "$ref": "#/$defs/CustomHookAst" },
+        { "$ref": "#/$defs/DiagnosticAst" }
       ]
     },
     "CompiledCardEffect": {

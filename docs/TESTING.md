@@ -16,7 +16,7 @@ npm test
    - Verification that `sourceTitle` (Series) has **zero** impact on card coherence or fit scores.
    - Strategy generation under hard constraints (`maxCopiesPerCard`, `maxCost`, `rarityCap`, `Any (Auto Best 2)` colors) producing tournament-legal 50+10 decks.
    - Constraint infeasibility guard when pool size cannot reach 50 cards.
-   - Full-catalog **Effect Prerequisite** & 3-pass Deck Builder audit on `Purple/Red + Midrange Tempo + ZAFT + Destroy & Trash Recursion` (verifying `GD05-112` / `GD05-113` / `GD06-116` / `GD05-115` exclusion, `GD04-116` self-mill synergy, and `>= minCopies` prerequisite satisfaction).
+   - Full-catalog **Effect Prerequisite** & 3-pass Deck Builder audit on `Purple/Red + Midrange Tempo + ZAFT + Removal / Disrupt & Draw / Recursion` (verifying `GD05-112` / `GD05-113` / `GD06-116` / `GD05-115` exclusion, `GD04-116` self-mill synergy, and `>= minCopies` prerequisite satisfaction).
    - Turn 1–6+ Best/Worst Action generation and Turn-by-Turn Win-Chance sensitivity across Turn Order and Opening Hand Quality settings.
 2. **`__tests__/effect-parser.test.ts`**:
    - Typed `EffectClause` parsing (`ST09-006`, `ST09-001`, `ST09-003`, `ST09-004`, `ST04-010`, `GD01-054`, `GD06-050`, `GD05-112`, `GD05-113`, `GD05-121`, `GD04-116`) including `PAIR_SELF_FROM_TRASH` and `extractEffectPrerequisites`.

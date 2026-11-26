@@ -26,6 +26,7 @@ import type {
 } from '@/types/gundam';
 import {
   type ConstraintFeasibility,
+  DEFAULT_BLUEPRINT,
   EFFECT_STYLE_META,
   TACTICAL_STYLE_META,
 } from '@/lib/deck-engine';
@@ -75,7 +76,7 @@ export function StrategyGeneratorPanel({
   const [step, setStep] = useState<WorkflowStep>(1);
   const [traitQuery, setTraitQuery] = useState('');
 
-  const activeStrategy = blueprint.styles[0] ?? 'Link-Strike';
+  const activeStrategy = blueprint.styles[0] ?? DEFAULT_BLUEPRINT.styles[0];
   const atMaxEffects = blueprint.effectStyles.length >= 2;
 
   const availableTraits = useMemo(() => {

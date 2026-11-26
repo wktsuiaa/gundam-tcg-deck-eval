@@ -9,7 +9,7 @@ export const HEXAGON_AXIS_META: {
   shortLabel: string;
 }[] = [
   { key: 'aggro', label: 'Aggro / Pressure', shortLabel: 'Aggro' },
-  { key: 'tempo', label: 'Tempo / Resource', shortLabel: 'Tempo' },
+  { key: 'attack', label: 'Attack / Ping', shortLabel: 'Attack' },
   { key: 'liquidity', label: 'Card Liquidity', shortLabel: 'Liquidity' },
   { key: 'synergy', label: 'Synergy / Link', shortLabel: 'Synergy' },
   { key: 'control', label: 'Control / Disruption', shortLabel: 'Control' },

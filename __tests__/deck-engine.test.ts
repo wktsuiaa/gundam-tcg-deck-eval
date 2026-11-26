@@ -11,6 +11,9 @@ import {
   DEFAULT_BLUEPRINT,
   DEFAULT_CONSTRAINTS,
   detectEffectStyles,
+  EFFECT_STYLE_META,
+  TACTICAL_STYLE_META,
+  normalizeBlueprint,
   evaluateConstraintFeasibility,
   exportDeckToText,
   filterPoolByConstraints,
@@ -219,11 +222,11 @@ describe('Effect Styles, Coherence (No Series) & Generation Constraints', () => 
   it('detects Effect Styles cleanly from card text', () => {
     const cmd = byCardNo.get('GD01-095')!;
     const styles = detectEffectStyles(cmd);
-    expect(styles).toContain('AP Deduction');
-    expect(styles).toContain('Destroy');
+    expect(styles).toContain('Removal / Disrupt');
+    expect(styles).toContain('Removal / Disrupt');
 
     const pilot = byCardNo.get('GD01-089')!;
-    expect(detectEffectStyles(pilot)).toContain('Damage Proof');
+    expect(detectEffectStyles(pilot)).toContain('Board / Deploy');
   });
 
   it('excludes Series (sourceTitle) from recommendation coherence & scoring', () => {
@@ -296,8 +299,8 @@ describe('Effect Styles, Coherence (No Series) & Generation Constraints', () => 
     const bp: StrategyBlueprint = {
       ...DEFAULT_BLUEPRINT,
       colors: [], // Test Any (Auto Best 2)
-      styles: ['Link-Strike'],
-      effectStyles: ['AP Deduction', 'Destroy'],
+      styles: ['Link / Synergy Combo'],
+      effectStyles: ['Removal / Disrupt', 'Attack / Ping'],
       constraints: {
         ...DEFAULT_CONSTRAINTS,
         maxCopiesPerCard: 3,
@@ -442,8 +445,8 @@ describe('Seam 2: Parsed Effect Styles, False-Positive Fixes & Knowledge Map Syn
     effect: '<Blocker> (Rest this Unit to change the attack target to it.)',
   });
 
-  it('eliminates Trash Recursion/Search false positives on ST09-006 and applies conditional discount', () => {
-    expect(detectEffectStyles(st09006)).toEqual(['Destroy']);
+  it('eliminates Draw / Recursion false positives on ST09-006 and applies conditional discount', () => {
+    expect(detectEffectStyles(st09006)).toEqual(['Removal / Disrupt']);
     const sig = scoreSingleCardSignals(st09006);
     expect(sig.hasSearch).toBe(false);
     expect(sig.hasRemoval).toBe(true);
@@ -462,13 +465,13 @@ describe('Seam 2: Parsed Effect Styles, False-Positive Fixes & Knowledge Map Syn
   });
 
   it('prevents 【Burst】Add to hand and <Blocker> reminder text from inflating Draw/Rest signals', () => {
-    expect(detectEffectStyles(kiraBurst)).toEqual(['AP Deduction']);
+    expect(detectEffectStyles(kiraBurst)).toEqual(['Removal / Disrupt']);
     const kiraSig = scoreSingleCardSignals(kiraBurst);
     expect(kiraSig.hasDraw).toBe(false);
     expect(kiraSig.hasSearch).toBe(false);
     expect(kiraSig.liquidity).toBe(0);
 
-    expect(detectEffectStyles(blastBlocker)).toEqual(['Combat Keywords']);
+    expect(detectEffectStyles(blastBlocker)).toEqual(['Board / Deploy']);
     expect(scoreSingleCardSignals(blastBlocker).hasRest).toBe(false);
   });
 
@@ -549,15 +552,15 @@ describe('Seam 3: Effect Prerequisite Enforcement, Trait Cohesion & Multi-Pass D
     ...DEFAULT_BLUEPRINT,
     colors: ['Purple', 'Red'],
     pacing: 'Midrange Tempo',
-    styles: ['Balanced Midrange'],
+    styles: ['Midrange / Value'],
     traitFocus: ['ZAFT'],
-    effectStyles: ['Destroy', 'Trash Recursion'],
+    effectStyles: ['Removal / Disrupt', 'Draw / Recursion'],
   };
 
   it('stops tagging GD05-112 and GD05-113 as Trash Recursion or Search', () => {
     for (const cardNo of ['GD05-112', 'GD05-113']) {
       const card = byCardNo.get(cardNo)!;
-      expect(detectEffectStyles(card)).not.toContain('Trash Recursion');
+      expect(detectEffectStyles(card)).not.toContain('Draw / Recursion');
       expect(scoreSingleCardSignals(card).hasSearch).toBe(false);
     }
   });
@@ -661,3 +664,60 @@ describe('Seam 3: Effect Prerequisite Enforcement, Trait Cohesion & Multi-Pass D
 });
 
 
+
+describe('Strategy vocabulary & Attack / Ping axis', () => {
+  it('offers exactly the six Build Deck Strategies and six Effect Styles', () => {
+    expect(TACTICAL_STYLE_META.map((m) => m.tag)).toEqual([
+      'Rush / Aggro',
+      'Midrange / Value',
+      'Control / Attrition',
+      'Ramp / Big Unit',
+      'Link / Synergy Combo',
+      'Burn / Ping',
+    ]);
+    expect(EFFECT_STYLE_META.map((m) => m.tag)).toEqual([
+      'Attack / Ping',
+      'Board / Deploy',
+      'Removal / Disrupt',
+      'Draw / Recursion',
+      'Resource / Ramp',
+      'Link / Synergy',
+    ]);
+  });
+
+  it('scores Attack / Ping from lowered damage steps, not from card cost', () => {
+    const pinger = makeCard({
+      cardNo: 'T-PING',
+      printId: 'T-PING',
+      type: 'COMMAND',
+      cost: 3,
+      ap: null,
+      hp: null,
+      effect: '【Main】Choose 1 enemy Unit. Deal 2 damage to it.',
+    });
+    const vanilla = makeCard({ cardNo: 'T-VAN', printId: 'T-VAN', type: 'COMMAND', cost: 3, ap: null, hp: null, effect: '' });
+    expect(detectEffectStyles(pinger)).toContain('Attack / Ping');
+    expect(scoreSingleCardSignals(pinger).attack).toBeGreaterThan(scoreSingleCardSignals(vanilla).attack);
+  });
+
+  it('replaces the Tempo axis with attack on analyzed decks', () => {
+    const analysis = analyzeDeck(createBlankCustomDeck(1), new Map(), new Map());
+    expect(Object.keys(analysis.hexagon)).toContain('attack');
+    expect(Object.keys(analysis.hexagon)).not.toContain('tempo');
+  });
+
+  it('migrates saved blueprints that use legacy strategy, effect style and tempo keys (tempo is dropped, not renamed)', () => {
+    const legacy = {
+      ...DEFAULT_BLUEPRINT,
+      styles: ['Shield Breach'],
+      effectStyles: ['Direct Damage', 'Rest Lock', 'Token Deploy'],
+      targetHexagon: { aggro: 60, defense: 50, tempo: 77, liquidity: 40, synergy: 30, control: 20 },
+    } as unknown as StrategyBlueprint;
+    const next = normalizeBlueprint(legacy);
+    expect(next.styles).toEqual(['Rush / Aggro']);
+    expect(next.effectStyles).toEqual(['Attack / Ping', 'Removal / Disrupt']);
+    expect(next.targetHexagon.attack).toBe(DEFAULT_BLUEPRINT.targetHexagon.attack);
+    expect(next.targetHexagon.aggro).toBe(60);
+    expect('tempo' in next.targetHexagon).toBe(false);
+  });
+});

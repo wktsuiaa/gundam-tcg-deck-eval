@@ -34,6 +34,8 @@ lib/gundam-db.ts  ──►  hydrates card.compiledEffect onto every print by ca
 
 Runtime modules (`lib/deck-engine.ts`, `lib/sandbox-engine.ts`) **never** call the regex compiler on catalog cards; they read `card.compiledEffect` exclusively.
 
+**Diagnostics.** Every line the Chevrotain CST cannot lex or parse, every line with no lowered clause, and every clause with leftover `unparsedResidual` text becomes an explicit `DIAGNOSTIC` ability (`LEX_ERROR`, `PARSE_ERROR`, `NO_LOWERING`, `UNPARSED_RESIDUAL`) instead of being dropped or guessed at. The committed shards contain `0` diagnostics; `__tests__/cfg-parser.test.ts` fails if any appear.
+
 ---
 
 ## 2. Anatomy of an Effect Clause

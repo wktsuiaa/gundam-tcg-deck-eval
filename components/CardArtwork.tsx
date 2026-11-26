@@ -46,6 +46,8 @@ export function CardArtwork({ card, className = '' }: CardArtworkProps) {
       {!loaded && (
         <div className="absolute inset-0 bg-[#161C28] animate-pulse" aria-hidden="true" />
       )}
+      {/* Plain <img>: card art is proxied through /api/card-image, so next/image optimization adds nothing. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={getCardImageUrl(card.imagePath)}
         alt={`${card.name} (${card.cardNo})`}

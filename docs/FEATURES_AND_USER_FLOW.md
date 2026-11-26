@@ -14,7 +14,7 @@
 - **Build & Cards (Consolidated Strategy + Card Editor)**:
   1. **Strategy & Constraints Generator** (collapsible 4-step workflow panel):
      - **Step 1 — Identity & Curve**: Select 1–2 **Target Colors** or **`Any (Auto Best 2)`**, pick **Target Pacing** (*Early Rush*, *Midrange Tempo*, *Late-Game Control*, *Ramp / Combo*), and multi-select **Trait Focus** (OR coherence anchor with searchable trait toggles).
-     - **Step 2 — Strategy & Effects**: Pick 1 **Build Deck Strategy** (single-select) and up to 2 optional **Effect Styles** (*AP Deduction*, *Destroy*, *Damage Proof*, *Repair*, *Bounce*, *Rest Lock*, *Direct Damage*, *Draw & Search*, *Trash Recursion*, *Resource Ramp*, *Combat Keywords*, *Token Deploy*).
+     - **Step 2 — Strategy & Effects**: Pick 1 **Build Deck Strategy** (*Rush / Aggro*, *Midrange / Value*, *Control / Attrition*, *Ramp / Big Unit*, *Link / Synergy Combo*, *Burn / Ping*) and up to 2 optional **Effect Styles** (*Attack / Ping*, *Board / Deploy*, *Removal / Disrupt*, *Draw / Recursion*, *Resource / Ramp*, *Link / Synergy*).
      - **Step 3 — Constraints**: Configure **Generation Limitations & Constraints** (Allowed Sets, Max Copies `1–4`, Max Cost, Max Lv., Rarity Cap `All`/`No LR`/`C/U/R Only`, and **Strict Trait / Link Lock**) with live **Pool Feasibility** status.
      - **Step 4 — Tune & Generate**: Review the clickable **Blueprint Summary**, tune **Target 6-Axis Hexagon Weights**, verify Pool Feasibility, and click **Generate Legal 50+10 Deck** (which auto-collapses the panel onto the generated decklist).
   2. **Card Search / Suggested Cards Panel (Left)**:

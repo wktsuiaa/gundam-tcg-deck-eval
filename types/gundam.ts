@@ -115,33 +115,25 @@ export interface DeckEntry {
 export type PacingTier = 'Early Rush' | 'Midrange Tempo' | 'Late-Game Control' | 'Ramp / Combo';
 
 export type TacticalStyleTag =
-  | 'Link-Strike'
-  | 'High-Liquidity Draw'
-  | 'Repair Fortress'
-  | 'Shield Breach'
-  | 'Wide Swarm'
-  | 'Command Control'
-  | 'Resource Ramp'
-  | 'Balanced Midrange';
+  | 'Rush / Aggro'
+  | 'Midrange / Value'
+  | 'Control / Attrition'
+  | 'Ramp / Big Unit'
+  | 'Link / Synergy Combo'
+  | 'Burn / Ping';
 
 export type EffectStyleTag =
-  | 'AP Deduction'
-  | 'Destroy'
-  | 'Damage Proof'
-  | 'Repair'
-  | 'Bounce'
-  | 'Rest Lock'
-  | 'Direct Damage'
-  | 'Draw & Search'
-  | 'Trash Recursion'
-  | 'Resource Ramp'
-  | 'Combat Keywords'
-  | 'Token Deploy';
+  | 'Attack / Ping'
+  | 'Board / Deploy'
+  | 'Removal / Disrupt'
+  | 'Draw / Recursion'
+  | 'Resource / Ramp'
+  | 'Link / Synergy';
 
 export interface HexagonAxes {
   aggro: number;
   defense: number;
-  tempo: number;
+  attack: number;
   liquidity: number;
   synergy: number;
   control: number;

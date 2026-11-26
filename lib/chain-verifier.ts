@@ -10,7 +10,6 @@ import type {
   CustomHookAst,
   EffectClauseAst,
   ProhibitionRule,
-  ReplacementEffectAst,
 } from './cfg-parser.ts';
 import {
   compileCardEffect,
