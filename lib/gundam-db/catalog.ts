@@ -22,13 +22,13 @@ export async function ensureHydratedCatalogFromDb(dbPath = DB_FILE): Promise<Cat
     }
 
     const shardMtime = await getLatestShardMtimeMs();
-    const effectsCountRow = db.prepare('SELECT COUNT(*) as cnt FROM card_effects').get() as { cnt: number };
+    const effectsCountRow = db.prepare('SELECT COUNT(*) as cnt FROM card_effects').get() as { cnt: number } | null | undefined;
     const existing = readCatalogFromSqlite(db);
 
     if (
       existing &&
       existing.cards.length > 0 &&
-      effectsCountRow.cnt > 0 &&
+      (effectsCountRow?.cnt ?? 0) > 0 &&
       dbMtime >= shardMtime
     ) {
       return existing;

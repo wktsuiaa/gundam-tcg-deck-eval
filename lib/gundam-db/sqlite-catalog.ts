@@ -1,10 +1,9 @@
-import Database from 'better-sqlite3';
 import type { CardColor, CardFaq, CatalogPayload, GundamCardPrint, GundamPackage, RulesPayload } from '@/types/gundam';
 import { getEffectSetPrefix, type CompiledCardEffect } from '@/lib/effect-parser';
-import { DEFAULT_RULES_PAYLOAD } from './connection';
+import { DEFAULT_RULES_PAYLOAD, type SqliteDatabase } from './connection';
 
 export function writeCatalogToSqlite(
-  db: Database.Database,
+  db: SqliteDatabase,
   packages: GundamPackage[],
   cards: GundamCardPrint[],
   syncedAt: string,
@@ -97,8 +96,8 @@ export function writeCatalogToSqlite(
   tx();
 }
 
-export function readCatalogFromSqlite(db: Database.Database): CatalogPayload | null {
-  const countRow = db.prepare('SELECT COUNT(*) as cnt FROM cards').get() as { cnt: number };
+export function readCatalogFromSqlite(db: SqliteDatabase): CatalogPayload | null {
+  const countRow = db.prepare('SELECT COUNT(*) as cnt FROM cards').get() as { cnt: number } | null | undefined;
   if (!countRow || countRow.cnt === 0) return null;
 
   const packages = db

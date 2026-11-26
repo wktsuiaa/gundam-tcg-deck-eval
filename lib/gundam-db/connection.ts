@@ -1,7 +1,19 @@
-import Database from 'better-sqlite3';
 import fsSync from 'node:fs';
 import path from 'node:path';
 import type { RulesPayload } from '@/types/gundam';
+
+export interface SqliteStatement {
+  get: (...args: unknown[]) => unknown;
+  all: (...args: unknown[]) => unknown[];
+  run: (...args: unknown[]) => { changes: number };
+}
+
+export interface SqliteDatabase {
+  pragma: (_sql: string) => void;
+  exec: (_sql: string) => void;
+  transaction: <T extends (...args: never[]) => unknown>(fn: T) => T;
+  prepare: (_sql: string) => SqliteStatement;
+}
 
 export const DATA_DIR = path.resolve(process.cwd(), 'data');
 
@@ -51,7 +63,7 @@ export function resolveSafeCollectionPath(code: string): string {
   return resolved;
 }
 
-export let dbInstance: Database.Database | null = null;
+export let dbInstance: SqliteDatabase | null = null;
 
 export function isDataDirectoryWritable(dirPath = DATA_DIR): boolean {
   try {
@@ -66,79 +78,22 @@ export function isDataDirectoryWritable(dirPath = DATA_DIR): boolean {
   }
 }
 
-export function getDb(dbPath = DB_FILE): Database.Database {
+export function getDb(dbPath = DB_FILE): SqliteDatabase {
   if (dbInstance && dbPath === DB_FILE) return dbInstance;
-  fsSync.mkdirSync(path.dirname(dbPath), { recursive: true });
-  const db = new Database(dbPath);
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS packages (
-      id TEXT PRIMARY KEY,
-      code TEXT NOT NULL UNIQUE,
-      name TEXT NOT NULL,
-      category TEXT NOT NULL,
-      card_count INTEGER NOT NULL DEFAULT 0
-    );
-
-    CREATE TABLE IF NOT EXISTS cards (
-      print_id TEXT PRIMARY KEY,
-      card_no TEXT NOT NULL,
-      name TEXT NOT NULL,
-      rarity TEXT NOT NULL,
-      block_icon TEXT NOT NULL,
-      lv INTEGER,
-      cost INTEGER,
-      color TEXT NOT NULL,
-      type TEXT NOT NULL,
-      effect TEXT NOT NULL,
-      zones_json TEXT NOT NULL,
-      traits_json TEXT NOT NULL,
-      link TEXT NOT NULL,
-      ap_raw TEXT NOT NULL,
-      hp_raw TEXT NOT NULL,
-      ap INTEGER,
-      hp INTEGER,
-      source_title TEXT NOT NULL,
-      where_to_get TEXT NOT NULL,
-      image_path TEXT NOT NULL,
-      is_parallel INTEGER NOT NULL DEFAULT 0,
-      faqs_json TEXT NOT NULL
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_cards_card_no ON cards(card_no);
-    CREATE INDEX IF NOT EXISTS idx_cards_color ON cards(color);
-    CREATE INDEX IF NOT EXISTS idx_cards_type ON cards(type);
-
-    CREATE TABLE IF NOT EXISTS card_packages (
-      print_id TEXT NOT NULL,
-      package_id TEXT NOT NULL,
-      PRIMARY KEY (print_id, package_id),
-      FOREIGN KEY (print_id) REFERENCES cards(print_id) ON DELETE CASCADE,
-      FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS rules_store (
-      key TEXT PRIMARY KEY,
-      payload_json TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS catalog_meta (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS card_effects (
-      card_no TEXT PRIMARY KEY,
-      set_prefix TEXT NOT NULL,
-      payload_json TEXT NOT NULL
-    );
-  `);
+  // MOCKED — better-sqlite3 stripped; catalog falls back to JSON shards
+  const mockDb: SqliteDatabase = {
+    pragma: () => {},
+    exec: () => {},
+    transaction: (fn) => fn,
+    prepare: () => ({
+      get: () => null,
+      all: () => [],
+      run: () => ({ changes: 0 }),
+    }),
+  };
 
   if (dbPath === DB_FILE) {
-    dbInstance = db;
+    dbInstance = mockDb;
   }
-  return db;
+  return mockDb;
 }
