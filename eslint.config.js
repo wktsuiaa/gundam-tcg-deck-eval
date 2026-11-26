@@ -18,7 +18,29 @@ module.exports = defineConfig([
       'prefer-const': 'error',
       'no-else-return': 'warn',
       'object-shorthand': 'warn',
+      // Files stay short enough to read in one sitting. Split along domain seams instead of raising the cap.
+      'max-lines': ['error', { max: 500 }],
     },
+  },
+  {
+    // Test files are exempt; they are split only when the module they cover is split.
+    files: ['__tests__/**'],
+    rules: { 'max-lines': 'off' },
+  },
+  {
+    // shortcut: files not yet split below 500 lines are exempt, remove each entry when its split lands.
+    files: [
+      'components/CatalogFilterPanel.tsx',
+      'components/DeckWorkspace.tsx',
+      'components/MatchSandbox.tsx',
+      'components/StrategyGeneratorPanel.tsx',
+      'lib/cfg-parser.ts',
+      'lib/chain-verifier.ts',
+      'lib/deck-engine.ts',
+      'lib/effect-parser.ts',
+      'lib/gundam-db.ts',
+    ],
+    rules: { 'max-lines': 'off' },
   },
   {
     files: ['eslint.config.js'],

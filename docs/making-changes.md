@@ -37,4 +37,5 @@ Axes you did not touch should not move. If they do, find out why before you comm
 - Strategy and effect-style names live in `TACTICAL_STYLE_META` / `EFFECT_STYLE_META` and `types/gundam.ts`. Rename in all three, and add a legacy mapping in `normalizeBlueprint` so saved decks keep working.
 - A new domain term goes in `GLOSSARY.md`. A hard-to-reverse, surprising decision gets the next number in `docs/adr/`.
 - Data shape changes follow [data-maintenance.md](data-maintenance.md).
+- A source file stays at 500 lines or fewer (`max-lines` in `eslint.config.js`). Split along domain seams, never into `part1`/`utils`. Tests are exempt. Files still over the cap are listed in an exemption block in `eslint.config.js`; remove an entry when you split that file.
 - Lint is flat config (`eslint.config.js`): correctness and readability rules only, no formatting rules.
