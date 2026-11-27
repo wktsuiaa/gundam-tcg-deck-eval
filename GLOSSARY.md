@@ -103,3 +103,7 @@ _Avoid_: Regex fallback, text parsing at runtime
 **Lowering Diagnostic**:
 An explicit `DIAGNOSTIC` ability node recording a line that **Lowering** could not lex, parse, or fully resolve (`LEX_ERROR`, `PARSE_ERROR`, `NO_LOWERING`, `UNPARSED_RESIDUAL`), so gaps are visible in data and tests instead of silently dropped.
 _Avoid_: Parse warning, error log
+
+**Custom Hook**:
+A versioned, named escape-hatch ability registered for a rare one-of card whose rule falls outside the core **Lowering** grammar, keeping bespoke card semantics explicit rather than misparsed or recorded as a **Lowering Diagnostic**.
+_Avoid_: Hardcoded card check, raw fallback

@@ -92,6 +92,8 @@ Single document synced by `scripts/sync_rules.py` containing official deck-const
 
 Pre-compiled, deterministic **Effect Shards** (`28` files, `1,290` unique `cardNo` entries, `0` diagnostics, `0` banned residual fields) produced by `scripts/compile_effects.ts` from canonical non-parallel card prints via the Chevrotain phrase-level CFG + pure CST lowering pipeline (`lib/cfg-parser.ts`).
 
+For a complete human-readable guide covering every field, enum value, JSON Schema keyword, and worked card walkthrough in `docs/schemas/effect-shard.schema.json`, see [Human Guide to Card Effect JSON](./CARD_EFFECT_JSON_GUIDE.md).
+
 Shards omit volatile timestamps so repeated compiler runs are byte-for-byte idempotent.
 
 ### Top-Level Object (`EffectShardFile`)

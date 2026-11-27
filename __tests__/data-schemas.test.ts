@@ -211,4 +211,51 @@ describe('JSON Data Contracts (docs/schemas/*.schema.json)', () => {
     badCol.cards[0].type = 'INVALID_TYPE';
     expect(validateSchema(badCol, collectionSchema, collectionSchema).length).toBeGreaterThan(0);
   });
+
+  it('documents every $defs name, property key, const, and enum value from effect-shard.schema.json in docs/CARD_EFFECT_JSON_GUIDE.md', () => {
+    const guide = fs.readFileSync(path.join(process.cwd(), 'docs', 'CARD_EFFECT_JSON_GUIDE.md'), 'utf8');
+    const missing: string[] = [];
+
+    for (const defName of Object.keys(effectSchema.$defs ?? {})) {
+      if (!guide.includes(defName)) {
+        missing.push(`$defs/${defName}`);
+      }
+    }
+
+    const collectTokens = (node: JsonSchema | undefined) => {
+      if (!node || typeof node !== 'object') return;
+      if (typeof node.const === 'string' && !guide.includes(`"${node.const}"`) && !guide.includes(`\`${node.const}\``)) {
+        missing.push(`const:${node.const}`);
+      }
+      if (Array.isArray(node.enum)) {
+        for (const val of node.enum) {
+          if (typeof val === 'string' && !guide.includes(`"${val}"`) && !guide.includes(`\`${val}\``)) {
+            missing.push(`enum:${val}`);
+          }
+        }
+      }
+      if (node.properties) {
+        for (const [propName, propSchema] of Object.entries(node.properties)) {
+          if (!guide.includes(`\`${propName}\``) && !guide.includes(`"${propName}"`)) {
+            missing.push(`prop:${propName}`);
+          }
+          collectTokens(propSchema);
+        }
+      }
+      if (typeof node.additionalProperties === 'object' && node.additionalProperties !== null) {
+        collectTokens(node.additionalProperties);
+      }
+      collectTokens(node.items);
+      for (const branch of node.oneOf ?? []) {
+        collectTokens(branch);
+      }
+    };
+
+    collectTokens(effectSchema);
+    for (const defSchema of Object.values(effectSchema.$defs ?? {})) {
+      collectTokens(defSchema);
+    }
+
+    expect([...new Set(missing)]).toEqual([]);
+  });
 });

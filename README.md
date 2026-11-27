@@ -53,5 +53,6 @@ Open `http://localhost:3000`.
 - [Features & User Flows](docs/FEATURES_AND_USER_FLOW.md)
 - [Calculations & Algorithms](docs/ALGORITHMS.md)
 - [Data JSON Schemas](docs/DATA_SCHEMAS.md)
+- [Card Effect JSON Guide](docs/CARD_EFFECT_JSON_GUIDE.md)
 - [Effect Parsing & Triggers](docs/EFFECT_PARSING_AND_TRIGGERS.md)
 - [Testing Flow & Verification](docs/TESTING.md)
