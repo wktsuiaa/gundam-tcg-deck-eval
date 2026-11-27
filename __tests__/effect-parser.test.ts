@@ -2,13 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { GundamCardPrint } from '@/types/gundam';
+import { parseCardAbilities, type AbilityAst } from '@/lib/cfg-parser';
 import {
   compileCardEffect,
   extractEffectPrerequisites,
   getEffectSetPrefix,
-  parseCardEffects,
   type CompiledCardEffect,
   type EffectShardFile,
+  type EffectStep,
 } from '@/lib/effect-parser';
 
 function loadCorpus(): Map<string, GundamCardPrint> {
@@ -25,106 +26,98 @@ function loadCorpus(): Map<string, GundamCardPrint> {
   return byCardNo;
 }
 
-describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
+describe('Seam 1: Schema v2 CST Lowering & Compiler Pipeline', () => {
   const corpus = loadCorpus();
 
   it('parses ST09-006 Sword Impulse Gundam with trash-deploy gate and Lv<=3 destroy target', () => {
-    const card = corpus.get('ST09-006')!;
-    const parsed = parseCardEffects(card);
+    const parsed = parseCardAbilities(corpus.get('ST09-006')!);
 
     expect(parsed.keywords).toEqual([]);
-    expect(parsed.clauses).toHaveLength(1);
-    const clause = parsed.clauses[0];
-    expect(clause.timings).toEqual(['DEPLOY']);
-    expect(clause.condition).toEqual({ kind: 'DEPLOYED_FROM_ZONE', zone: 'trash' });
-    expect(clause.unparsedResidual).toBe('');
-    expect(clause.steps).toEqual([
-      {
-        action: 'DESTROY',
-        target: {
-          owner: 'ENEMY',
-          cardType: 'UNIT',
-          count: 1,
-          lvMax: 3,
+    expect(parsed.abilities).toHaveLength(1);
+    expect(parsed.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      timings: ['DEPLOY'],
+      condition: { kind: 'DEPLOYED_FROM_ZONE', zone: 'trash' },
+      steps: [
+        {
+          action: 'DESTROY',
+          target: { owner: 'ENEMY', cardType: 'UNIT', count: 1, lvMax: 3 },
         },
-      },
-    ]);
-  });
-
-  it('parses ST09-001 Impulse Gundam Activate-Main cost and Lv.4+ Impulse trash deploy', () => {
-    const card = corpus.get('ST09-001')!;
-    const parsed = parseCardEffects(card);
-
-    expect(parsed.clauses).toHaveLength(1);
-    const clause = parsed.clauses[0];
-    expect(clause.timings).toEqual(['ACTIVATE_MAIN']);
-    expect(clause.cost?.resourceCost).toBe(2);
-    expect(clause.cost?.returnSelfToDeckBottom).toBe(true);
-    expect(clause.unparsedResidual).toBe('');
-    expect(clause.steps[0]).toMatchObject({
-      action: 'DEPLOY_FROM_TRASH',
-      free: true,
-      target: {
-        owner: 'SELF',
-        cardType: 'UNIT',
-        count: 1,
-        lvMin: 4,
-        nameContains: 'Impulse Gundam',
-      },
+      ],
     });
   });
 
-  it('parses ST09-003 Saviour Gundam <Breach 3> without reminder leak and symmetrical AoE damage', () => {
-    const card = corpus.get('ST09-003')!;
-    const parsed = parseCardEffects(card);
+  it('parses ST09-001 Impulse Gundam Activate-Main cost and Lv.4+ Impulse trash deploy', () => {
+    const parsed = parseCardAbilities(corpus.get('ST09-001')!);
+
+    expect(parsed.abilities).toHaveLength(1);
+    expect(parsed.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      timings: ['ACTIVATE_MAIN'],
+      cost: { resourceCost: 2, returnSelfToDeckBottom: true },
+      steps: [
+        {
+          action: 'DEPLOY_FROM_TRASH',
+          free: true,
+          target: {
+            owner: 'SELF',
+            cardType: 'UNIT',
+            count: 1,
+            lvMin: 4,
+            nameContains: 'Impulse Gundam',
+          },
+        },
+      ],
+    });
+  });
+
+  it('parses ST09-003 Saviour Gundam <Breach 3> and symmetrical AoE damage', () => {
+    const parsed = parseCardAbilities(corpus.get('ST09-003')!);
 
     expect(parsed.keywords).toEqual([{ name: 'Breach', value: 3 }]);
-    expect(parsed.clauses).toHaveLength(1);
-    const clause = parsed.clauses[0];
-    expect(clause.timings).toEqual(['WHEN_LINKED']);
-    expect(clause.condition).toEqual({ kind: 'TRASH_COUNT_AT_LEAST', count: 5, color: 'Purple' });
-    expect(clause.unparsedResidual).toBe('');
-    expect(clause.steps).toEqual([
-      {
-        action: 'DEAL_DAMAGE',
-        amount: 2,
-        target: {
-          owner: 'ANY',
-          cardType: 'UNIT',
-          count: 'ALL',
-          apMax: 5,
+    expect(parsed.abilities).toHaveLength(1);
+    expect(parsed.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      timings: ['WHEN_LINKED'],
+      condition: { kind: 'TRASH_COUNT_AT_LEAST', count: 5, color: 'Purple' },
+      steps: [
+        {
+          action: 'DEAL_DAMAGE',
+          amount: 2,
+          target: { owner: 'ANY', cardType: 'UNIT', count: 'ALL', apMax: 5 },
         },
-      },
-    ]);
+      ],
+    });
   });
 
   it('parses ST09-004 Freedom Gundam <Blocker> and conditional <Suppression> with Base check', () => {
-    const card = corpus.get('ST09-004')!;
-    const parsed = parseCardEffects(card);
+    const parsed = parseCardAbilities(corpus.get('ST09-004')!);
 
     expect(parsed.keywords).toEqual([{ name: 'Blocker', value: null }]);
-    expect(parsed.clauses).toHaveLength(1);
-    expect(parsed.clauses[0]).toMatchObject({
-      timings: ['CONTINUOUS'],
+    expect(parsed.abilities).toHaveLength(1);
+    expect(parsed.abilities[0]).toMatchObject({
+      kind: 'CONTINUOUS_MODIFIER',
       condition: { kind: 'FRIENDLY_BASE_IN_PLAY' },
-      unparsedResidual: '',
-      steps: [{ action: 'GRANT_KEYWORD', keyword: { name: 'Suppression', value: null }, target: { owner: 'SELF', self: true } }],
+      modifier: {
+        type: 'GRANT_KEYWORD',
+        keyword: { name: 'Suppression', value: null },
+        target: { owner: 'SELF', self: true },
+      },
     });
   });
 
   it('separates 【Burst】Add this card to your hand from 【Attack】AP-2 on ST04-010 Kira Yamato', () => {
-    const card = corpus.get('ST04-010')!;
-    const parsed = parseCardEffects(card);
+    const parsed = parseCardAbilities(corpus.get('ST04-010')!);
 
-    expect(parsed.clauses).toHaveLength(2);
-    expect(parsed.clauses[0]).toMatchObject({
+    expect(parsed.abilities).toHaveLength(2);
+    expect(parsed.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
       timings: ['BURST'],
-      unparsedResidual: '',
       steps: [{ action: 'ADD_SELF_TO_HAND' }],
     });
-    expect(parsed.clauses[1]).toMatchObject({
+    expect(parsed.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
       timings: ['ATTACK'],
-      unparsedResidual: '',
       steps: [
         {
           action: 'MODIFY_AP',
@@ -137,61 +130,64 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
   });
 
   it('handles GD01-054 continuous AP-threshold keyword and GD06-050 conditional multi-target upgrade', () => {
-    const duel = parseCardEffects(corpus.get('GD01-054')!);
-    expect(duel.clauses).toHaveLength(1);
-    expect(duel.clauses[0]).toMatchObject({
-      timings: ['CONTINUOUS'],
+    const duel = parseCardAbilities(corpus.get('GD01-054')!);
+    expect(duel.abilities).toHaveLength(1);
+    expect(duel.abilities[0]).toMatchObject({
+      kind: 'CONTINUOUS_MODIFIER',
       condition: { kind: 'SELF_AP_AT_LEAST', minAp: 5 },
-      unparsedResidual: '',
-      steps: [{ action: 'GRANT_KEYWORD', keyword: { name: 'Breach', value: 3 } }],
+      modifier: { type: 'GRANT_KEYWORD', keyword: { name: 'Breach', value: 3 } },
     });
 
-    const legend = parseCardEffects(corpus.get('GD06-050')!);
-    const deployClause = legend.clauses.find((c) => c.timings.includes('DEPLOY'));
+    const legend = parseCardAbilities(corpus.get('GD06-050')!);
+    const deployClause = legend.abilities.find((a) => a.kind === 'EFFECT_CLAUSE' && a.timings.includes('DEPLOY'));
     expect(deployClause).toBeDefined();
-    expect(deployClause!.steps.some((s) => s.action === 'DESTROY')).toBe(true);
+    if (deployClause?.kind === 'EFFECT_CLAUSE') {
+      expect(deployClause.steps.some((s) => s.action === 'DESTROY')).toBe(true);
+    }
   });
 
   it('parses GD05-112 and GD05-113 self-pairing as PAIR_SELF_FROM_TRASH with (MF) Effect Prerequisite and primaryClause=true', () => {
     const gd112 = corpus.get('GD05-112')!;
-    const parsed112 = parseCardEffects(gd112);
-    expect(parsed112.clauses[0].steps).toEqual([
-      {
-        action: 'GRANT_KEYWORD',
-        keyword: { name: 'Breach', value: 3 },
-        duration: 'THIS_TURN',
-        target: { owner: 'SELF', cardType: 'UNIT', count: 1, trait: 'MF' },
-      },
-      {
-        action: 'PAIR_SELF_FROM_TRASH',
-        target: { owner: 'SELF', cardType: 'UNIT', count: 1, trait: 'MF', zone: 'BATTLE_AREA' },
-      },
-    ]);
+    const parsed112 = parseCardAbilities(gd112);
+    expect(parsed112.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        {
+          action: 'GRANT_KEYWORD',
+          keyword: { name: 'Breach', value: 3 },
+          duration: 'THIS_TURN',
+          target: { owner: 'SELF', cardType: 'UNIT', count: 1, trait: 'MF' },
+        },
+        {
+          action: 'PAIR_SELF_FROM_TRASH',
+          target: { owner: 'SELF', cardType: 'UNIT', count: 1, trait: 'MF', zone: 'BATTLE_AREA' },
+        },
+      ],
+    });
 
     const prereq112 = extractEffectPrerequisites(gd112);
     expect(prereq112.some((p) => p.trait === 'MF' && p.primaryClause && p.minCopies === 4)).toBe(true);
 
-    // GD05-121 has a generic AP-2 main step + (MF) secondary self-pair -> primaryClause=false
     const prereq121 = extractEffectPrerequisites(corpus.get('GD05-121')!);
     expect(prereq121.some((p) => p.trait === 'MF' && !p.primaryClause)).toBe(true);
 
-    // GD04-116 scales damage off milled (Minerva Squad) cards -> density threshold 8
     const prereq4116 = extractEffectPrerequisites(corpus.get('GD04-116')!);
     expect(prereq4116.some((p) => p.trait === 'Minerva Squad' && p.minCopies === 8)).toBe(true);
   });
 
   it('parses GD06-001, GD06-002, GD06-003, and GD06-009 with exact triggers, conditions, and 1 HP selector', () => {
-    const gd001 = parseCardEffects(corpus.get('GD06-001')!);
-    expect(gd001.clauses[0]).toMatchObject({
+    const gd001 = parseCardAbilities(corpus.get('GD06-001')!);
+    expect(gd001.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
       timings: ['WHEN_ATTACKED'],
       oncePerTurn: true,
       triggerEvent: { kind: 'WHEN_ATTACKED', actor: 'SELF' },
       steps: [{ action: 'DRAW', count: 1 }],
-      unparsedResidual: '',
     });
 
-    const gd002 = parseCardEffects(corpus.get('GD06-002')!);
-    expect(gd002.clauses[0]).toMatchObject({
+    const gd002 = parseCardAbilities(corpus.get('GD06-002')!);
+    expect(gd002.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
       timings: ['WHEN_DESTROY_BY_BATTLE'],
       oncePerTurn: true,
       triggerEvent: {
@@ -208,32 +204,33 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
           target: { owner: 'SELF', cardType: 'UNIT', count: 1, trait: 'Orb' },
         },
       ],
-      unparsedResidual: '',
     });
-    expect(gd002.clauses[1].steps).toEqual([
-      { action: 'EXILE', target: { owner: 'SELF', cardType: 'UNIT', count: 3, zone: 'TRASH' } },
-      {
-        action: 'IF_PREVIOUS_SUCCEEDED',
-        thenSteps: [
-          { action: 'BOUNCE', target: { owner: 'ENEMY', cardType: 'UNIT', count: 1, state: 'ACTIVE' } },
-        ],
-      },
-    ]);
-
-    const gd003 = parseCardEffects(corpus.get('GD06-003')!);
-    expect(gd003.clauses[0]).toMatchObject({
-      timings: ['CONTINUOUS'],
+    expect(gd002.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
       steps: [
+        { action: 'EXILE', target: { owner: 'SELF', cardType: 'UNIT', count: 3, zone: 'TRASH' } },
         {
-          action: 'MODIFY_AP',
-          delta: 1,
-          scaleBy: { metric: 'HAND_COUNT', owner: 'SELF' },
-          target: { owner: 'SELF', self: true, cardType: 'UNIT' },
+          action: 'IF_PREVIOUS_SUCCEEDED',
+          thenSteps: [
+            { action: 'BOUNCE', target: { owner: 'ENEMY', cardType: 'UNIT', count: 1, state: 'ACTIVE' } },
+          ],
         },
       ],
-      unparsedResidual: '',
     });
-    expect(gd003.clauses[1]).toMatchObject({
+
+    const gd003 = parseCardAbilities(corpus.get('GD06-003')!);
+    expect(gd003.abilities[0]).toMatchObject({
+      kind: 'CONTINUOUS_MODIFIER',
+      modifier: {
+        type: 'MODIFY_STAT',
+        stat: 'AP',
+        delta: 1,
+        scaleBy: { metric: 'HAND_COUNT', owner: 'SELF' },
+        target: { owner: 'SELF', self: true, cardType: 'UNIT' },
+      },
+    });
+    expect(gd003.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
       timings: ['ATTACK'],
       condition: {
         kind: 'ALL_OF',
@@ -243,11 +240,11 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
         ],
       },
       steps: [{ action: 'DRAW', count: 1 }],
-      unparsedResidual: '',
     });
 
-    const gd009 = parseCardEffects(corpus.get('GD06-009')!);
-    expect(gd009.clauses[0]).toMatchObject({
+    const gd009 = parseCardAbilities(corpus.get('GD06-009')!);
+    expect(gd009.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
       timings: ['DEPLOY'],
       steps: [
         {
@@ -255,7 +252,6 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
           target: { owner: 'ENEMY', cardType: 'UNIT', count: 1, hpMin: 1, hpMax: 1 },
         },
       ],
-      unparsedResidual: '',
     });
   });
 
@@ -292,57 +288,88 @@ describe('Seam 1: parseCardEffects (Fail-Closed Effect Clause IR)', () => {
     ).toBe(true);
   });
 
-  it('audits all unique cards with zero crashes, zero reminder leaks, zero RAW_CONDITIONs, zero residuals, and 100% link coverage', () => {
-    let totalClauses = 0;
-    let fullyParsedClauses = 0;
-    let rawConditions = 0;
+  it('recursively audits all AbilityAst nodes with 0 DIAGNOSTICs, 0 banned raw fields, 0 reminder leaks, and 100% link coverage', () => {
+    let totalAbilities = 0;
+    let diagnostics = 0;
+    let bannedFields = 0;
     let missingLinkReq = 0;
     let missingHpExact = 0;
     let reminderLeaks = 0;
 
-    const countRaw = (cond: ReturnType<typeof parseCardEffects>['clauses'][number]['condition']): number => {
-      if (!cond) return 0;
-      if (cond.kind === 'RAW_CONDITION') return 1;
-      if (cond.kind === 'ALL_OF' || cond.kind === 'ANY_OF') {
-        return cond.conditions.reduce((s, c) => s + countRaw(c), 0);
+    const visitSteps = (steps: EffectStep[]) => {
+      for (const s of steps) {
+        const rec = s as Record<string, unknown>;
+        if ('summary' in rec) bannedFields++;
+        if (s.action === 'IF_CONDITION') {
+          visitSteps(s.thenSteps);
+          if (s.elseSteps) visitSteps(s.elseSteps);
+        } else if (s.action === 'IF_PREVIOUS_SUCCEEDED') {
+          visitSteps(s.thenSteps);
+        } else if (s.action === 'GRANT_CLAUSE') {
+          if ((s.clause.timings.includes('WHEN_LINKED') || s.clause.timings.includes('DURING_LINK')) && !s.clause.linkRequirement) {
+            missingLinkReq++;
+          }
+          visitSteps(s.clause.steps);
+        }
       }
-      if (cond.kind === 'NOT') return countRaw(cond.condition);
-      return 0;
+    };
+
+    const visitAbility = (ab: AbilityAst) => {
+      totalAbilities++;
+      const rec = ab as unknown as Record<string, unknown>;
+      if ('insteadUpgrade' in rec || 'replacementSummary' in rec || 'unparsedResidual' in rec) {
+        bannedFields++;
+      }
+      if (ab.kind === 'DIAGNOSTIC') {
+        diagnostics++;
+        return;
+      }
+      if (ab.kind === 'EFFECT_CLAUSE') {
+        if ((ab.timings.includes('WHEN_LINKED') || ab.timings.includes('DURING_LINK')) && !ab.linkRequirement) {
+          missingLinkReq++;
+        }
+        visitSteps(ab.steps);
+      } else if (ab.kind === 'REPLACEMENT_EFFECT') {
+        if (ab.steps) visitSteps(ab.steps);
+        if (ab.outcome.steps) visitSteps(ab.outcome.steps);
+      } else if (ab.kind === 'CUSTOM_HOOK') {
+        visitSteps(ab.steps);
+      } else if (ab.kind === 'CONTINUOUS_MODIFIER') {
+        const modRec = ab.modifier as Record<string, unknown>;
+        if (modRec.type === 'STATIC_PERMISSION' || 'summary' in modRec) bannedFields++;
+      }
+
+      if (/with \d+ HP\b(?!\s+or)/i.test(ab.raw) && !JSON.stringify(ab).includes('hpMin')) {
+        missingHpExact++;
+      }
+      const abText = JSON.stringify(ab);
+      if (abText.includes('change the attack target') || abText.includes('first card in that opponent')) {
+        reminderLeaks++;
+      }
     };
 
     for (const card of corpus.values()) {
-      const parsed = parseCardEffects(card);
-      for (const clause of parsed.clauses) {
-        totalClauses++;
-        if (clause.unparsedResidual === '') fullyParsedClauses++;
-        rawConditions += countRaw(clause.condition);
-        if ((clause.timings.includes('WHEN_LINKED') || clause.timings.includes('DURING_LINK')) && !clause.linkRequirement) {
-          missingLinkReq++;
-        }
-        if (/with \d+ HP\b(?!\s+or)/i.test(clause.raw) && !JSON.stringify(clause).includes('hpMin')) {
-          missingHpExact++;
-        }
-        const stepsText = JSON.stringify(clause.steps);
-        if (stepsText.includes('change the attack target') || stepsText.includes('first card in that opponent')) {
-          reminderLeaks++;
-        }
+      const compiled = compileCardEffect(card);
+      expect('clauses' in compiled).toBe(false);
+      for (const ab of compiled.abilities) {
+        visitAbility(ab);
       }
     }
 
     expect(reminderLeaks).toBe(0);
-    expect(totalClauses).toBeGreaterThan(1000);
-    expect(rawConditions).toBe(0);
-    expect(fullyParsedClauses).toBe(totalClauses);
+    expect(totalAbilities).toBeGreaterThan(1000);
+    expect(diagnostics).toBe(0);
+    expect(bannedFields).toBe(0);
     expect(missingLinkReq).toBe(0);
     expect(missingHpExact).toBe(0);
   });
 
-  it('keeps pre-compiled Effect Shards under data/effects/ complete and in sync with data/collections/', () => {
+  it('keeps pre-compiled Effect Shards under data/effects/ complete and in sync with data/collections/ (schemaVersion 2)', () => {
     const effectsDir = path.join(process.cwd(), 'data', 'effects');
     const compiledByNo = new Map<string, CompiledCardEffect>();
     for (const file of fs.readdirSync(effectsDir).filter((f) => f.endsWith('.json')).sort()) {
       const shard = JSON.parse(fs.readFileSync(path.join(effectsDir, file), 'utf8')) as EffectShardFile;
-      expect(shard.schemaVersion).toBe(1);
+      expect(shard.schemaVersion).toBe(2);
       expect(shard.cardCount).toBe(Object.keys(shard.effects).length);
       for (const [cardNo, eff] of Object.entries(shard.effects)) {
         expect(getEffectSetPrefix(cardNo)).toBe(shard.setPrefix);

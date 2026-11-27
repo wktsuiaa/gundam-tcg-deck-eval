@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST01",
   "cardCount": 16,
   "effects": {
@@ -58,20 +58,18 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【When Paired･(White Base Team) Pilot】Draw 1.",
+          "raw": "【When Paired<DOT>(White Base Team) Pilot】Draw 1.",
           "timings": [
             "WHEN_PAIRED"
           ],
           "oncePerTurn": false,
           "pairFilter": {
-            "trait": "White Base Team",
-            "color": "White"
+            "trait": "White Base Team"
           },
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -84,10 +82,9 @@
         {
           "kind": "TRAIT",
           "trait": "White Base Team",
-          "color": "White",
           "cardType": "PILOT",
           "minCopies": 4,
-          "reason": "Requires White (White Base Team) Pilot",
+          "reason": "Requires (White Base Team) Pilot",
           "primaryClause": true
         }
       ]
@@ -555,8 +552,26 @@
           "kind": "CUSTOM_HOOK",
           "clauseIndex": 2,
           "hookId": "ST01-015#2",
-          "version": 1,
+          "version": 2,
           "raw": "【Activate<DOT>Main】【Once per Turn】<RES_COST:2><COST_SEP>Deploy 1 [Gundam]((White Base Team)<DOT>AP3<DOT>HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)<DOT>AP2<DOT>HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)<DOT>AP1<DOT>HP1) Unit token if you have 2 or more Units in play.",
+          "timings": [
+            "ACTIVATE_MAIN"
+          ],
+          "cost": {
+            "resourceCost": 2
+          },
+          "steps": [
+            {
+              "action": "DEPLOY_TOKEN",
+              "count": 1,
+              "name": "White Base Token",
+              "ap": 3,
+              "hp": 3,
+              "traits": [
+                "White Base Team"
+              ]
+            }
+          ],
           "prerequisites": []
         }
       ],
@@ -606,13 +621,12 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 2,
-          "raw": "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn.",
+          "raw": "【Activate<DOT>Main】Rest this Base<COST_SEP>All friendly Link Units get AP+1 during this turn.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "Rest this Base",
             "restSelf": true
           },
           "steps": [

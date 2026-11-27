@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST07",
   "cardCount": 15,
   "effects": {
@@ -57,13 +57,12 @@
                 "traits": [
                   "CB"
                 ],
-                "drawAccepted": true
+                "placedFromDeck": true
               },
               "thenSteps": [
                 {
                   "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
+                  "count": 1
                 }
               ]
             }
@@ -195,7 +194,7 @@
               "count": 1
             },
             "damageType": "BATTLE",
-            "raw": "when this Unit destroys an enemy Unit with battle damage"
+            "raw": "when this Unit destroys an enemy Unit with battle damage ,"
           },
           "condition": {
             "kind": "IS_YOUR_TURN"
@@ -218,14 +217,6 @@
           "raw": "【During Link】This Unit gets AP+2.",
           "layer": 3,
           "activeIn": "BATTLE_AREA",
-          "requiresLink": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Lockon Stratos"
-            ],
-            "traits": [],
-            "raw": "[Lockon Stratos]"
-          },
           "duration": "CONTINUOUS",
           "modifier": {
             "type": "MODIFY_STAT",
@@ -236,6 +227,14 @@
               "self": true,
               "cardType": "UNIT"
             }
+          },
+          "requiresLink": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Lockon Stratos"
+            ],
+            "traits": [],
+            "raw": "[Lockon Stratos]"
           }
         }
       ],
@@ -412,10 +411,7 @@
               ],
               "replacesPrevious": true
             }
-          ],
-          "insteadUpgrade": {
-            "rawUpgrade": "all your (CB) Units get AP+1 instead"
-          }
+          ]
         }
       ],
       "synergy": {
@@ -427,6 +423,13 @@
         ]
       },
       "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "minCopies": 8,
+          "reason": "Requires 7+ (CB) cards in trash",
+          "primaryClause": false
+        },
         {
           "kind": "TRAIT",
           "trait": "CB",
@@ -482,8 +485,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -546,7 +548,6 @@
                 "owner": "SELF",
                 "self": true,
                 "cardType": "UNIT",
-                "count": 1,
                 "state": "ACTIVE",
                 "lvMaxRef": "SELF_LV"
               }
@@ -625,6 +626,12 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
+            },
+            "sourceFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1,
+              "apMax": 3
             }
           }
         }
@@ -665,8 +672,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         },
@@ -680,9 +686,8 @@
           "oncePerTurn": false,
           "steps": [
             {
-              "action": "DAMAGE_PROOF",
-              "summary": "Change the attack target of the battling enemy Unit to it.",
-              "damageType": "ANY",
+              "action": "REDIRECT_ATTACK_TARGET",
+              "rule": "MUST_ATTACK_TARGET",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
@@ -729,14 +734,11 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true,
-              "trait": "CB"
+              "action": "REVEAL_TOP",
+              "count": 1
             },
             {
               "action": "RETURN_TO_DECK",
@@ -754,15 +756,7 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "CB",
-          "minCopies": 8,
-          "reason": "Searches (CB) cards",
-          "primaryClause": false
-        }
-      ]
+      "prerequisites": []
     },
     "ST07-015": {
       "cardNo": "ST07-015",
@@ -824,7 +818,14 @@
             "target": {
               "owner": "SELF",
               "self": true,
-              "cardType": "UNIT"
+              "cardType": "BASE"
+            },
+            "sourceFilter": {
+              "owner": "ENEMY",
+              "excludeToken": true,
+              "cardType": "UNIT",
+              "count": 1,
+              "lvMax": 3
             }
           }
         }

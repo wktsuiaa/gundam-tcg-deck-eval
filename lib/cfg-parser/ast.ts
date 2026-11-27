@@ -1,4 +1,17 @@
-import type { ActivationCost, EffectCondition, EffectDuration, EffectPrerequisite, EffectStep, EffectTiming, KeywordAbility, LinkRequirement, PairFilter, ScaleMetric, TargetSelector, TriggerEvent } from '../effect-parser.ts';
+import type {
+  ActivationCost,
+  EffectCondition,
+  EffectDuration,
+  EffectPrerequisite,
+  EffectStep,
+  EffectTiming,
+  KeywordAbility,
+  LinkRequirement,
+  PairFilter,
+  ScaleMetric,
+  TargetSelector,
+  TriggerEvent,
+} from '../effect-parser.ts';
 
 export type ReplacementEventKind =
   | 'WOULD_BE_DESTROYED'
@@ -13,6 +26,7 @@ export type ProhibitionRule =
   | 'CANT_RECEIVE_BATTLE_DAMAGE'
   | 'CANT_RECEIVE_EFFECT_DAMAGE'
   | 'CANT_RECEIVE_DAMAGE'
+  | 'CANT_REDUCE_AP'
   | 'CANT_CHOOSE_ENEMY_PLAYER'
   | 'CANT_BE_CHOSEN'
   | 'CANT_SET_ACTIVE'
@@ -20,6 +34,13 @@ export type ProhibitionRule =
   | 'CANT_BE_PAIRED'
   | 'CANT_DEPLOY'
   | 'CANT_BE_DESTROYED';
+
+export interface ReplacementOutcome {
+  kind: 'PREVENT_DAMAGE' | 'REST_OTHER' | 'PREVENT_DESTROY' | 'PREVENT_MOVE';
+  damageType?: 'BATTLE' | 'EFFECT' | 'ANY';
+  target?: TargetSelector;
+  steps?: EffectStep[];
+}
 
 export interface EffectClauseAst {
   kind: 'EFFECT_CLAUSE';
@@ -34,10 +55,6 @@ export interface EffectClauseAst {
   condition?: EffectCondition;
   steps: EffectStep[];
   modalGroup?: string;
-  insteadUpgrade?: {
-    condition?: EffectCondition;
-    rawUpgrade: string;
-  };
 }
 
 export interface ReplacementEffectAst {
@@ -47,12 +64,14 @@ export interface ReplacementEffectAst {
   scope: 'ACTIVE_ZONE' | 'PAIRED' | 'LINKED';
   intercepts: ReplacementEventKind;
   subject: TargetSelector;
+  sourceFilter?: TargetSelector;
   pairFilter?: PairFilter;
+  oncePerTurn?: boolean;
   condition?: EffectCondition;
   optional: boolean;
   duration?: EffectDuration;
   steps?: EffectStep[];
-  replacementSummary: string;
+  outcome: ReplacementOutcome;
   maxPerEventInstance: 1;
 }
 
@@ -80,6 +99,7 @@ export interface ContinuousModifierAst {
         type: 'COST_REDUCTION';
         amount: number;
         lvDelta?: number;
+        perTarget?: ScaleMetric;
         target: TargetSelector;
       }
     | {
@@ -106,6 +126,8 @@ export interface ContinuousModifierAst {
         rule: ProhibitionRule;
         target: TargetSelector;
         sourceFilter?: TargetSelector;
+        damageMax?: number;
+        additionalRules?: ProhibitionRule[];
       }
     | {
         type: 'ALLOW_ATTACK_ACTIVE';
@@ -119,17 +141,13 @@ export interface ContinuousModifierAst {
         type: 'RESTRICTION';
         rule: string;
         target: TargetSelector;
-        summary: string;
+        sourceFilter?: TargetSelector;
       }
     | {
         type: 'REDIRECT_ATTACK_TARGET';
-        rule: string;
+        rule: 'MUST_ATTACK_TARGET' | 'CANT_CHOOSE_TARGET' | 'CANT_CHOOSE_SAME_PLAYER';
         target: TargetSelector;
-      }
-    | {
-        type: 'STATIC_PERMISSION';
-        summary: string;
-        target: TargetSelector;
+        attackerFilter?: TargetSelector;
       };
 }
 
@@ -139,6 +157,9 @@ export interface CustomHookAst {
   hookId: string;
   version: number;
   raw: string;
+  timings: EffectTiming[];
+  cost?: ActivationCost;
+  steps: EffectStep[];
   prerequisites: EffectPrerequisite[];
 }
 
@@ -164,6 +185,9 @@ export interface CustomHookDefinition {
   hookId: string;
   version: number;
   description: string;
+  timings: EffectTiming[];
+  cost?: ActivationCost;
+  steps: EffectStep[];
   prerequisites?: EffectPrerequisite[];
 }
 
@@ -174,9 +198,21 @@ export interface CustomHookDefinition {
 export const CUSTOM_HOOK_REGISTRY: Record<string, CustomHookDefinition> = {
   'ST01-015#2': {
     hookId: 'ST01-015#2',
-    version: 1,
+    version: 2,
     description:
       'White Base: Activate-Main pay 2 to deploy 1 Gundam (0 Units), Guncannon (1 Unit), or Guntank (2+ Units) token.',
+    timings: ['ACTIVATE_MAIN'],
+    cost: { resourceCost: 2 },
+    steps: [
+      {
+        action: 'DEPLOY_TOKEN',
+        count: 1,
+        name: 'White Base Token',
+        ap: 3,
+        hp: 3,
+        traits: ['White Base Team'],
+      },
+    ],
   },
 };
 

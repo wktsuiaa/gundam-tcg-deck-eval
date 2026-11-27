@@ -33,15 +33,15 @@ An optional multi-select set of card traits (matched with OR logic) used to anch
 _Avoid_: Series filter, Faction lock
 
 **Effect Clause**:
-A single triggered or activated ability unit on a card, scoped by a timing header or **Trigger Event** and composed of an optional **Link Requirement**, **Guard Condition**, activation cost, target selector, and ordered resolution steps.
+A single triggered or activated ability unit on a card, scoped by a timing header or **Trigger Event** and composed of an optional **Link Requirement**, **Guard Condition**, activation cost, target selector, and ordered resolution steps (including conditional *"instead"* upgrades).
 _Avoid_: Effect line, card rule, effect tag
 
 **Replacement Effect**:
-A rule on a card that intercepts a specific game event before it resolves and substitutes an altered or alternative outcome (for example, an *"instead"* or *"would be destroyed"* clause), applying at most once per event instance.
+A rule on a card that intercepts a specific game event before it resolves and substitutes a structured alternative outcome (for example, preventing damage or resting another permanent *"instead"*), applying at most once per event instance.
 _Avoid_: Interrupt trigger, prevent step, continuous redirect
 
 **Continuous Modifier**:
-A passive, state-evaluated rule active while its source remains in scope and its **Guard Condition** holds—such as stat adjustments, keyword or trait grants, cost reductions, or `"can't"` prohibitions.
+A passive, state-evaluated rule active while its source remains in scope and its **Guard Condition** holds—such as stat adjustments, keyword or trait grants, cost reductions, or `"can't"` prohibitions with structured source filters.
 _Avoid_: Static trigger, continuous clause, passive step
 
 **Trigger Event**:
@@ -73,7 +73,7 @@ A condition or friendly card requirement inside an **Effect Clause**—such as a
 _Avoid_: Generation Constraint, Trait Focus
 
 **Compiled Card Effect**:
-The pre-compiled, deterministic record for a unique card number containing its **Keyword Abilities**, **Effect Clauses**, **Effect Prerequisites**, and synergy profile derived offline from raw catalog prose.
+The pre-compiled, deterministic record for a unique card number containing its **Keyword Abilities**, lowered ability nodes, **Effect Prerequisites**, and synergy profile derived offline solely from structured syntax **Lowering**.
 _Avoid_: Effect cache, parsed effect JSON, runtime IR
 
 **Effect Shard**:
@@ -97,7 +97,7 @@ The Hexagon axis that replaced Tempo. It scores effect-driven damage, evasive or
 _Avoid_: Tempo, Aggro (Aggro scores raw curve and combat stats, not effect damage)
 
 **Lowering**:
-The offline pass that turns an **Effect Clause**'s Chevrotain concrete syntax tree into typed ability AST nodes stored in a **Compiled Card Effect**.
+The offline pass that parses normalized card prose with a context-free grammar into a concrete syntax tree and lowers every branch directly into typed ability nodes stored in a **Compiled Card Effect**, retaining raw line text for human debugging only.
 _Avoid_: Regex fallback, text parsing at runtime
 
 **Lowering Diagnostic**:

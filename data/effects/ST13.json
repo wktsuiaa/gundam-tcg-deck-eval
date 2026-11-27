@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST13",
   "cardCount": 16,
   "effects": {
@@ -14,7 +14,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Once per Turn】During your turn, when you pair a Pilot with one of your Units, deploy 1 to 2 [Bit / Funnel] Unit tokens.",
+          "raw": "【Once per Turn】During your turn, when you pair a Pilot with one of your Units, deploy 1 to 2 [Bit / Funnel]((Long-Range Weapon)<DOT>AP2<DOT>HP2<DOT>This Unit can't be paired with a Pilot or attack) Unit tokens.",
           "timings": [
             "WHEN_UNIT_PAIRED"
           ],
@@ -22,7 +22,7 @@
           "triggerEvent": {
             "kind": "WHEN_UNIT_PAIRED",
             "actor": "FRIENDLY",
-            "raw": "when you pair a Pilot with one of your Units"
+            "raw": "when you pair a Pilot with one of your Units ,"
           },
           "condition": {
             "kind": "IS_YOUR_TURN"
@@ -33,37 +33,25 @@
               "count": 1,
               "ap": 2,
               "hp": 2,
-              "name": "Bit / Funnel"
+              "name": "Bit / Funnel",
+              "traits": [
+                "Long-Range Weapon"
+              ]
             }
           ]
         },
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 1,
-          "raw": "【Activate･Main】【Once per Turn】①：Choose 1 of your Unit tokens and 1 enemy Unit. Begin a battle between them and only perform the damage step.",
+          "raw": "【Activate<DOT>Main】【Once per Turn】<RES_COST:1><COST_SEP>Choose 1 of your Unit tokens and 1 enemy Unit. Begin a battle between them and only perform the damage step.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": true,
           "cost": {
-            "raw": "①",
             "resourceCost": 1
           },
-          "steps": [
-            {
-              "action": "FORCE_BATTLE_DAMAGE_STEP",
-              "attacker": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              },
-              "defender": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ]
+          "steps": []
         }
       ],
       "synergy": {
@@ -83,7 +71,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Deploy】Deploy 1 [Bit / Funnel] Unit token.",
+          "raw": "【Deploy】Deploy 1 [Bit / Funnel]((Long-Range Weapon)<DOT>AP2<DOT>HP2<DOT>This Unit can't be paired with a Pilot or attack) Unit token.",
           "timings": [
             "DEPLOY"
           ],
@@ -94,7 +82,10 @@
               "count": 1,
               "ap": 2,
               "hp": 2,
-              "name": "Bit / Funnel"
+              "name": "Bit / Funnel",
+              "traits": [
+                "Long-Range Weapon"
+              ]
             }
           ]
         }
@@ -138,18 +129,16 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": false,
-              "trashRest": false
+              "count": 3,
+              "remainderPosition": "TOP"
             },
             {
               "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "position": "TOP",
               "target": {
                 "owner": "SELF",
-                "cardType": "CARD",
-                "zone": "DECK",
-                "count": 1
+                "self": true,
+                "cardType": "UNIT"
               }
             }
           ]
@@ -186,13 +175,11 @@
             {
               "action": "LOOK_TOP",
               "count": 5,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true
+              "action": "REVEAL_TOP",
+              "count": 1
             },
             {
               "action": "RETURN_TO_DECK",
@@ -229,10 +216,6 @@
             "ATTACK"
           ],
           "oncePerTurn": false,
-          "condition": {
-            "kind": "SELF_STATE",
-            "attackingTarget": "ENEMY_PLAYER"
-          },
           "steps": [
             {
               "action": "DEAL_DAMAGE",
@@ -248,27 +231,21 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 1,
-          "raw": "【Activate･Action】【Once per Turn】Rest 1 friendly Unit：Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it.",
+          "raw": "【Activate<DOT>Action】【Once per Turn】Rest 1 friendly Unit<COST_SEP>Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it.",
           "timings": [
             "ACTIVATE_ACTION"
           ],
           "oncePerTurn": true,
+          "cost": {},
           "steps": [
             {
-              "action": "REST",
+              "action": "DEAL_DAMAGE",
+              "amount": 1,
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "lvMax": 4
-              }
-            },
-            {
-              "action": "DEAL_DAMAGE",
-              "amount": 1,
-              "target": {
-                "owner": "ANY",
-                "count": 1
               }
             }
           ]
@@ -277,8 +254,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "DAMAGED_ENEMY_TARGET",
-          "RESTED_ENEMY_TARGET"
+          "DAMAGED_ENEMY_TARGET"
         ]
       },
       "prerequisites": []
@@ -294,7 +270,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】<Support 1>",
+          "raw": "【Activate<DOT>Main】<Support 1>",
           "timings": [
             "ACTIVATE_MAIN"
           ],
@@ -355,9 +331,8 @@
             {
               "action": "EXILE",
               "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 2
+                "owner": "ENEMY",
+                "count": 1
               }
             }
           ]
@@ -380,20 +355,24 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】【Once per Turn】Destroy 1 friendly Unit token：This Unit gains <Breach 3> during this turn.",
+          "raw": "【Activate<DOT>Main】【Once per Turn】Destroy 1 friendly Unit token<COST_SEP>This Unit gains <Breach 3> during this turn.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": true,
+          "cost": {},
           "steps": [
             {
-              "action": "DESTROY",
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "Breach",
+                "value": 3
+              },
+              "duration": "THIS_TURN",
               "target": {
                 "owner": "SELF",
                 "self": true,
-                "cardType": "UNIT_TOKEN",
-                "token": true,
-                "count": 1
+                "cardType": "UNIT"
               }
             }
           ]
@@ -439,13 +418,11 @@
             {
               "action": "LOOK_TOP",
               "count": 5,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true
+              "action": "REVEAL_TOP",
+              "count": 1
             },
             {
               "action": "RETURN_TO_DECK",
@@ -502,18 +479,18 @@
             "actor": "ENEMY",
             "targetKind": "UNIT",
             "targetFilter": {
-              "owner": "ANY",
+              "owner": "ENEMY",
+              "cardType": "UNIT",
               "count": 1
             },
             "damageType": "EFFECT",
             "whileAttacking": true,
-            "raw": "When an enemy Unit is destroyed with effect damage"
+            "raw": "When an enemy Unit is destroyed with effect damage while this Unit is attacking ,"
           },
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -537,7 +514,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Main】Deploy 1 to 2 [Bit / Funnel] Unit tokens.",
+          "raw": "【Main】Deploy 1 to 2 [Bit / Funnel]((Long-Range Weapon)<DOT>AP2<DOT>HP2<DOT>This Unit can't be paired with a Pilot or attack) Unit tokens.",
           "timings": [
             "MAIN"
           ],
@@ -548,7 +525,10 @@
               "count": 1,
               "ap": 2,
               "hp": 2,
-              "name": "Bit / Funnel"
+              "name": "Bit / Funnel",
+              "traits": [
+                "Long-Range Weapon"
+              ]
             }
           ]
         },
@@ -601,19 +581,9 @@
                 {
                   "action": "LOOK_TOP",
                   "count": 4,
-                  "revealSearch": false,
-                  "trashRest": false
+                  "remainderPosition": "TOP"
                 }
               ]
-            },
-            {
-              "action": "DEPLOY_FROM_TOP_DECK",
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 4
-              }
             },
             {
               "action": "RETURN_TO_DECK",
@@ -724,7 +694,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 1,
-          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, deploy 1 [Bit / Funnel] Unit token.",
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, deploy 1 [Bit / Funnel]((Long-Range Weapon)<DOT>AP2<DOT>HP2<DOT>This Unit can't be paired with a Pilot or attack) Unit token.",
           "timings": [
             "DEPLOY"
           ],
@@ -739,7 +709,10 @@
               "count": 1,
               "ap": 2,
               "hp": 2,
-              "name": "Bit / Funnel"
+              "name": "Bit / Funnel",
+              "traits": [
+                "Long-Range Weapon"
+              ]
             }
           ]
         }

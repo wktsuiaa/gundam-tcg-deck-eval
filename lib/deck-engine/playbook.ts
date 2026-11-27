@@ -50,9 +50,11 @@ export function generateDeckPlaybook(
 
   const traitCombos: DetectedCombo[] = [];
   for (const { card } of mainExpanded) {
-    const m = card.effect.match(/\(([A-Za-z0-9 '&-]+)\)\s*Unit/i);
-    if (m) {
-      const targetTrait = m[1].trim();
+    const unitTraitPrereq = card.compiledEffect?.prerequisites.find(
+      (p) => p.kind === 'TRAIT' && (p.trait || p.anyTraits?.[0]) && (!p.cardType || p.cardType === 'UNIT')
+    );
+    const targetTrait = unitTraitPrereq?.trait ?? unitTraitPrereq?.anyTraits?.[0];
+    if (targetTrait) {
       const partners = units
         .map((x) => x.card)
         .filter(

@@ -174,6 +174,7 @@ export type EffectCondition =
       kind: 'SELF_STATE';
       color?: CardColor;
       traits?: string[];
+      linked?: boolean;
       paired?: boolean;
       pairedPilotLvMax?: number;
       damaged?: boolean;
@@ -214,8 +215,7 @@ export type EffectCondition =
       other?: boolean;
     }
   | { kind: 'EX_RESOURCE_USED_TO_PLAY' }
-  | { kind: 'PHASE_AT_START_OF_OPPONENT_TURN' }
-  | { kind: 'RAW_CONDITION'; text: string };
+  | { kind: 'PHASE_AT_START_OF_OPPONENT_TURN' };
 
 export interface ActivationCost {
   resourceCost?: number;
@@ -260,7 +260,15 @@ export type EffectStep =
   | { action: 'GRANT_TRAIT'; traits: string[]; duration?: EffectDuration; target: TargetSelector }
   | { action: 'GRANT_PILOT_MODE'; pilotName: string }
   | { action: 'NAME_ALIAS'; alias: string }
-  | { action: 'DAMAGE_PROOF'; summary: string; amount?: number; maxDamage?: number; damageType?: 'BATTLE' | 'EFFECT' | 'ANY'; duration?: EffectDuration; target?: TargetSelector }
+  | {
+      action: 'DAMAGE_PROOF';
+      amount?: number;
+      maxDamage?: number;
+      damageType?: 'BATTLE' | 'EFFECT' | 'ANY';
+      duration?: EffectDuration;
+      target?: TargetSelector;
+      sourceFilter?: TargetSelector;
+    }
   | { action: 'ADD_RESOURCE'; count: number; ex?: boolean; rested?: boolean }
   | { action: 'PAY_RESOURCE'; amount: number; optional?: boolean }
   | { action: 'COST_REDUCTION'; amount: number; lvDelta?: number; zone?: 'HAND' | 'TRASH'; perTarget?: ScaleMetric; exactCost?: number; exactLv?: number }
@@ -274,7 +282,27 @@ export type EffectStep =
   | { action: 'FORCE_BATTLE_DAMAGE_STEP'; attacker: TargetSelector; defender: TargetSelector }
   | { action: 'MODIFY_DAMAGE_DEALT'; delta: number; sourceFilter?: TargetSelector; targetFilter?: TargetSelector; duration?: EffectDuration }
   | { action: 'COUNT_UNITS'; target: TargetSelector; plusSelf?: boolean }
-  | { action: 'RESTRICTION'; rule: 'CANT_BE_PAIRED' | 'CANT_SET_ACTIVE' | 'CANT_BE_RESTED' | 'CAN_ATTACK_TURN_DEPLOYED' | 'ONLY_ATTACK_WHEN_DEPLOYED' | 'DEPLOYED_RESTED' | 'INSTEAD_REST_TARGET' | 'CANT_ACTIVATE_BLOCKER'; target: TargetSelector; duration?: EffectDuration; summary: string }
+  | {
+      action: 'RESTRICTION';
+      rule:
+        | 'CANT_BE_PAIRED'
+        | 'CANT_SET_ACTIVE'
+        | 'CANT_BE_RESTED'
+        | 'CAN_ATTACK_TURN_DEPLOYED'
+        | 'ONLY_ATTACK_WHEN_DEPLOYED'
+        | 'DEPLOYED_RESTED'
+        | 'INSTEAD_REST_TARGET'
+        | 'CANT_ACTIVATE_BLOCKER'
+        | 'CANT_BE_DESTROYED'
+        | 'CANT_BE_CHOSEN'
+        | 'CANT_BLOCK'
+        | 'CANT_CHOOSE_ENEMY_PLAYER'
+        | 'CANT_ATTACK'
+        | 'CANT_REDUCE_AP';
+      target: TargetSelector;
+      sourceFilter?: TargetSelector;
+      duration?: EffectDuration;
+    }
   | { action: 'IF_CONDITION'; condition: EffectCondition; thenSteps: EffectStep[]; elseSteps?: EffectStep[]; replacesPrevious?: boolean }
   | { action: 'IF_PREVIOUS_SUCCEEDED'; negated?: boolean; filter?: { count?: number; lvMin?: number; cardType?: string; traits?: string[]; drawAccepted?: boolean; placedFromDeck?: boolean }; thenSteps: EffectStep[] }
   | { action: 'GRANT_CLAUSE'; clause: EffectClause; duration?: EffectDuration; target: TargetSelector };
@@ -296,13 +324,6 @@ export interface EffectClause {
   cost?: ActivationCost;
   condition?: EffectCondition;
   steps: EffectStep[];
-  unparsedResidual: string;
-}
-
-export interface ParsedCardEffects {
-  cardNo: string;
-  keywords: KeywordAbility[];
-  clauses: EffectClause[];
 }
 
 export interface CompiledCardEffect {
@@ -318,7 +339,7 @@ export interface CompiledCardEffect {
 }
 
 export interface EffectShardFile {
-  schemaVersion: 1;
+  schemaVersion: 2;
   setPrefix: string;
   cardCount: number;
   effects: Record<string, CompiledCardEffect>;

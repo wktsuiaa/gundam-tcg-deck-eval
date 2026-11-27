@@ -63,6 +63,10 @@ export function effectStyleOfStep(step: EffectStep): EffectStyleTag | undefined 
       return 'Link / Synergy';
     case 'GRANT_KEYWORD':
       return effectStyleOfKeyword(step.keyword.name);
+    case 'RESTRICTION':
+      return step.target.owner === 'ENEMY' ? 'Removal / Disrupt' : 'Board / Deploy';
+    case 'REDIRECT_ATTACK_TARGET':
+      return step.rule === 'MUST_ATTACK_TARGET' ? 'Removal / Disrupt' : 'Board / Deploy';
     default:
       return undefined;
   }
@@ -247,7 +251,15 @@ export function scoreSingleCardSignals(card: GundamCardPrint): CardSignalScores 
   ) {
     control += 14;
   }
-  if (hasStep((s) => s.action === 'CANT_ATTACK')) control += 16 * gateMult;
+  if (hasStep((s) => s.action === 'CANT_ATTACK' || (s.action === 'RESTRICTION' && s.target.owner === 'ENEMY'))) {
+    control += 16 * gateMult;
+  }
+  if (hasStep((s) => s.action === 'RESTRICTION' && s.target.owner === 'SELF')) {
+    defense += 14;
+  }
+  if (hasStep((s) => s.action === 'REDIRECT_ATTACK_TARGET')) {
+    defense += 16;
+  }
 
   return {
     aggro: clamp(aggro),

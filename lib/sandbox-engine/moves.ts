@@ -5,17 +5,51 @@ import { checkCondition } from './conditions';
 import { canPayActivationCost, payActivationCost, resolveClause, resolveClausesForTiming, resolveStartOfTurn } from './effects';
 import { cloneState, destroyUnit } from './match-state';
 import { matchesCardSelector } from './targeting';
-import { EMPTY_PARSED_EFFECTS, effectiveAp, effectiveRemainingHp, unitHasKeyword, unitKeywordValue } from './unit-stats';
+import { EMPTY_PARSED_EFFECTS, effectiveAp, effectiveRemainingHp, unitHasKeyword, unitHasProhibition, unitKeywordValue } from './unit-stats';
 
-export function canPayCard(player: SandboxPlayerState, card: GundamCardPrint): boolean {
+export function effectivePlayCost(card: GundamCardPrint, state?: SandboxMatchState, side?: SandboxSide): number {
+  let cost = card.cost ?? 0;
+  if (!state || !side) return Math.max(0, cost);
+  const parsed = card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
+  for (const ab of parsed.abilities) {
+    if (ab.kind !== 'CONTINUOUS_MODIFIER' || ab.layer !== 3 || ab.modifier.type !== 'COST_REDUCTION') continue;
+    if (ab.activeIn !== 'HAND' && ab.activeIn !== 'ANY') continue;
+    if (!checkCondition(ab.condition, state, side)) continue;
+    let factor = 1;
+    if (ab.modifier.perTarget) {
+      const f = ab.modifier.perTarget.metric === 'BOARD_UNIT_COUNT'
+        ? state.players[ab.modifier.perTarget.owner === 'ENEMY' ? (side === 'A' ? 'B' : 'A') : side].battleArea.filter((u) => {
+            if (ab.modifier.type !== 'COST_REDUCTION' || !ab.modifier.perTarget?.traits?.length) return true;
+            return ab.modifier.perTarget.traits.some((tr) => u.card.traits.some((t) => t.toLowerCase() === tr.toLowerCase()));
+          }).length
+        : 1;
+      factor = f;
+    }
+    cost -= ab.modifier.amount * factor;
+  }
+  return Math.max(0, cost);
+}
+
+export function canPayCard(
+  player: SandboxPlayerState,
+  card: GundamCardPrint,
+  state?: SandboxMatchState,
+  side?: SandboxSide
+): boolean {
   const lvReq = card.lv ?? 1;
-  const costReq = card.cost ?? 0;
+  const costReq = effectivePlayCost(card, state, side);
   return player.resourcesTotal >= lvReq && player.resourcesActive >= costReq;
 }
 
-export function canUnitAttack(unit: SandboxUnitInstance, currentTurn: number): boolean {
-  if (unit.rested || effectiveAp(unit) <= 0) return false;
+export function canUnitAttack(
+  unit: SandboxUnitInstance,
+  currentTurn: number,
+  state?: SandboxMatchState,
+  side?: SandboxSide
+): boolean {
+  if (unit.rested || effectiveAp(unit, state, side) <= 0) return false;
   if (unit.summonedTurn === currentTurn && !unit.isLinked) return false;
+  if (unitHasProhibition(unit, 'CANT_ATTACK', state, side)) return false;
   return true;
 }
 
@@ -61,9 +95,9 @@ export function applySandboxMove(
 
   if (move.actionType === 'DEPLOY_UNIT' && move.card) {
     const handIdx = player.hand.findIndex((c) => c.printId === move.card!.printId);
-    if (handIdx !== -1 && canPayCard(player, move.card) && player.battleArea.length < 6) {
+    if (handIdx !== -1 && canPayCard(player, move.card, next, side) && player.battleArea.length < 6) {
       const [card] = player.hand.splice(handIdx, 1);
-      player.resourcesActive -= card.cost ?? 0;
+      player.resourcesActive -= effectivePlayCost(card, next, side);
       const instance: SandboxUnitInstance = {
         instanceId: `unit-${side}-${next.turn}-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
         card,
@@ -84,9 +118,9 @@ export function applySandboxMove(
   } else if (move.actionType === 'PAIR_PILOT' && move.card && move.unitInstanceId) {
     const handIdx = player.hand.findIndex((c) => c.printId === move.card!.printId);
     const unit = player.battleArea.find((u) => u.instanceId === move.unitInstanceId);
-    if (handIdx !== -1 && unit && !unit.pairedPilot && canPayCard(player, move.card)) {
+    if (handIdx !== -1 && unit && !unit.pairedPilot && canPayCard(player, move.card, next, side)) {
       const [pilot] = player.hand.splice(handIdx, 1);
-      player.resourcesActive -= pilot.cost ?? 0;
+      player.resourcesActive -= effectivePlayCost(pilot, next, side);
       unit.pairedPilot = pilot;
       unit.isLinked = doesPilotLinkUnit(pilot, unit.card);
       const effNotes = [
@@ -100,14 +134,16 @@ export function applySandboxMove(
           : []),
       ];
       summary = `${unit.isLinked ? 'Linked' : 'Paired'} ${pilot.name} onto ${unit.card.name} (${effectiveAp(
-        unit
-      )}/${effectiveRemainingHp(unit)})${effNotes.length > 0 ? ` — ${effNotes.join(', ')}` : ''}.`;
+        unit,
+        next,
+        side
+      )}/${effectiveRemainingHp(unit, next, side)})${effNotes.length > 0 ? ` — ${effNotes.join(', ')}` : ''}.`;
     }
   } else if (move.actionType === 'DEPLOY_BASE' && move.card) {
     const handIdx = player.hand.findIndex((c) => c.printId === move.card!.printId);
-    if (handIdx !== -1 && canPayCard(player, move.card)) {
+    if (handIdx !== -1 && canPayCard(player, move.card, next, side)) {
       const [baseCard] = player.hand.splice(handIdx, 1);
-      player.resourcesActive -= baseCard.cost ?? 0;
+      player.resourcesActive -= effectivePlayCost(baseCard, next, side);
       if (player.base) player.trash.push(player.base);
       player.base = baseCard;
       player.baseDamage = 0;
@@ -118,9 +154,9 @@ export function applySandboxMove(
     }
   } else if (move.actionType === 'PLAY_COMMAND' && move.card) {
     const handIdx = player.hand.findIndex((c) => c.printId === move.card!.printId);
-    if (handIdx !== -1 && canPayCard(player, move.card)) {
+    if (handIdx !== -1 && canPayCard(player, move.card, next, side)) {
       const [cmd] = player.hand.splice(handIdx, 1);
-      player.resourcesActive -= cmd.cost ?? 0;
+      player.resourcesActive -= effectivePlayCost(cmd, next, side);
       player.trash.push(cmd);
       const effNotes = resolveClausesForTiming(next, side, cmd, 'MAIN', undefined, move.targetInstanceId);
       summary = `Played Command ${cmd.name}${effNotes.length > 0 ? ` — ${effNotes.join(', ')}` : ''}.`;
@@ -141,7 +177,11 @@ export function applySandboxMove(
     }
   } else if (move.actionType === 'ATTACK_SHIELD' && move.unitInstanceId) {
     const attacker = player.battleArea.find((u) => u.instanceId === move.unitInstanceId);
-    if (attacker && canUnitAttack(attacker, next.turn)) {
+    if (
+      attacker &&
+      canUnitAttack(attacker, next.turn, next, side) &&
+      !unitHasProhibition(attacker, 'CANT_CHOOSE_ENEMY_PLAYER', next, side)
+    ) {
       attacker.rested = true;
       const combatNotes: string[] = [];
       combatNotes.push(...resolveClausesForTiming(next, side, attacker.card, 'ATTACK', attacker, move.targetInstanceId));
@@ -151,7 +191,13 @@ export function applySandboxMove(
 
       const highManeuver = unitHasKeyword(attacker, 'High-Maneuver', next, side);
       const blocker = !highManeuver
-        ? opponent.battleArea.find((u) => !u.rested && unitHasKeyword(u, 'Blocker', next, oppSide))
+        ? opponent.battleArea.find(
+            (u) =>
+              !u.rested &&
+              unitHasKeyword(u, 'Blocker', next, oppSide) &&
+              !unitHasProhibition(u, 'CANT_ACTIVATE_BLOCKER', next, oppSide) &&
+              !unitHasProhibition(u, 'CANT_BLOCK', next, oppSide)
+          )
         : undefined;
 
       if (blocker) {
@@ -166,7 +212,7 @@ export function applySandboxMove(
         const firstStrike = unitHasKeyword(attacker, 'First Strike', next, side);
 
         blocker.damage += atkAp;
-        const blkDied = effectiveRemainingHp(blocker) <= 0;
+        const blkDied = effectiveRemainingHp(blocker, next, oppSide) <= 0;
         if (blkDied) {
           destroyUnit(next, oppSide, blocker.instanceId, true);
           combatNotes.push(
@@ -183,7 +229,7 @@ export function applySandboxMove(
         }
         if (!(firstStrike && blkDied)) {
           attacker.damage += blkAp;
-          if (effectiveRemainingHp(attacker) <= 0) {
+          if (effectiveRemainingHp(attacker, next, side) <= 0) {
             destroyUnit(next, side, attacker.instanceId, true);
             combatNotes.push(
               ...resolveClausesForTiming(next, oppSide, blocker.card, 'WHEN_DESTROY_BY_BATTLE', blocker, undefined, true, 'UNIT')
@@ -240,7 +286,7 @@ export function applySandboxMove(
   } else if (move.actionType === 'ATTACK_UNIT' && move.unitInstanceId && move.targetInstanceId) {
     const attacker = player.battleArea.find((u) => u.instanceId === move.unitInstanceId);
     const defender = opponent.battleArea.find((u) => u.instanceId === move.targetInstanceId);
-    if (attacker && defender && canUnitAttack(attacker, next.turn) && defender.rested) {
+    if (attacker && defender && canUnitAttack(attacker, next.turn, next, side) && defender.rested) {
       attacker.rested = true;
       const combatNotes: string[] = [];
       combatNotes.push(...resolveClausesForTiming(next, side, attacker.card, 'ATTACK', attacker, defender.instanceId));
@@ -257,7 +303,7 @@ export function applySandboxMove(
       const firstStrike = unitHasKeyword(attacker, 'First Strike', next, side);
 
       defender.damage += atkAp;
-      const defDied = effectiveRemainingHp(defender) <= 0;
+      const defDied = effectiveRemainingHp(defender, next, oppSide) <= 0;
       if (defDied) {
         destroyUnit(next, oppSide, defender.instanceId, true);
         combatNotes.push(
@@ -274,7 +320,7 @@ export function applySandboxMove(
       }
       if (!(firstStrike && defDied)) {
         attacker.damage += defAp;
-        if (effectiveRemainingHp(attacker) <= 0) {
+        if (effectiveRemainingHp(attacker, next, side) <= 0) {
           destroyUnit(next, side, attacker.instanceId, true);
           combatNotes.push(
             ...resolveClausesForTiming(next, oppSide, defender.card, 'WHEN_DESTROY_BY_BATTLE', defender, undefined, true, 'UNIT')

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST09",
   "cardCount": 10,
   "effects": {
@@ -14,13 +14,12 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】②, return this Unit to the bottom of its owner's deck：Choose 1 Unit card with \"Impulse Gundam\" in its card name that is Lv.4 or higher from your trash. Deploy it.",
+          "raw": "【Activate<DOT>Main】<RES_COST:2>, return this Unit to the bottom of its owner's deck<COST_SEP>Choose 1 Unit card with \"Impulse Gundam\" in its card name that is Lv.4 or higher from your trash. Deploy it.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "②, return this Unit to the bottom of its owner's deck",
             "resourceCost": 2,
             "returnSelfToDeckBottom": true
           },
@@ -28,7 +27,6 @@
             {
               "action": "DEPLOY_FROM_TRASH",
               "free": true,
-              "rested": false,
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
@@ -439,8 +437,7 @@
                 {
                   "action": "LOOK_TOP",
                   "count": 2,
-                  "revealSearch": false,
-                  "trashRest": false
+                  "remainderPosition": "TOP"
                 }
               ]
             },

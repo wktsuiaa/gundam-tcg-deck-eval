@@ -1,7 +1,7 @@
 import type { DeckEntry, DeckRecommendation, GundamCardPrint, HexagonAxes, StrategyBlueprint, TacticalStyleTag } from '@/types/gundam';
 import { doesPilotLinkUnit, extractPilotNamesForLink, isCommandPilot } from '@/lib/gundam-keywords';
 import { type EffectPrerequisite, type SynergyNodeKey } from '@/lib/effect-parser';
-import { CardSignalScores, scoreSingleCardSignals } from './card-signals';
+import { CardSignalScores, collectLoweredSteps, scoreSingleCardSignals } from './card-signals';
 import { blendTargetHexagon, filterPoolByConstraints } from './constraints';
 import { EMPTY_SYNERGY, clamp } from './shared';
 import { normalizeTraitFocus } from './strategy-meta';
@@ -328,11 +328,18 @@ export function rankCandidatesForStrategy(
       }
     }
 
-    // Trait-tutoring bonus: e.g. "(Zeon) Unit" in effect text matching deck traits
-    const traitRef = card.effect.match(/\(([A-Za-z0-9 '&-]+)\)\s*Unit/i);
-    if (traitRef && (deckTraitFreq.get(traitRef[1].trim().toLowerCase()) ?? 0) >= 2) {
+    // Trait-tutoring bonus from compiled AST prerequisites & step targets (never prose regex)
+    const unitTraitPrereq =
+      card.compiledEffect?.prerequisites.find(
+        (p) => p.kind === 'TRAIT' && (p.trait || p.anyTraits?.[0]) && (!p.cardType || p.cardType === 'UNIT')
+      ) ?? null;
+    const stepTrait = collectLoweredSteps(card)
+      .steps.map((x) => ('target' in x.step ? x.step.target?.trait ?? x.step.target?.traits?.[0] : undefined))
+      .find(Boolean);
+    const refTrait = unitTraitPrereq?.trait ?? unitTraitPrereq?.anyTraits?.[0] ?? stepTrait;
+    if (refTrait && (deckTraitFreq.get(refTrait.toLowerCase()) ?? 0) >= 2) {
       coherenceScore += 20;
-      reasons.push(`Buffs/searches (${traitRef[1].trim()}) formation`);
+      reasons.push(`Buffs/searches (${refTrait}) formation`);
     }
 
     // Pilot–Unit Linkage coherence (explicitly counts live Link pairs in deck or eligible pool)

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST02",
   "cardCount": 16,
   "effects": {
@@ -28,10 +28,7 @@
             "target": {
               "owner": "SELF",
               "self": true,
-              "cardType": "UNIT",
-              "count": 1,
-              "state": "ACTIVE",
-              "lvMax": 4
+              "cardType": "UNIT"
             }
           }
         }
@@ -62,8 +59,7 @@
             {
               "action": "ADD_RESOURCE",
               "count": 1,
-              "ex": true,
-              "rested": false
+              "ex": true
             }
           ]
         }
@@ -101,7 +97,7 @@
               "count": 1
             },
             "damageType": "BATTLE",
-            "raw": "when this Unit destroys an enemy Unit with battle damage"
+            "raw": "when this Unit destroys an enemy Unit with battle damage ,"
           },
           "condition": {
             "kind": "IS_YOUR_TURN"
@@ -167,13 +163,12 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】【Once per Turn】④：Set this Unit as active.",
+          "raw": "【Activate<DOT>Main】【Once per Turn】<RES_COST:4><COST_SEP>Set this Unit as active.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": true,
           "cost": {
-            "raw": "④",
             "resourceCost": 4
           },
           "steps": [
@@ -274,16 +269,6 @@
           "raw": "【During Link】This Unit gets AP+1 and HP+1.",
           "layer": 3,
           "activeIn": "BATTLE_AREA",
-          "requiresLink": {
-            "role": "PILOT_MATCHING_UNIT",
-            "names": [
-              "Heero Yuy"
-            ],
-            "traits": [
-              "Operation Meteor"
-            ],
-            "raw": "[Heero Yuy]"
-          },
           "duration": "CONTINUOUS",
           "modifier": {
             "type": "MODIFY_STAT",
@@ -294,6 +279,16 @@
               "self": true,
               "cardType": "UNIT"
             }
+          },
+          "requiresLink": {
+            "role": "PILOT_MATCHING_UNIT",
+            "names": [
+              "Heero Yuy"
+            ],
+            "traits": [
+              "Operation Meteor"
+            ],
+            "raw": "[Heero Yuy]"
           }
         }
       ],
@@ -360,7 +355,7 @@
               "count": 1
             },
             "damageType": "BATTLE",
-            "raw": "when this Unit destroys an enemy Unit with battle damage"
+            "raw": "when this Unit destroys an enemy Unit with battle damage ,"
           },
           "linkRequirement": {
             "role": "PILOT_MATCHING_UNIT",
@@ -378,8 +373,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -475,9 +469,20 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "During this battle, your shield area cards can't receive damage from enemy Units that are Lv.4 or lower.",
               "damageType": "ANY",
-              "duration": "THIS_BATTLE"
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "SHIELD",
+                "count": 1,
+                "zone": "SHIELD"
+              },
+              "sourceFilter": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 4
+              }
             }
           ]
         },
@@ -589,8 +594,7 @@
             {
               "action": "LOOK_TOP",
               "count": 2,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             }
           ]
         }
@@ -626,7 +630,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 1,
-          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, deploy 1 [Tallgeese]((OZ)･AP4･HP2) Unit token. If it is your turn and a card with \"Corsica Base\" in its card name is in your trash, deploy 2 [Leo]((OZ)･AP1･HP1) Unit tokens instead.",
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, deploy 1 [Tallgeese]((OZ)<DOT>AP4<DOT>HP2) Unit token. If it is your turn and a card with \"Corsica Base\" in its card name is in your trash, deploy 2 [Leo]((OZ)<DOT>AP1<DOT>HP1) Unit tokens instead.",
           "timings": [
             "DEPLOY"
           ],
@@ -649,25 +653,31 @@
                   "hp": 2,
                   "name": "Tallgeese",
                   "traits": [
-                    "(OZ"
+                    "OZ"
                   ]
                 }
               ]
             },
             {
-              "action": "DEPLOY_TOKEN",
-              "count": 2,
-              "ap": 1,
-              "hp": 1,
-              "name": "Leo",
-              "traits": [
-                "(OZ"
-              ]
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "IS_YOUR_TURN"
+              },
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_TOKEN",
+                  "count": 2,
+                  "ap": 1,
+                  "hp": 1,
+                  "name": "Leo",
+                  "traits": [
+                    "OZ"
+                  ]
+                }
+              ],
+              "replacesPrevious": true
             }
-          ],
-          "insteadUpgrade": {
-            "rawUpgrade": "deploy 1 [Tallgeese]((OZ)<DOT>AP4<DOT>HP2) Unit token. If it is your turn and a card with \"Corsica Base\" in its card name is in your trash, deploy 2 [Leo]((OZ)<DOT>AP1<DOT>HP1) Unit tokens instead"
-          }
+          ]
         }
       ],
       "synergy": {

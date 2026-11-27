@@ -212,7 +212,6 @@ export function checkCondition(
     case 'EX_RESOURCE_USED_TO_PLAY':
     case 'PHASE_AT_START_OF_OPPONENT_TURN':
     case 'DEVELOPMENT_EXILE':
-    case 'RAW_CONDITION':
       if (unsimulated) unsimulated.hit = true;
       return false;
   }

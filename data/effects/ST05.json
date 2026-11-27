@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST05",
   "cardCount": 15,
   "effects": {
@@ -122,13 +122,12 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】Rest this Unit：Choose 1 of your Units. Deal 1 damage to it. It gets AP+1 during this turn.",
+          "raw": "【Activate<DOT>Main】Rest this Unit<COST_SEP>Choose 1 of your Units. Deal 1 damage to it. It gets AP+1 during this turn.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "Rest this Unit",
             "restSelf": true
           },
           "steps": [
@@ -395,7 +394,7 @@
               "count": 1
             },
             "damageType": "BATTLE",
-            "raw": "when this Unit destroys an enemy Unit with battle damage"
+            "raw": "when this Unit destroys an enemy Unit with battle damage ,"
           },
           "linkRequirement": {
             "role": "PILOT_MATCHING_UNIT",
@@ -678,13 +677,12 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 2,
-          "raw": "【Activate･Main】Rest this Base：Choose 1 of your damaged Units. It gets AP+2 during this turn.",
+          "raw": "【Activate<DOT>Main】Rest this Base<COST_SEP>Choose 1 of your damaged Units. It gets AP+2 during this turn.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "Rest this Base",
             "restSelf": true
           },
           "steps": [

@@ -37,7 +37,7 @@ export function CardDetailDrawer({
     group.variants.find((v) => v.printId === selectedPrintId) ?? group.primary;
 
   const colorMeta = CARD_COLOR_META[activeCard.color] ?? CARD_COLOR_META.Colorless;
-  const keywords = useMemo(() => extractCardKeywords(activeCard.effect), [activeCard.effect]);
+  const keywords = useMemo(() => extractCardKeywords(activeCard), [activeCard]);
 
   const linkPartners = useMemo(() => {
     const baseByNo = new Map<string, GundamCardPrint>();

@@ -71,7 +71,7 @@ async function main() {
     for (const [prefix, group] of byPrefix.entries()) {
       const shardPath = path.join(EFFECTS_DIR, `${prefix}.json`);
       const expected: EffectShardFile = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         setPrefix: prefix,
         cardCount: group.size,
         effects: Object.fromEntries([...group.entries()]),
@@ -105,7 +105,7 @@ async function main() {
       throw new Error(`Unsafe effect shard path: ${prefix}`);
     }
     const shard: EffectShardFile = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       setPrefix: prefix,
       cardCount: group.size,
       effects: Object.fromEntries([...group.entries()]),

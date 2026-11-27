@@ -1,93 +1,10 @@
-import { CstParser, Lexer, createToken, type IToken } from 'chevrotain';
-import { parseKeywordTag } from './lift.ts';
+import { BracketName, Colon, Comma, CostSep, KeywordTag, KwAt, KwDuring, KwIf, KwThen, KwWhile, Period, Slash, TimingTag } from './tokens.ts';
+import { GundamPhraseParser } from './grammar-phrases.ts';
+export { GundamLexer } from './tokens.ts';
 
-export const WhiteSpace = createToken({
-  name: 'WhiteSpace',
-  pattern: /[ \t\r\n]+/,
-  group: Lexer.SKIPPED,
-});
-
-export const TimingTag = createToken({ name: 'TimingTag', pattern: /【[^】]+】/ });
-
-export const ResCostTag = createToken({ name: 'ResCostTag', pattern: /<RES_COST:\d+>/ });
-
-export const CostSep = createToken({ name: 'CostSep', pattern: /<COST_SEP>/ });
-
-export const DotSep = createToken({ name: 'DotSep', pattern: /<DOT>/ });
-
-export const KeywordTag = createToken({ name: 'KeywordTag', pattern: /<[^<>]+>/ });
-
-export const BracketName = createToken({ name: 'BracketName', pattern: /\[[^\[\]]+\]/ });
-
-export const ParenToken = createToken({
-  name: 'ParenToken',
-  pattern: /\((?:[^()]+|\([^()]*\))*\)/,
-});
-
-export const QuotedStr = createToken({ name: 'QuotedStr', pattern: /"[^"]*"/ });
-
-export const KwWould = createToken({ name: 'KwWould', pattern: /\bwould\b/i });
-
-export const KwInstead = createToken({ name: 'KwInstead', pattern: /\binstead\b/i });
-
-export const KwCant = createToken({ name: 'KwCant', pattern: /\b(?:can't|cannot)\b/i });
-
-export const KwDoesnt = createToken({ name: 'KwDoesnt', pattern: /\bdoesn't\b/i });
-
-export const KwWhen = createToken({ name: 'KwWhen', pattern: /\b(?:When|Whenever)\b/i });
-
-export const KwIf = createToken({ name: 'KwIf', pattern: /\bIf\b/ });
-
-export const KwDuring = createToken({ name: 'KwDuring', pattern: /\bDuring\b/ });
-
-export const KwWhile = createToken({ name: 'KwWhile', pattern: /\bWhile\b/ });
-
-export const KwAt = createToken({ name: 'KwAt', pattern: /\bAt\b/ });
-
-export const Slash = createToken({ name: 'Slash', pattern: /\// });
-
-export const Comma = createToken({ name: 'Comma', pattern: /,/ });
-
-export const Period = createToken({ name: 'Period', pattern: /\./ });
-
-export const Colon = createToken({ name: 'Colon', pattern: /:/ });
-
-export const NumberTok = createToken({ name: 'NumberTok', pattern: /[+-]?\d+/ });
-
-export const WordTok = createToken({ name: 'WordTok', pattern: /[^\s,./:【】<>[\]()"]+/ });
-
-export const ALL_TOKENS = [
-  WhiteSpace,
-  TimingTag,
-  ResCostTag,
-  CostSep,
-  DotSep,
-  KeywordTag,
-  BracketName,
-  ParenToken,
-  QuotedStr,
-  KwWould,
-  KwInstead,
-  KwCant,
-  KwDoesnt,
-  KwWhen,
-  KwIf,
-  KwDuring,
-  KwWhile,
-  KwAt,
-  Slash,
-  Comma,
-  Period,
-  Colon,
-  NumberTok,
-  WordTok,
-];
-
-export const GundamLexer = new Lexer(ALL_TOKENS);
-
-export class GundamClauseCstParser extends CstParser {
+export class GundamClauseCstParser extends GundamPhraseParser {
   constructor() {
-    super(ALL_TOKENS, { recoveryEnabled: false });
+    super();
     this.performSelfAnalysis();
   }
 
@@ -121,190 +38,220 @@ export class GundamClauseCstParser extends CstParser {
   });
 
   private replacementUnit = this.RULE('replacementUnit', () => {
-    this.MANY(() => {
-      this.SUBRULE(this.timingPrefix);
+    this.MANY(() => this.SUBRULE(this.timingPrefix));
+    this.OPTION({
+      GATE: () => this.startsWithTurnPhaseLead(),
+      DEF: () => this.SUBRULE(this.turnPhaseLead),
     });
-    this.MANY2(() => {
-      this.OR([
-        { ALT: () => this.CONSUME(KwWould) },
-        { ALT: () => this.CONSUME(KwInstead) },
-        { ALT: () => this.CONSUME(KwDoesnt) },
-        { ALT: () => this.CONSUME(KwWhen) },
-        { ALT: () => this.CONSUME(KwIf) },
-        { ALT: () => this.CONSUME(KwDuring) },
-        { ALT: () => this.CONSUME(KwWhile) },
-        { ALT: () => this.CONSUME(KwAt) },
-        { ALT: () => this.SUBRULE(this.clauseBodyAtom) },
-      ]);
+    this.OPTION2({
+      GATE: () => this.startsWithWhenTrigger(),
+      DEF: () => this.SUBRULE(this.whenTriggerClause),
     });
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.sentenceUnit));
   });
 
   private continuousUnit = this.RULE('continuousUnit', () => {
-    this.MANY(() => {
-      this.SUBRULE(this.timingPrefix);
+    this.MANY(() => this.SUBRULE(this.timingPrefix));
+    this.OPTION({
+      GATE: () => this.startsWithTurnPhaseLead(),
+      DEF: () => this.SUBRULE(this.turnPhaseLead),
     });
-    this.AT_LEAST_ONE(() => {
-      this.OR([
-        { ALT: () => this.CONSUME(KwCant) },
-        { ALT: () => this.CONSUME(KwIf) },
-        { ALT: () => this.CONSUME(KwDuring) },
-        { ALT: () => this.CONSUME(KwWhile) },
-        { ALT: () => this.CONSUME(KwAt) },
-        { ALT: () => this.CONSUME(KwWhen) },
-        { ALT: () => this.SUBRULE(this.clauseBodyAtom) },
-      ]);
+    this.OPTION2({
+      GATE: () => this.startsWithGuardCondition(),
+      DEF: () => this.SUBRULE(this.guardCondition),
     });
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.continuousSentence));
+  });
+
+  private continuousSentence = this.RULE('continuousSentence', () => {
+    this.OR([
+      {
+        GATE: () => this.isPilotBracketSentence(),
+        ALT: () => this.SUBRULE(this.pilotModeSentence),
+      },
+      {
+        GATE: () => this.isNameAliasSentence(),
+        ALT: () => this.SUBRULE(this.nameAliasSentence),
+      },
+      {
+        GATE: () => this.isProhibitionSentence(),
+        ALT: () => this.SUBRULE(this.prohibitionSentence),
+      },
+      {
+        GATE: () => this.isStatOrCostSentence(),
+        ALT: () => this.SUBRULE(this.statOrCostSentence),
+      },
+      {
+        ALT: () => this.SUBRULE(this.generalContinuousSentence),
+      },
+    ]);
+    this.OPTION(() => this.CONSUME(Period));
+  });
+
+  private pilotModeSentence = this.RULE('pilotModeSentence', () => {
+    this.CONSUME(BracketName);
+  });
+
+  private nameAliasSentence = this.RULE('nameAliasSentence', () => {
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
+  });
+
+  private prohibitionSentence = this.RULE('prohibitionSentence', () => {
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
+  });
+
+  private statOrCostSentence = this.RULE('statOrCostSentence', () => {
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
+  });
+
+  private generalContinuousSentence = this.RULE('generalContinuousSentence', () => {
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
   });
 
   private effectClauseUnit = this.RULE('effectClauseUnit', () => {
-    this.MANY(() => {
-      this.SUBRULE(this.timingPrefix);
+    this.MANY(() => this.SUBRULE(this.timingPrefix));
+    this.OPTION({
+      GATE: () => this.hasCostPrefix(),
+      DEF: () => this.SUBRULE(this.costPrefix),
     });
-    this.AT_LEAST_ONE(() => {
-      this.OR([
-        { ALT: () => this.CONSUME(KwWhen) },
-        { ALT: () => this.CONSUME(KwIf) },
-        { ALT: () => this.CONSUME(KwDuring) },
-        { ALT: () => this.CONSUME(KwWhile) },
-        { ALT: () => this.CONSUME(KwAt) },
-        { ALT: () => this.CONSUME(KwCant) },
-        { ALT: () => this.CONSUME(KwInstead) },
-        { ALT: () => this.CONSUME(KwDoesnt) },
-        { ALT: () => this.CONSUME(KwWould) },
-        { ALT: () => this.SUBRULE(this.clauseBodyAtom) },
-      ]);
+    this.OPTION2({
+      GATE: () => this.hasDevPrologue(),
+      DEF: () => this.SUBRULE(this.devPrologue),
     });
+    this.OPTION3({
+      GATE: () => this.startsWithTurnPhaseLead(),
+      DEF: () => this.SUBRULE(this.turnPhaseLead),
+    });
+    this.OPTION4({
+      GATE: () => this.startsWithWhenTrigger(),
+      DEF: () => this.SUBRULE(this.whenTriggerClause),
+    });
+    this.OPTION5({
+      GATE: () => this.startsWithGuardCondition(),
+      DEF: () => this.SUBRULE(this.guardCondition),
+    });
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.sentenceUnit));
   });
 
-  private timingPrefix = this.RULE('timingPrefix', () => {
-    this.CONSUME(TimingTag);
-    this.OPTION(() => {
-      this.CONSUME(Slash);
-      this.CONSUME2(TimingTag);
-    });
-  });
-
-  private clauseBodyAtom = this.RULE('clauseBodyAtom', () => {
+  private sentenceUnit = this.RULE('sentenceUnit', () => {
     this.OR([
-      { ALT: () => this.CONSUME(ResCostTag) },
-      { ALT: () => this.CONSUME(CostSep) },
-      { ALT: () => this.CONSUME(DotSep) },
-      { ALT: () => this.CONSUME(TimingTag) },
-      { ALT: () => this.CONSUME(KeywordTag) },
-      { ALT: () => this.CONSUME(BracketName) },
-      { ALT: () => this.CONSUME(ParenToken) },
-      { ALT: () => this.CONSUME(QuotedStr) },
-      { ALT: () => this.CONSUME(Slash) },
-      { ALT: () => this.CONSUME(Comma) },
-      { ALT: () => this.CONSUME(Period) },
-      { ALT: () => this.CONSUME(Colon) },
-      { ALT: () => this.CONSUME(NumberTok) },
-      { ALT: () => this.CONSUME(WordTok) },
+      {
+        GATE: () => this.isGrantEffectSentenceStart(),
+        ALT: () => this.SUBRULE(this.grantEffectSentence),
+      },
+      {
+        GATE: () => this.isConditionalSentenceStart(),
+        ALT: () => this.SUBRULE(this.conditionalSentence),
+      },
+      {
+        GATE: () => this.startsWithWhenTrigger(),
+        ALT: () => this.SUBRULE(this.whenTriggerSentence),
+      },
+      {
+        GATE: () => this.isDuringDurationLead(),
+        ALT: () => this.SUBRULE(this.durationLeadSentence),
+      },
+      {
+        GATE: () => this.isImperativeSentenceStart(),
+        ALT: () => this.SUBRULE(this.imperativeSentence),
+      },
+      {
+        ALT: () => this.SUBRULE(this.subjectPredicateSentence),
+      },
     ]);
   });
 
-  // Lookahead predicates keeping LL(k) selection deterministic & ambiguity-free
-  private scanLineTokens(): IToken[] {
-    const out: IToken[] = [];
-    for (let i = 1; i <= 200; i += 1) {
-      const tok = this.LA(i);
-      if (!tok || tok.tokenType.name === 'EOF') break;
-      out.push(tok);
-    }
-    return out;
-  }
+  private grantEffectSentence = this.RULE('grantEffectSentence', () => {
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
+    this.OR([
+      { ALT: () => this.CONSUME(CostSep) },
+      { ALT: () => this.CONSUME(Colon) },
+    ]);
+    this.MANY(() => this.SUBRULE(this.timingPrefix));
+    this.OPTION({
+      GATE: () => this.startsWithTurnPhaseLead(),
+      DEF: () => this.SUBRULE(this.turnPhaseLead),
+    });
+    this.OPTION2({
+      GATE: () => this.startsWithWhenTrigger(),
+      DEF: () => this.SUBRULE(this.whenTriggerClause),
+    });
+    this.AT_LEAST_ONE2(() => this.SUBRULE(this.simpleSentenceUnit));
+  });
 
-  private isKeywordOnlyLine(): boolean {
-    const toks = this.scanLineTokens();
-    return (
-      toks.length > 0 &&
-      toks.every(
-        (t) =>
-          (t.tokenType === KeywordTag || t.tokenType === BracketName) &&
-          parseKeywordTag(t.image) !== null
-      )
-    );
-  }
+  private simpleSentenceUnit = this.RULE('simpleSentenceUnit', () => {
+    this.OR([
+      {
+        GATE: () => this.isConditionalSentenceStart(),
+        ALT: () => this.SUBRULE2(this.conditionalSentence),
+      },
+      {
+        GATE: () => this.isImperativeSentenceStart(),
+        ALT: () => this.SUBRULE2(this.imperativeSentence),
+      },
+      {
+        ALT: () => this.SUBRULE2(this.subjectPredicateSentence),
+      },
+    ]);
+  });
 
-  private isReplacementClause(): boolean {
-    const toks = this.scanLineTokens();
-    const hasWould = toks.some((t) => t.tokenType === KwWould);
-    const hasInstead = toks.some((t) => t.tokenType === KwInstead);
-    const hasDoesnt = toks.some((t) => t.tokenType === KwDoesnt);
-    const timingTags = toks
-      .filter((t) => t.tokenType === TimingTag)
-      .map((t) => t.image);
-    // Clauses with active or trigger timing tags (e.g. 【Attack】, 【When Linked】, 【Activate･Action】)
-    // are triggered/activated EFFECT_CLAUSE abilities that set up a temporary or conditional effect, not passive replacements.
-    const hasActiveOrTriggerTiming = timingTags.some((img) =>
-      /【(?:Main|Action|Burst|Deploy|Attack|Destroyed|When |Activate)/i.test(img)
-    );
-    if (hasActiveOrTriggerTiming) return false;
-    // True event replacements: "would ... instead", "would ... doesn't receive", or "When you rest ... instead"
-    if (hasWould && (hasInstead || hasDoesnt)) return true;
-    const text = toks.map((t) => t.image).join(' ');
-    if (
-      hasInstead &&
-      /\bWhen\s+you\s+rest\b/i.test(text)
-    ) {
-      return true;
-    }
-    return false;
-  }
+  private conditionalSentence = this.RULE('conditionalSentence', () => {
+    this.OPTION(() => {
+      this.CONSUME(KwThen);
+      this.CONSUME(Comma);
+    });
+    this.OR([
+      { ALT: () => this.CONSUME(KwIf) },
+      { ALT: () => this.CONSUME(KwWhile) },
+    ]);
+    this.SUBRULE(this.conditionExpr);
+    this.CONSUME2(Comma);
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
+    this.OPTION2(() => this.CONSUME(Period));
+  });
 
-  private isContinuousClause(): boolean {
-    const toks = this.scanLineTokens();
-    const timingTags = toks
-      .filter((t) => t.tokenType === TimingTag)
-      .map((t) => t.image);
-    const nonOnceTimings = timingTags.filter((img) => img !== '【Once per Turn】');
-    const hasStaticTiming = nonOnceTimings.some((img) =>
-      /【(?:During Pair|During Link|Pilot)/i.test(img)
-    );
-    const hasActiveTiming = nonOnceTimings.some(
-      (img) => !/【(?:During Pair|During Link|Pilot)/i.test(img)
-    );
-    if (hasActiveTiming) return false;
+  private whenTriggerSentence = this.RULE('whenTriggerSentence', () => {
+    this.SUBRULE(this.whenTriggerClause);
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
+    this.OPTION(() => this.CONSUME(Period));
+  });
 
-    const text = toks.map((t) => t.image).join(' ');
-    if (/name is also treated as/i.test(text)) return true;
+  private durationLeadSentence = this.RULE('durationLeadSentence', () => {
+    this.CONSUME(KwDuring);
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.phraseUnitTok));
+    this.CONSUME(Comma);
+    this.OR([
+      {
+        GATE: () => this.startsWithWhenTrigger(),
+        ALT: () => this.SUBRULE(this.whenTriggerSentence),
+      },
+      {
+        GATE: () => this.isConditionalSentenceStart(),
+        ALT: () => this.SUBRULE(this.conditionalSentence),
+      },
+      {
+        ALT: () => {
+          this.AT_LEAST_ONE2(() => this.SUBRULE(this.commaExprTok));
+          this.OPTION(() => this.CONSUME(Period));
+        },
+      },
+    ]);
+  });
 
-    // Phase-boundary triggers ("At the end of your/a/the turn,", "At the start of your opponent's turn,")
-    if (
-      /\bAt\s+the\s+(?:end|start)\s+of\b/i.test(text) &&
-      !/\bwhile\b/i.test(text.split(/\bAt\s+the\b/i)[0] ?? '')
-    ) {
-      return false;
-    }
+  private imperativeSentence = this.RULE('imperativeSentence', () => {
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
+    this.OPTION(() => this.CONSUME(Period));
+  });
 
-    // Reactive "when/whenever" triggers (even under 【During Pair】 or "During your turn,")
-    const hasReactiveWhen = toks.some((t) => t.tokenType === KwWhen);
-    if (hasReactiveWhen && !/\bwhile\b/i.test(text.split(/\bwhen\b/i)[0] ?? '')) {
-      return false;
-    }
-
-    if (hasStaticTiming) return true;
-
-    // Imperative or temporary one-shot spell sentences ("Choose 1 ...", "... until end of turn", "... during this turn")
-    if (
-      /\b(?:until end of turn|during this turn|during this battle)\b/i.test(text) ||
-      /^(?:Choose|Destroy|Draw|Deal|Return|Deploy|Recover|Discard|Rest|Set)\b/i.test(text)
-    ) {
-      return false;
-    }
-
-    if (
-      /can't|cannot/i.test(text) ||
-      /\b(?:Increase|Reduce|gains?|gets)\b/i.test(text)
-    ) {
-      return true;
-    }
-    return nonOnceTimings.length === 0;
-  }
+  private subjectPredicateSentence = this.RULE('subjectPredicateSentence', () => {
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.commaExprTok));
+    this.OPTION(() => this.CONSUME(Period));
+  });
 }
 
-export const clauseParser = new GundamClauseCstParser();
+// Keep unused-token tree-shaking quiet if needed
+void TimingTag;
+void Slash;
+void KwAt;
 
-// ---------------------------------------------------------------------------
-// 4. CST-to-AST Helpers & Lifting
-// ---------------------------------------------------------------------------
+export const clauseParser = new GundamClauseCstParser();

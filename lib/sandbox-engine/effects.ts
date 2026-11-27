@@ -243,7 +243,7 @@ export function resolveClause(
             const dmg = step.amount * factor;
             entry.unit.damage += dmg;
             notes.push(`dealt ${dmg} damage to ${entry.unit.card.name}`);
-            if (effectiveRemainingHp(entry.unit) <= 0) {
+            if (effectiveRemainingHp(entry.unit, state, entry.side) <= 0) {
               destroyUnit(state, entry.side, entry.unit.instanceId);
               notes.push(`${entry.unit.card.name} destroyed`);
             }

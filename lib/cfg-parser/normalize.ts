@@ -138,6 +138,9 @@ export function normalizeCardEffectText(rawEffect: string): string {
   return normalizedLines.join('\n');
 }
 
-// ---------------------------------------------------------------------------
-// 3. Chevrotain Pure-TypeScript CFG Lexer & Parser
-// ---------------------------------------------------------------------------
+export function getEffectSetPrefix(cardNo: string): string {
+  const m = cardNo.match(/^([A-Za-z0-9]+)-/);
+  const raw = m ? m[1] : 'MISC';
+  return raw.replace(/[^A-Za-z0-9_-]/g, '_') || 'MISC';
+}
+

@@ -90,7 +90,7 @@ Single document synced by `scripts/sync_rules.py` containing official deck-const
 
 ## 4. Compiled Effect Shards (`data/effects/<SET>.json`)
 
-Pre-compiled, deterministic **Effect Shards** (`28` files, `1,290` unique `cardNo` entries, `1,392` **Effect Clauses**, `100.0%` full AST coverage with `0` `RAW_CONDITION` and `0` `unparsedResidual` across the synced corpus) produced by `scripts/compile_effects.ts` from canonical non-parallel card prints (resolving historical errata/wording diffs in favor of the canonical non-parallel print).
+Pre-compiled, deterministic **Effect Shards** (`28` files, `1,290` unique `cardNo` entries, `0` diagnostics, `0` banned residual fields) produced by `scripts/compile_effects.ts` from canonical non-parallel card prints via the Chevrotain phrase-level CFG + pure CST lowering pipeline (`lib/cfg-parser.ts`).
 
 Shards omit volatile timestamps so repeated compiler runs are byte-for-byte idempotent.
 
@@ -98,7 +98,7 @@ Shards omit volatile timestamps so repeated compiler runs are byte-for-byte idem
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
-| `schemaVersion` | `1` (const) | Schema format version (`1`). |
+| `schemaVersion` | `2` (const) | Schema format version (`2`). |
 | `setPrefix` | `string` | `cardNo` prefix (`GD01`..`GD06`, `ST01`..`ST14`, `EB01`, `EXB`, `EXBP`, `EXR`, `EXRP`, `R`, `RP`, `T`, or `MISC`). |
 | `cardCount` | `integer` | Exact count of keys in `effects` (`cardCount === Object.keys(effects).length`). |
 | `effects` | `Record<string, CompiledCardEffect>` | Map keyed and sorted by `cardNo`. |
@@ -109,25 +109,25 @@ Shards omit volatile timestamps so repeated compiler runs are byte-for-byte idem
 | :--- | :--- | :--- |
 | `cardNo` | `string` | Canonical card number matching its parent key. |
 | `sourcePrintId` | `string` | Canonical `printId` chosen for compilation (`!isParallel` preferred, lowest `printId` tiebreak). |
-| `name` | `string` | Abstracted card name. |
-| `type` | `string` | Abstracted card type (`UNIT`, `PILOT`, `COMMAND`, `BASE`, etc.). |
+| `name` | `string` | Card name. |
+| `type` | `string` | Card type (`UNIT`, `PILOT`, `COMMAND`, `BASE`, etc.). |
 | `color` | `CardColor` | `Blue \| Green \| Red \| Purple \| White \| Colorless`. |
 | `keywords` | `KeywordAbility[]` | Innate **Keyword Abilities** outside timing headers: `{ name: KeywordName, value: integer \| null }`. |
-| `clauses` | `EffectClause[]` | Ordered compiled **Effect Clauses** (see below). |
+| `abilities` | `AbilityAst[]` | Ordered AST nodes discriminated by `kind`: `EFFECT_CLAUSE`, `REPLACEMENT_EFFECT`, `CONTINUOUS_MODIFIER`, `CUSTOM_HOOK`, or `DIAGNOSTIC`. (`clauses` was removed in `schemaVersion: 2`.) |
 | `synergy` | `CardSynergyProfile` | `{ requires: SynergyNodeKey[], enables: SynergyNodeKey[] }` for Knowledge Map edges. |
 | `prerequisites` | `EffectPrerequisite[]` | Deck-composition requirements (`{ kind: "TRAIT" \| "COLOR" \| "CARD_TYPE" \| "NAME" \| "LINK", trait?, color?, cardType?, nameContains?, anyNames?, anyTraits?, minCopies: 4 \| 8, primaryClause, reason }`). |
 
-### `EffectClause` & Union Discriminators
+### `AbilityAst` Variants (`schemaVersion: 2`)
 
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `raw` | `string` | Single clause line after parenthetical reminder-text stripping, modal header propagation, and `■` Development merging. |
-| `timings` | `EffectTiming[]` | Non-empty array across 34 trigger/state timings: bracketed headers (`DEPLOY`, `ATTACK`, `DESTROYED`, `WHEN_PAIRED`, `WHEN_LINKED`, `DURING_PAIR`, `DURING_LINK`, `BURST`, `ACTIVATE_MAIN`, `ACTIVATE_ACTION`, `MAIN`, `ACTION`), turn/play headers (`END_OF_TURN`, `START_OF_OPPONENT_TURN`, `WHEN_PLAYING`), reactive **Trigger Events** (`WHEN_ATTACKED`, `WHEN_DESTROY_BY_BATTLE`, `WHEN_DEAL_DAMAGE`, `WHEN_RECEIVE_DAMAGE`, `WHEN_RECOVER_HP`, `WHEN_UNIT_DEPLOYED`, `WHEN_UNIT_PAIRED`, `WHEN_UNIT_LINKED`, `WHEN_UNIT_DESTROYED`, `WHEN_RESTED`, `WHEN_BLOCKED`, `WHEN_PLACE_EX_RESOURCE`, `WHEN_EXILE_EX_RESOURCE`, `WHEN_ACTIVATE_COMMAND`, `WHEN_PAY_EFFECT_COST`, `WHEN_DRAW`, `WHEN_AP_REDUCED`, `WHEN_PLAY_CARD_WITH_EX_RESOURCE`), or `CONTINUOUS`. |
-| `oncePerTurn` | `boolean` | `true` when tagged `【Once per Turn】`. |
-| `triggerEvent` | `TriggerEvent` (optional) | Structured reactive trigger metadata `{ kind, actor?, actorFilter?, targetKind?, targetFilter?, damageType?, whileAttacking?, raw? }` extracted when a clause is fired by an inline `When ...` / `Whenever ...` event (e.g., `WHEN_ATTACKED`, `WHEN_DESTROY_BY_BATTLE`) rather than a static aura. |
-| `pairFilter` | `PairFilter` (optional) | `{ trait?, color?, lvMin?, lvMax? }` parsed from `【... Pilot】` headers. |
-| `linkRequirement` | `LinkRequirement` (optional) | `{ role: "UNIT_REQUIRES_PILOT" \| "PILOT_MATCHING_UNIT", names: string[], traits: string[], raw: string }` attached to every `WHEN_LINKED` / `DURING_LINK` clause (`125` clauses across the catalog). |
-| `cost` | `ActivationCost` (optional) | `{ resourceCost?, restSelf?, returnSelfToDeckBottom?, destroySelf?, discardCount?, exileFromTrashCount?, exileFilter?, raw? }`. |
-| `condition` | `EffectCondition` (optional) | Recursive **Guard Condition** union discriminated by `kind`: `ALL_OF`, `ANY_OF`, `NOT`, `DEPLOYED_FROM_ZONE`, `TRASH_COUNT_AT_LEAST`, `FRIENDLY_BASE_IN_PLAY`, `SELF_AP_AT_LEAST`, `UNIT_TRAIT_IS`, `IS_YOUR_TURN`, `IS_OPPONENT_TURN`, `SELF_RESTED`, `DESTROYED_BY_BATTLE`, `UNIT_COUNT_AT_LEAST`, `DEVELOPMENT_EXILE`, `BOARD_CARD_COUNT`, `SELF_STATE`, `HAND_COUNT`, `SHIELD_COUNT`, `RESOURCE_COUNT`, `PLAYER_LV_AT_LEAST`, `ENEMY_PLAYER_COUNT_AT_LEAST`, `TURN_HISTORY`, `EX_RESOURCE_USED_TO_PLAY`, `PHASE_AT_START_OF_OPPONENT_TURN`, and future-sync escape hatch `RAW_CONDITION` (asserted `0` across committed shards). |
-| `steps` | `EffectStep[]` | Ordered typed actions discriminated by `action` (47 variants, including scaling via `ScaleMetric`, exact `TargetSelector` bounds `hpMin` / `hpMax` / `hpRank` / `lvRank` / `linked` / `paired`, identity actions `GRANT_PILOT_MODE` / `NAME_ALIAS`, rule overrides `REDIRECT_ATTACK_TARGET` / `REDIRECT_BATTLE_DAMAGE` / `FORCE_BATTLE_DAMAGE_STEP` / `MODIFY_DAMAGE_DEALT` / `COUNT_UNITS` / `RESTRICTION`, and recursive control-flow steps `IF_CONDITION`, `IF_PREVIOUS_SUCCEEDED`, `GRANT_CLAUSE`). |
-| `unparsedResidual` | `string` | Fail-closed future-sync escape hatch (`""` across all `1,392` committed clauses; logs `"Manual resolution required: ..."` in `lib/sandbox-engine.ts` if ever non-empty after a new card sync). |
+- **`EFFECT_CLAUSE`**: `{ kind, clauseIndex, raw, timings, oncePerTurn, triggerEvent?, pairFilter?, linkRequirement?, cost?, condition?, steps, modalGroup? }`
+  - `raw` is strictly for human inspection/debugging and `oncePerTurn` keying — runtime, synergy, and deck logic never inspect `raw`.
+  - `timings` spans the 34 trigger/state timings; `linkRequirement` attaches on every `WHEN_LINKED` / `DURING_LINK` clause (including nested `GRANT_CLAUSE` abilities).
+  - `condition` uses structured `EffectCondition` variants (`ALL_OF`, `ANY_OF`, `NOT`, `TRASH_COUNT_AT_LEAST`, `SELF_STATE`, `BOARD_CARD_COUNT`, etc.; `RAW_CONDITION` is removed).
+  - `steps` uses strongly typed `EffectStep` variants (with `IF_CONDITION.replacesPrevious` instead of prose `insteadUpgrade`, and `DAMAGE_PROOF`/`RESTRICTION` carrying `target` and `sourceFilter` without `summary`).
+- **`REPLACEMENT_EFFECT`**: `{ kind, clauseIndex, raw, scope, intercepts, subject, sourceFilter?, pairFilter?, oncePerTurn?, condition?, optional, duration?, steps?, outcome, maxPerEventInstance: 1 }`
+  - Structured `outcome` (`{ kind: 'PREVENT_DAMAGE' | 'REST_OTHER' | 'PREVENT_DESTROY' | 'PREVENT_MOVE', damageType?, target?, steps? }`; `replacementSummary` removed).
+- **`CONTINUOUS_MODIFIER`**: `{ kind, clauseIndex, raw, layer: 2 | 3 | 4, activeIn, requiresPair?, requiresLink?, pairFilter?, oncePerTurn?, condition?, duration?, modifier }`
+  - Typed `modifier` discriminated by `type`: `MODIFY_STAT`, `COST_REDUCTION`, `GRANT_KEYWORD`, `GRANT_TRAIT`, `NAME_ALIAS`, `GRANT_PILOT_MODE`, `PROHIBITION`, `ALLOW_ATTACK_ACTIVE`, `FREEZE_AURA`, `RESTRICTION`, `REDIRECT_ATTACK_TARGET`.
+- **`CUSTOM_HOOK`**: `{ kind, clauseIndex, hookId, version, raw, timings, cost?, steps, prerequisites }` for versioned 1-of exceptions in `CUSTOM_HOOK_REGISTRY` (e.g., `ST01-015#2`).
+- **`DIAGNOSTIC`**: Explicit `LEX_ERROR` / `PARSE_ERROR` / `NO_LOWERING` / `UNPARSED_RESIDUAL` marker (`0` across committed shards).
+

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST14",
   "cardCount": 16,
   "effects": {
@@ -28,13 +28,17 @@
             "target": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1
+              "count": 1,
+              "state": "RESTED",
+              "lvRank": "LOWEST"
             }
           }
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESTED_ENEMY_TARGET"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -78,9 +82,8 @@
             {
               "action": "EXILE",
               "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 2
+                "owner": "ENEMY",
+                "count": 1
               }
             }
           ]
@@ -208,13 +211,11 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true
+              "action": "REVEAL_TOP",
+              "count": 1
             },
             {
               "action": "RETURN_TO_DECK",
@@ -238,16 +239,19 @@
             "self": true,
             "cardType": "UNIT"
           },
+          "sourceFilter": {
+            "owner": "ENEMY",
+            "cardType": "UNIT",
+            "count": 1,
+            "apMaxRef": "SELF_AP"
+          },
+          "oncePerTurn": true,
           "optional": false,
           "duration": "CONTINUOUS",
-          "steps": [
-            {
-              "action": "DAMAGE_PROOF",
-              "summary": "it doesn't receive that damage.",
-              "damageType": "ANY"
-            }
-          ],
-          "replacementSummary": "【During Pair】【Once per Turn】When this Unit would receive battle damage from an enemy Unit with AP equal to or less than it, it doesn't receive that damage.",
+          "outcome": {
+            "kind": "PREVENT_DAMAGE",
+            "damageType": "BATTLE"
+          },
           "maxPerEventInstance": 1
         }
       ],
@@ -310,8 +314,7 @@
             {
               "action": "ADD_RESOURCE",
               "count": 1,
-              "ex": true,
-              "rested": false
+              "ex": true
             }
           ]
         }
@@ -378,8 +381,7 @@
               },
               "duration": "THIS_BATTLE",
               "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
+                "owner": "SELF",
                 "count": 1
               }
             }
@@ -428,10 +430,11 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
-                "owner": "SELF",
+                "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
-                "lvMin": 5
+                "state": "ACTIVE",
+                "apMax": 5
               }
             }
           ]
@@ -577,10 +580,7 @@
               ],
               "replacesPrevious": true
             }
-          ],
-          "insteadUpgrade": {
-            "rawUpgrade": "choose 1 enemy Unit instead"
-          }
+          ]
         },
         {
           "kind": "CONTINUOUS_MODIFIER",
@@ -600,7 +600,15 @@
         ],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "CARD_TYPE",
+          "cardType": "COMMAND",
+          "minCopies": 8,
+          "reason": "Requires 4+ COMMAND cards in trash",
+          "primaryClause": false
+        }
+      ]
     },
     "ST14-015": {
       "cardNo": "ST14-015",
@@ -622,8 +630,7 @@
             {
               "action": "ADD_RESOURCE",
               "count": 1,
-              "ex": true,
-              "rested": false
+              "ex": true
             }
           ]
         },
@@ -637,12 +644,6 @@
           "oncePerTurn": false,
           "steps": [
             {
-              "action": "ADD_RESOURCE",
-              "count": 1,
-              "ex": false,
-              "rested": true
-            },
-            {
               "action": "IF_CONDITION",
               "condition": {
                 "kind": "NOT",
@@ -653,7 +654,7 @@
               },
               "thenSteps": [
                 {
-                  "action": "DESTROY",
+                  "action": "SET_ACTIVE",
                   "target": {
                     "owner": "ENEMY",
                     "cardType": "RESOURCE",
@@ -662,15 +663,6 @@
                   }
                 }
               ]
-            },
-            {
-              "action": "SET_ACTIVE",
-              "target": {
-                "owner": "ENEMY",
-                "cardType": "RESOURCE",
-                "countRef": "ENEMY_PLAYERS",
-                "count": "UP_TO"
-              }
             }
           ]
         }
@@ -734,7 +726,7 @@
               "cardType": "UNIT",
               "count": 1
             },
-            "raw": "when a friendly Unit links"
+            "raw": "when a friendly Unit links ,"
           },
           "condition": {
             "kind": "IS_YOUR_TURN"

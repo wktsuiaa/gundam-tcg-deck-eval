@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST10",
   "cardCount": 16,
   "effects": {
@@ -24,22 +24,27 @@
             "actor": "SELF",
             "targetKind": "SHIELD",
             "damageType": "BATTLE",
-            "raw": "When this Unit destroys an enemy shield area card with battle damage"
+            "raw": "When this Unit destroys an enemy shield area card with battle damage ,"
           },
           "steps": [
             {
               "action": "SET_ACTIVE",
               "target": {
-                "owner": "ANY",
-                "count": 1
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
               }
             },
             {
               "action": "REDIRECT_ATTACK_TARGET",
-              "rule": "CANT_CHOOSE_SAME_PLAYER",
+              "rule": "CANT_CHOOSE_TARGET",
               "target": {
-                "owner": "ENEMY",
-                "cardType": "CARD",
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "attackerFilter": {
+                "owner": "ANY",
                 "count": 1
               },
               "duration": "THIS_TURN"
@@ -64,24 +69,35 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Deploy・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect: Choose 1 enemy Unit with 4 or less HP. Rest it.",
+          "raw": "【Deploy<DOT>Development 2】 You may exile the specified number of (G Generation) cards in your trash from the game. If you do, Choose 1 enemy Unit with 4 or less HP. Rest it.",
           "timings": [
             "DEPLOY"
           ],
           "oncePerTurn": false,
-          "condition": {
-            "kind": "DEVELOPMENT_EXILE",
-            "count": 2
-          },
           "steps": [
             {
-              "action": "REST",
+              "action": "EXILE",
               "target": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
+                "owner": "SELF",
+                "cardType": "CARD",
                 "count": 1,
-                "hpMax": 4
+                "trait": "G Generation",
+                "zone": "TRASH"
               }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "REST",
+                  "target": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "hpMax": 4
+                  }
+                }
+              ]
             }
           ]
         }
@@ -92,7 +108,15 @@
           "RESTED_ENEMY_TARGET"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 4,
+          "reason": "Requires (G Generation) target",
+          "primaryClause": false
+        }
+      ]
     },
     "ST10-003": {
       "cardNo": "ST10-003",
@@ -168,7 +192,7 @@
               "count": 1
             },
             "damageType": "BATTLE",
-            "raw": "when this Unit destroys an enemy Unit with battle damage"
+            "raw": "when this Unit destroys an enemy Unit with battle damage ,"
           },
           "condition": {
             "kind": "IS_YOUR_TURN"
@@ -203,7 +227,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【When Linked・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect: Choose 1 Command card that is Lv.4 or lower from your trash. Add it to your hand.",
+          "raw": "【When Linked<DOT>Development 2】 You may exile the specified number of (G Generation) cards in your trash from the game. If you do, Choose 1 Command card that is Lv.4 or lower from your trash. Add it to your hand.",
           "timings": [
             "WHEN_LINKED"
           ],
@@ -216,20 +240,31 @@
             ],
             "raw": "(G Generation) Trait"
           },
-          "condition": {
-            "kind": "DEVELOPMENT_EXILE",
-            "count": 2
-          },
           "steps": [
             {
-              "action": "ADD_FROM_TRASH_TO_HAND",
+              "action": "EXILE",
               "target": {
                 "owner": "SELF",
-                "cardType": "COMMAND",
+                "cardType": "CARD",
                 "count": 1,
-                "lvMax": 4,
+                "trait": "G Generation",
                 "zone": "TRASH"
               }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "ADD_FROM_TRASH_TO_HAND",
+                  "target": {
+                    "owner": "SELF",
+                    "cardType": "COMMAND",
+                    "count": 1,
+                    "lvMax": 4,
+                    "zone": "TRASH"
+                  }
+                }
+              ]
             }
           ]
         }
@@ -248,6 +283,13 @@
           "minCopies": 4,
           "reason": "Link requires (G Generation) Trait",
           "primaryClause": false
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 4,
+          "reason": "Requires (G Generation) target",
+          "primaryClause": false
         }
       ]
     },
@@ -262,30 +304,39 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Deploy・Development 2】You may exile the specified number of (G Generation) cards in your trash from the game. If you do, activate the following effect: Draw a number of cards equal to the number of enemy players. Then, discard the same number of cards you drew with this effect.",
+          "raw": "【Deploy<DOT>Development 2】 You may exile the specified number of (G Generation) cards in your trash from the game. If you do, Draw a number of cards equal to the number of enemy players. Then, discard the same number of cards you drew with this effect.",
           "timings": [
             "DEPLOY"
           ],
           "oncePerTurn": false,
-          "condition": {
-            "kind": "DEVELOPMENT_EXILE",
-            "count": 2
-          },
           "steps": [
             {
-              "action": "DRAW",
-              "count": 1,
-              "scaleBy": {
-                "metric": "ENEMY_PLAYER_COUNT",
-                "owner": "ENEMY"
+              "action": "EXILE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "CARD",
+                "count": 1,
+                "trait": "G Generation",
+                "zone": "TRASH"
               }
+            },
+            {
+              "action": "IF_PREVIOUS_SUCCEEDED",
+              "thenSteps": [
+                {
+                  "action": "DRAW",
+                  "count": 1,
+                  "scaleBy": {
+                    "metric": "ENEMY_PLAYER_COUNT",
+                    "owner": "ENEMY"
+                  }
+                }
+              ]
             },
             {
               "action": "DISCARD",
               "count": 1,
-              "scaleBy": {
-                "metric": "DRAWN_COUNT"
-              }
+              "targetOwner": "SELF"
             }
           ]
         }
@@ -296,7 +347,15 @@
           "TRASH_COUNT_FUEL"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 4,
+          "reason": "Requires (G Generation) target",
+          "primaryClause": false
+        }
+      ]
     },
     "ST10-009": {
       "cardNo": "ST10-009",
@@ -512,7 +571,10 @@
               "duration": "THIS_TURN",
               "target": {
                 "owner": "ANY",
-                "count": 2
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 5,
+                "trait": "G Generation"
               }
             }
           ]
@@ -543,18 +605,13 @@
           "triggerEvent": {
             "kind": "WHEN_PLAYING",
             "actor": "SELF",
-            "raw": "When playing this card from your hand"
+            "raw": "When playing this card from your hand ,"
           },
           "steps": [
             {
               "action": "DISCARD",
               "count": 1,
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "G Generation"
-              },
+              "targetOwner": "SELF",
               "optional": true
             },
             {
@@ -564,7 +621,8 @@
                   "action": "COST_REDUCTION",
                   "amount": 0,
                   "exactCost": 2,
-                  "exactLv": 2
+                  "exactLv": 2,
+                  "zone": "HAND"
                 }
               ]
             }
@@ -581,8 +639,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 2,
-              "bothPlayers": false
+              "count": 2
             }
           ]
         }

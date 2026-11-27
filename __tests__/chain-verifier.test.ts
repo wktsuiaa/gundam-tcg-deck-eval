@@ -616,4 +616,63 @@ describe('Seam 3: Rules-Accurate Chain Verifier (Core Gates & 4-Layer Modifiers)
       expect(blockedPreview.result.reason).toBe('INSUFFICIENT_RESOURCES');
     }
   });
+
+  it('enforces structured sourceFilter immunities (GD01-091), shield DAMAGE_PROOF (ST02-013), and ST14-006 apMaxRef', () => {
+    // GD01-091 (Chang Wufei, Pilot): During your turn, if this Unit has <Breach>, it can't receive battle damage from enemy Units with 3 or less AP
+    const gd01091 = corpus.get('GD01-091')!;
+    const breachUnit = makeCard({ cardNo: 'TST-BR', name: 'Shenlong Frame', ap: 4, hp: 5, effect: '<Breach 3>' });
+    const immState = makeBaseState({ turn: 4 });
+    immState.players.A.battleArea = [
+      makeUnit('A-91', breachUnit, { pairedPilot: gd01091, deployedTurn: 1 }),
+    ];
+    immState.players.B.battleArea = [
+      makeUnit('B-3AP', makeCard({ cardNo: 'B3', ap: 3, hp: 5 }), { rested: true, deployedTurn: 1 }),
+    ];
+    const immRes = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state: immState },
+      playLine: [{ type: 'ATTACK_UNIT', side: 'A', attackerId: 'A-91', targetId: 'B-3AP' }],
+      witness: {},
+    });
+    expect(immRes.legal).toBe(true);
+    if (immRes.legal) {
+      expect(immRes.finalState.players.A.battleArea[0]?.damage).toBe(0);
+    }
+
+    // ST02-013: 【Action】During this battle, your shield area cards can't receive damage from enemy Units Lv.4 or lower
+    const st02013 = corpus.get('ST02-013')!;
+    const shieldState = makeBaseState({ turn: 4 });
+    shieldState.players.B.activeResources = 4;
+    shieldState.players.B.hand = [st02013];
+    shieldState.players.A.battleArea = [
+      makeUnit('A-LV4', makeCard({ cardNo: 'ALV4', lv: 4, ap: 4, hp: 4 }), { deployedTurn: 1 }),
+    ];
+    const shieldGuard = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state: shieldState },
+      playLine: [{ type: 'ATTACK_SHIELD', side: 'A', attackerId: 'A-LV4' }],
+      witness: { actionSteps: [{ kind: 'PLAY_ACTION', side: 'B', handIndex: 0 }] },
+    });
+    expect(shieldGuard.legal).toBe(true);
+    if (shieldGuard.legal) {
+      expect(shieldGuard.finalState.players.B.shields).toHaveLength(1);
+    }
+
+    // ST14-006 with 5+ AP enemy ignores replacement, <= self AP prevents damage
+    const st14006 = corpus.get('ST14-006')!;
+    const pilot = makeCard({ cardNo: 'P14', type: 'PILOT', ap: 1, hp: 1 });
+    const bigAtkState = makeBaseState({ turn: 4 });
+    bigAtkState.players.A.battleArea = [makeUnit('A-BIG', makeCard({ cardNo: 'BIG', ap: 8, hp: 8 }), { deployedTurn: 1 })];
+    bigAtkState.players.B.battleArea = [
+      makeUnit('B-14', st14006, { pairedPilot: pilot, rested: true, deployedTurn: 1 }),
+    ];
+    const bigRes = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state: bigAtkState },
+      playLine: [{ type: 'ATTACK_UNIT', side: 'A', attackerId: 'A-BIG', targetId: 'B-14' }],
+      witness: {},
+    });
+    expect(bigRes.legal).toBe(true);
+    if (bigRes.legal) {
+      expect(bigRes.finalState.players.B.battleArea).toHaveLength(0);
+    }
+  });
 });
+

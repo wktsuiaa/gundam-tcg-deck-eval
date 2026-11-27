@@ -113,10 +113,14 @@ export abstract class RunnerBase {
         if (ab.scope === 'LINKED' && !isUnitLinked(target)) continue;
         const guardKey = `${eventId}:${target.instanceId}:${ab.clauseIndex}`;
         if (this.appliedReplacements.has(guardKey)) continue;
-        if (ab.raw.includes('AP equal to or less than it') && sourceUnit && sourceSide) {
-          const srcAp = evaluateUnitEffectiveState(sourceUnit, this.state, sourceSide).ap;
-          const tgtAp = evaluateUnitEffectiveState(target, this.state, targetSide).ap;
-          if (srcAp > tgtAp) continue;
+        if (ab.sourceFilter && sourceUnit && sourceSide) {
+          const srcEff = evaluateUnitEffectiveState(sourceUnit, this.state, sourceSide);
+          if (ab.sourceFilter.apMaxRef === 'SELF_AP') {
+            const tgtAp = evaluateUnitEffectiveState(target, this.state, targetSide).ap;
+            if (srcEff.ap > tgtAp) continue;
+          }
+          if (ab.sourceFilter.apMax !== undefined && srcEff.ap > ab.sourceFilter.apMax) continue;
+          if (ab.sourceFilter.lvMax !== undefined && srcEff.lv > ab.sourceFilter.lvMax) continue;
         }
         const accept = ab.optional ? this.witness.nextOptionalAccept(true) : true;
         if (!accept) continue;

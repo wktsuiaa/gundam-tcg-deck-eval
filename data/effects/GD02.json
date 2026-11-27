@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "GD02",
   "cardCount": 130,
   "effects": {
@@ -19,7 +19,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【During Pair･(Cyber-Newtype) Pilot】When one of your (Titans) Units destroys an enemy shield area card with damage, this Unit recovers 2 HP.",
+          "raw": "【During Pair<DOT>(Cyber-Newtype) Pilot】When one of your (Titans) Units destroys an enemy shield area card with damage, this Unit recovers 2 HP.",
           "timings": [
             "DURING_PAIR",
             "WHEN_DESTROY_BY_BATTLE"
@@ -36,7 +36,7 @@
             },
             "targetKind": "SHIELD",
             "damageType": "ANY",
-            "raw": "When one of your (Titans) Units destroys an enemy shield area card with damage"
+            "raw": "When one of your (Titans) Units destroys an enemy shield area card with damage ,"
           },
           "pairFilter": {
             "trait": "Cyber-Newtype"
@@ -109,7 +109,7 @@
               "count": 1
             },
             "damageType": "BATTLE",
-            "raw": "when one of your Units destroys an enemy Unit with battle damage"
+            "raw": "when one of your Units destroys an enemy Unit with battle damage ,"
           },
           "linkRequirement": {
             "role": "UNIT_REQUIRES_PILOT",
@@ -162,7 +162,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【During Pair･Lv.3 or Lower Pilot】【Destroyed】You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand.",
+          "raw": "【During Pair<DOT>Lv.3 or Lower Pilot】【Destroyed】You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand.",
           "timings": [
             "DURING_PAIR",
             "DESTROYED"
@@ -175,11 +175,7 @@
             {
               "action": "DISCARD",
               "count": 1,
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 1
-              },
+              "targetOwner": "SELF",
               "optional": true
             },
             {
@@ -191,7 +187,7 @@
                     "owner": "SELF",
                     "self": true,
                     "cardType": "PILOT",
-                    "count": 1
+                    "paired": true
                   }
                 }
               ]
@@ -225,14 +221,16 @@
           "oncePerTurn": false,
           "steps": [
             {
-              "action": "FREEZE",
+              "action": "RESTRICTION",
+              "rule": "CANT_SET_ACTIVE",
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "RESTED",
                 "hpMax": 3
-              }
+              },
+              "duration": "NEXT_TURN"
             }
           ]
         }
@@ -332,6 +330,12 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
+            },
+            "sourceFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1,
+              "lvMax": 2
             }
           }
         }
@@ -439,7 +443,7 @@
           "triggerEvent": {
             "kind": "WHEN_AP_REDUCED",
             "actor": "SELF",
-            "raw": "When this Unit's AP is reduced by an enemy effect"
+            "raw": "When this Unit's AP is reduced by an enemy effect ,"
           },
           "steps": [
             {
@@ -486,13 +490,12 @@
             "actor": "SELF",
             "targetKind": "UNIT",
             "damageType": "EFFECT",
-            "raw": "When this Unit receives enemy effect damage"
+            "raw": "When this Unit receives enemy effect damage ,"
           },
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -514,13 +517,12 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Action】Destroy this Unit：Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it.",
+          "raw": "【Activate<DOT>Action】Destroy this Unit<COST_SEP>Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it.",
           "timings": [
             "ACTIVATE_ACTION"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "Destroy this Unit",
             "destroySelf": true
           },
           "steps": [
@@ -530,7 +532,7 @@
               "target": {
                 "owner": "SELF",
                 "self": true,
-                "cardType": "BASE",
+                "cardType": "UNIT",
                 "count": 1,
                 "zone": "SHIELD"
               }
@@ -767,14 +769,11 @@
             {
               "action": "LOOK_TOP",
               "count": 5,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true,
-              "trait": "Zeon"
+              "action": "REVEAL_TOP",
+              "count": 1
             },
             {
               "action": "RETURN_TO_DECK",
@@ -793,14 +792,6 @@
           "raw": "【During Link】 This Unit gets AP+2.",
           "layer": 3,
           "activeIn": "BATTLE_AREA",
-          "requiresLink": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Lalah Sune"
-            ],
-            "traits": [],
-            "raw": "[Lalah Sune]"
-          },
           "duration": "CONTINUOUS",
           "modifier": {
             "type": "MODIFY_STAT",
@@ -811,6 +802,14 @@
               "self": true,
               "cardType": "UNIT"
             }
+          },
+          "requiresLink": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Lalah Sune"
+            ],
+            "traits": [],
+            "raw": "[Lalah Sune]"
           }
         }
       ],
@@ -821,13 +820,6 @@
         ]
       },
       "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "Zeon",
-          "minCopies": 8,
-          "reason": "Searches (Zeon) cards",
-          "primaryClause": false
-        },
         {
           "kind": "LINK",
           "cardType": "PILOT",
@@ -860,13 +852,7 @@
             {
               "action": "DISCARD",
               "count": 1,
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Earth Federation",
-                "color": "Green"
-              },
+              "targetOwner": "SELF",
               "optional": true
             },
             {
@@ -875,8 +861,7 @@
                 {
                   "action": "ADD_RESOURCE",
                   "count": 1,
-                  "ex": true,
-                  "rested": false
+                  "ex": true
                 }
               ]
             },
@@ -889,8 +874,7 @@
               "thenSteps": [
                 {
                   "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
+                  "count": 1
                 }
               ]
             }
@@ -924,7 +908,7 @@
           "triggerEvent": {
             "kind": "WHEN_PLACE_EX_RESOURCE",
             "actor": "SELF",
-            "raw": "When you place an EX Resource"
+            "raw": "When you place an EX Resource ,"
           },
           "steps": [
             {
@@ -973,14 +957,6 @@
           "raw": "【During Link】While you are Lv.7 or higher, this Unit gains <First Strike>.",
           "layer": 2,
           "activeIn": "BATTLE_AREA",
-          "requiresLink": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Flit Asuno"
-            ],
-            "traits": [],
-            "raw": "[Flit Asuno]"
-          },
           "condition": {
             "kind": "PLAYER_LV_AT_LEAST",
             "minLv": 7
@@ -997,6 +973,14 @@
               "self": true,
               "cardType": "UNIT"
             }
+          },
+          "requiresLink": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Flit Asuno"
+            ],
+            "traits": [],
+            "raw": "[Flit Asuno]"
           }
         }
       ],
@@ -1031,14 +1015,6 @@
           "raw": "【During Link】This Unit gains <High-Maneuver>.",
           "layer": 2,
           "activeIn": "BATTLE_AREA",
-          "requiresLink": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [],
-            "traits": [
-              "Clan"
-            ],
-            "raw": "(Clan) Trait"
-          },
           "duration": "CONTINUOUS",
           "modifier": {
             "type": "GRANT_KEYWORD",
@@ -1051,6 +1027,14 @@
               "self": true,
               "cardType": "UNIT"
             }
+          },
+          "requiresLink": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [],
+            "traits": [
+              "Clan"
+            ],
+            "raw": "(Clan) Trait"
           }
         }
       ],
@@ -1090,18 +1074,16 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": false,
-              "trashRest": false
+              "count": 3,
+              "remainderPosition": "TOP"
             },
             {
               "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "position": "TOP",
               "target": {
                 "owner": "SELF",
-                "cardType": "CARD",
-                "zone": "DECK",
-                "count": 1
+                "self": true,
+                "cardType": "UNIT"
               }
             }
           ]
@@ -1457,7 +1439,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 1,
-          "raw": "【During Pair･(Neo Zeon) Pilot】【Attack】Choose 1 damaged enemy Unit. Deal 2 damage to it.",
+          "raw": "【During Pair<DOT>(Neo Zeon) Pilot】【Attack】Choose 1 damaged enemy Unit. Deal 2 damage to it.",
           "timings": [
             "DURING_PAIR",
             "ATTACK"
@@ -1577,18 +1559,7 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "revealSearch": false,
-              "trashRest": false
-            },
-            {
-              "action": "DEPLOY_FROM_TOP_DECK",
-              "target": {
-                "owner": "ANY",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 4,
-                "trait": "Clan"
-              }
+              "remainderPosition": "TOP"
             },
             {
               "action": "RETURN_TO_DECK",
@@ -1657,7 +1628,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】<Support 2>",
+          "raw": "【Activate<DOT>Main】<Support 2>",
           "timings": [
             "ACTIVATE_MAIN"
           ],
@@ -1688,7 +1659,6 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "It can't receive battle damage from enemy Units with 2 or less HP during this turn.",
               "damageType": "BATTLE",
               "duration": "THIS_TURN",
               "target": {
@@ -1697,6 +1667,12 @@
                 "count": 1,
                 "other": true,
                 "trait": "New UNE"
+              },
+              "sourceFilter": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "hpMax": 2
               }
             }
           ]
@@ -1815,7 +1791,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Deploy】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)･AP0･HP1) Unit token.",
+          "raw": "【Deploy】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)<DOT>AP0<DOT>HP1) Unit token.",
           "timings": [
             "DEPLOY"
           ],
@@ -1838,7 +1814,7 @@
               "hp": 1,
               "name": "Daughtress",
               "traits": [
-                "(New UNE"
+                "New UNE"
               ]
             }
           ]
@@ -1870,7 +1846,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Destroyed】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)･AP0･HP1) Unit token.",
+          "raw": "【Destroyed】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)<DOT>AP0<DOT>HP1) Unit token.",
           "timings": [
             "DESTROYED"
           ],
@@ -1893,7 +1869,7 @@
               "hp": 1,
               "name": "Daughtress",
               "traits": [
-                "(New UNE"
+                "New UNE"
               ]
             }
           ]
@@ -1938,16 +1914,14 @@
                 "minAp": 5
               },
               {
-                "kind": "SELF_STATE",
-                "attackingTarget": "ENEMY_UNIT"
+                "kind": "SELF_STATE"
               }
             ]
           },
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -2009,13 +1983,12 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】Rest this Unit：Destroy this and choose 1 enemy Unit that is Lv.5 or lower. Deal 1 damage to it.",
+          "raw": "【Activate<DOT>Main】Rest this Unit<COST_SEP>Destroy this and choose 1 enemy Unit that is Lv.5 or lower. Deal 1 damage to it.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "Rest this Unit",
             "restSelf": true
           },
           "steps": [
@@ -2032,8 +2005,9 @@
               "action": "DEAL_DAMAGE",
               "amount": 1,
               "target": {
-                "owner": "ANY",
-                "count": 1
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
               }
             }
           ]
@@ -2070,7 +2044,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】<Support 1>",
+          "raw": "【Activate<DOT>Main】<Support 1>",
           "timings": [
             "ACTIVATE_MAIN"
           ],
@@ -2158,14 +2132,6 @@
           "raw": "【During Link】During your turn, while there are 7 or more cards in your trash, all your other (Vulture) Units get AP+2.",
           "layer": 3,
           "activeIn": "BATTLE_AREA",
-          "requiresLink": {
-            "role": "UNIT_REQUIRES_PILOT",
-            "names": [
-              "Garrod Ran"
-            ],
-            "traits": [],
-            "raw": "[Garrod Ran]"
-          },
           "condition": {
             "kind": "ALL_OF",
             "conditions": [
@@ -2190,6 +2156,14 @@
               "other": true,
               "trait": "Vulture"
             }
+          },
+          "requiresLink": {
+            "role": "UNIT_REQUIRES_PILOT",
+            "names": [
+              "Garrod Ran"
+            ],
+            "traits": [],
+            "raw": "[Garrod Ran]"
           }
         }
       ],
@@ -2245,8 +2219,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -2310,7 +2283,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【During Pair･(Vulture) Pilot】【Destroyed】Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand.",
+          "raw": "【During Pair<DOT>(Vulture) Pilot】【Destroyed】Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand.",
           "timings": [
             "DURING_PAIR",
             "DESTROYED"
@@ -2441,14 +2414,14 @@
               "thenSteps": [
                 {
                   "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
+                  "count": 1
                 }
               ]
             },
             {
               "action": "DISCARD",
-              "count": 1
+              "count": 1,
+              "targetOwner": "SELF"
             }
           ]
         }
@@ -2534,7 +2507,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【When Paired･Purple Pilot】If there are 3 or more (Teiwaz)/(Tekkadan) cards in your trash, choose 1 enemy Unit with 3 or less AP. Rest it.",
+          "raw": "【When Paired<DOT>Purple Pilot】If there are 3 or more (Teiwaz)/(Tekkadan) cards in your trash, choose 1 enemy Unit with 3 or less AP. Rest it.",
           "timings": [
             "WHEN_PAIRED"
           ],
@@ -2655,6 +2628,11 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
+            },
+            "sourceFilter": {
+              "owner": "ENEMY",
+              "cardType": "COMMAND",
+              "count": 1
             }
           }
         }
@@ -2773,7 +2751,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【During Link】【Activate･Main】【Once per Turn】Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn.",
+          "raw": "【During Link】【Activate<DOT>Main】【Once per Turn】Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn.",
           "timings": [
             "DURING_LINK",
             "ACTIVATE_MAIN"
@@ -2811,14 +2789,14 @@
               ]
             },
             {
-              "action": "CANT_ATTACK",
-              "duration": "THIS_TURN",
+              "action": "RESTRICTION",
+              "rule": "CANT_CHOOSE_ENEMY_PLAYER",
               "target": {
                 "owner": "SELF",
-                "cardType": "BASE",
-                "count": 1,
-                "state": "ACTIVE"
-              }
+                "self": true,
+                "cardType": "UNIT"
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
@@ -2867,15 +2845,15 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 2,
-              "bothPlayers": false
+              "count": 2
             },
             {
               "action": "IF_PREVIOUS_SUCCEEDED",
               "thenSteps": [
                 {
                   "action": "DISCARD",
-                  "count": 2
+                  "count": 2,
+                  "targetOwner": "SELF"
                 }
               ]
             }
@@ -2923,18 +2901,13 @@
           "steps": [
             {
               "action": "PAIR_FROM_HAND",
-              "pilotFilter": {
-                "owner": "SELF",
-                "cardType": "PILOT",
-                "count": 1,
-                "trait": "AEUG",
-                "zone": "HAND"
-              },
               "target": {
                 "owner": "SELF",
                 "self": true,
                 "cardType": "UNIT",
-                "count": 1
+                "count": 1,
+                "trait": "AEUG",
+                "zone": "HAND"
               }
             }
           ]
@@ -2944,7 +2917,24 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "COLOR",
+          "color": "White",
+          "cardType": "BASE",
+          "minCopies": 4,
+          "reason": "Requires friendly White Base",
+          "primaryClause": true
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "AEUG",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (AEUG) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "GD02-072": {
       "cardNo": "GD02-072",
@@ -2988,7 +2978,16 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "COLOR",
+          "color": "White",
+          "cardType": "BASE",
+          "minCopies": 4,
+          "reason": "Requires friendly White Base",
+          "primaryClause": false
+        }
+      ]
     },
     "GD02-073": {
       "cardNo": "GD02-073",
@@ -3017,8 +3016,7 @@
             "target": {
               "owner": "SELF",
               "self": true,
-              "cardType": "UNIT",
-              "count": 1
+              "cardType": "UNIT"
             }
           }
         }
@@ -3275,7 +3273,16 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "COLOR",
+          "color": "White",
+          "cardType": "BASE",
+          "minCopies": 4,
+          "reason": "Requires friendly White Base",
+          "primaryClause": true
+        }
+      ]
     },
     "GD02-082": {
       "cardNo": "GD02-082",
@@ -3426,7 +3433,7 @@
           "triggerEvent": {
             "kind": "WHEN_RECOVER_HP",
             "actor": "SELF",
-            "raw": "when this Unit recovers HP"
+            "raw": "when this Unit recovers HP ,"
           },
           "linkRequirement": {
             "role": "PILOT_MATCHING_UNIT",
@@ -3455,8 +3462,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -3528,7 +3534,7 @@
             "stat": "AP",
             "delta": 1,
             "target": {
-              "owner": "ANY",
+              "owner": "SELF",
               "count": 1
             }
           }
@@ -3679,14 +3685,11 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true,
-              "trait": "Earth Federation"
+              "action": "REVEAL_TOP",
+              "count": 1
             },
             {
               "action": "RETURN_TO_DECK",
@@ -3720,13 +3723,6 @@
           ],
           "minCopies": 4,
           "reason": "Links with Unit matching [Flit Asuno]",
-          "primaryClause": false
-        },
-        {
-          "kind": "TRAIT",
-          "trait": "Earth Federation",
-          "minCopies": 8,
-          "reason": "Searches (Earth Federation) cards",
           "primaryClause": false
         }
       ]
@@ -4034,12 +4030,13 @@
             "targetKind": "UNIT",
             "targetFilter": {
               "owner": "ENEMY",
-              "cardType": "PILOT",
+              "cardType": "UNIT",
               "count": 1,
+              "paired": true,
               "trait": "Newtype"
             },
             "damageType": "BATTLE",
-            "raw": "when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage"
+            "raw": "when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage ,"
           },
           "condition": {
             "kind": "IS_YOUR_TURN"
@@ -4047,8 +4044,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -4095,6 +4091,7 @@
             {
               "action": "DISCARD",
               "count": 1,
+              "targetOwner": "SELF",
               "optional": true
             },
             {
@@ -4103,16 +4100,13 @@
                 {
                   "action": "LOOK_TOP",
                   "count": 3,
-                  "revealSearch": false,
-                  "trashRest": false
+                  "remainderPosition": "TOP"
                 }
               ]
             },
             {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true,
-              "trait": "Vulture"
+              "action": "REVEAL_TOP",
+              "count": 1
             },
             {
               "action": "RETURN_TO_DECK",
@@ -4133,15 +4127,7 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "Vulture",
-          "minCopies": 8,
-          "reason": "Searches (Vulture) cards",
-          "primaryClause": false
-        }
-      ]
+      "prerequisites": []
     },
     "GD02-095": {
       "cardNo": "GD02-095",
@@ -4187,8 +4173,9 @@
               },
               "duration": "THIS_BATTLE",
               "target": {
-                "owner": "ANY",
-                "count": 1
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
               }
             }
           ]
@@ -4245,16 +4232,8 @@
           },
           "steps": [
             {
-              "action": "DEPLOY_FROM_TRASH",
-              "free": false,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 2,
-                "trait": "Vagan",
-                "zone": "TRASH"
-              }
+              "action": "PAY_RESOURCE",
+              "amount": 1
             }
           ]
         }
@@ -4262,7 +4241,6 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "DEPLOY_FROM_TRASH",
           "AP_THRESHOLD_5"
         ]
       },
@@ -4280,14 +4258,6 @@
           "minCopies": 4,
           "reason": "Links with Unit matching [Desil Galette]",
           "primaryClause": false
-        },
-        {
-          "kind": "TRAIT",
-          "trait": "Vagan",
-          "cardType": "UNIT",
-          "minCopies": 8,
-          "reason": "Requires (Vagan) UNIT target",
-          "primaryClause": true
         }
       ]
     },
@@ -4342,7 +4312,16 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "COLOR",
+          "color": "White",
+          "cardType": "BASE",
+          "minCopies": 4,
+          "reason": "Requires friendly White Base",
+          "primaryClause": true
+        }
+      ]
     },
     "GD02-098": {
       "cardNo": "GD02-098",
@@ -4406,15 +4385,15 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             },
             {
               "action": "IF_PREVIOUS_SUCCEEDED",
               "thenSteps": [
                 {
                   "action": "DISCARD",
-                  "count": 1
+                  "count": 1,
+                  "targetOwner": "SELF"
                 }
               ]
             }
@@ -4543,8 +4522,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         },
@@ -4569,8 +4547,7 @@
             },
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -4730,8 +4707,7 @@
             {
               "action": "ADD_RESOURCE",
               "count": 1,
-              "ex": true,
-              "rested": false
+              "ex": true
             }
           ]
         }
@@ -4779,8 +4755,7 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
               "action": "RETURN_TO_DECK",
@@ -4805,8 +4780,7 @@
               "thenSteps": [
                 {
                   "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
+                  "count": 1
                 }
               ]
             }
@@ -4823,7 +4797,7 @@
           "trait": "Newtype",
           "cardType": "PILOT",
           "minCopies": 4,
-          "reason": "Requires (Newtype) PILOT target",
+          "reason": "Requires (Newtype)",
           "primaryClause": false
         }
       ]
@@ -4847,13 +4821,17 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "It can't receive battle damage from enemy Units during this battle.",
               "damageType": "BATTLE",
               "duration": "THIS_BATTLE",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT_TOKEN",
                 "token": true,
+                "count": 1
+              },
+              "sourceFilter": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
                 "count": 1
               }
             }
@@ -4896,9 +4874,20 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "During this battle, your shield area cards can't receive damage from enemy Units that are Lv.3 or lower.",
               "damageType": "ANY",
-              "duration": "THIS_BATTLE"
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "SHIELD",
+                "count": 1,
+                "zone": "SHIELD"
+              },
+              "sourceFilter": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 3
+              }
             }
           ]
         },
@@ -4964,7 +4953,6 @@
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": "ALL",
-                "other": true,
                 "linked": true
               }
             }
@@ -4999,10 +4987,11 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
-                "owner": "SELF",
+                "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
-                "trait": "Clan"
+                "state": "ACTIVE",
+                "lvMax": 4
               }
             }
           ]
@@ -5012,16 +5001,7 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "Clan",
-          "cardType": "UNIT",
-          "minCopies": 4,
-          "reason": "Requires (Clan) UNIT target",
-          "primaryClause": true
-        }
-      ]
+      "prerequisites": []
     },
     "GD02-109": {
       "cardNo": "GD02-109",
@@ -5090,24 +5070,15 @@
           "oncePerTurn": false,
           "steps": [
             {
-              "action": "DEPLOY_FROM_TRASH",
-              "free": false,
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "lvMax": 5,
-                "zone": "TRASH"
-              }
+              "action": "PAY_RESOURCE",
+              "amount": 1
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "DEPLOY_FROM_TRASH"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -5202,8 +5173,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         },
@@ -5436,10 +5406,11 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
-                "owner": "SELF",
+                "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
-                "trait": "Vulture"
+                "state": "ACTIVE",
+                "lvMax": 4
               }
             }
           ]
@@ -5462,16 +5433,7 @@
         ],
         "enables": []
       },
-      "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "Vulture",
-          "cardType": "UNIT",
-          "minCopies": 4,
-          "reason": "Requires (Vulture) UNIT target",
-          "primaryClause": true
-        }
-      ]
+      "prerequisites": []
     },
     "GD02-117": {
       "cardNo": "GD02-117",
@@ -5513,12 +5475,12 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 3,
-              "bothPlayers": false
+              "count": 3
             },
             {
               "action": "DISCARD",
-              "count": 2
+              "count": 2,
+              "targetOwner": "SELF"
             }
           ]
         }
@@ -5860,10 +5822,11 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
-                "owner": "SELF",
-                "cardType": "UNIT_TOKEN",
-                "token": true,
-                "count": 1
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "state": "ACTIVE",
+                "apMax": 5
               }
             }
           ]
@@ -6006,11 +5969,7 @@
                 {
                   "action": "DISCARD",
                   "count": 1,
-                  "target": {
-                    "owner": "ANY",
-                    "count": 1,
-                    "color": "Red"
-                  },
+                  "targetOwner": "SELF",
                   "optional": true
                 }
               ]
@@ -6020,8 +5979,7 @@
               "thenSteps": [
                 {
                   "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
+                  "count": 1
                 }
               ]
             }
@@ -6244,7 +6202,7 @@
           "trait": "Teiwaz",
           "cardType": "UNIT",
           "minCopies": 4,
-          "reason": "Requires (Teiwaz) UNIT target",
+          "reason": "Requires (Teiwaz)",
           "primaryClause": false
         }
       ]
@@ -6295,11 +6253,14 @@
           "duration": "CONTINUOUS",
           "modifier": {
             "type": "PROHIBITION",
-            "rule": "CANT_DEPLOY",
+            "rule": "CANT_RECEIVE_EFFECT_DAMAGE",
             "target": {
               "owner": "SELF",
               "self": true,
-              "cardType": "UNIT"
+              "cardType": "BASE"
+            },
+            "sourceFilter": {
+              "owner": "ENEMY"
             }
           }
         }
@@ -6382,7 +6343,7 @@
           "trait": "Gjallarhorn",
           "cardType": "UNIT",
           "minCopies": 4,
-          "reason": "Requires (Gjallarhorn) UNIT target",
+          "reason": "Requires (Gjallarhorn)",
           "primaryClause": false
         }
       ]

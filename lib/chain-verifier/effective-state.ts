@@ -1,9 +1,9 @@
 import type { GundamCardPrint } from '../../types/gundam.ts';
-import type { ContinuousModifierAst, ProhibitionRule } from '../cfg-parser.ts';
+import type { ContinuousModifierAst } from '../cfg-parser.ts';
 import { type KeywordAbility, type KeywordName } from '../effect-parser.ts';
 import { evaluateCondition, evaluateScaleMetric } from './conditions';
 import { getCardAbilities, isUnitLinked } from './state-helpers';
-import { ChainMatchState, ChainSide, ChainUnitInstance, EffectiveUnitState } from './types';
+import { ChainMatchState, ChainSide, ChainUnitInstance, EffectiveUnitState, TemporaryModifier } from './types';
 
 export function getActiveContinuousModifiers(
   unit: ChainUnitInstance,
@@ -110,20 +110,23 @@ export function evaluateUnitEffectiveState(
   maxHp = Math.max(0, maxHp);
 
   // Layer 4: Prohibitions ("can't") — unconditionally dominate Layers 1–3
-  const prohibitions = new Set<ProhibitionRule>();
+  const prohibitions = new Set<NonNullable<TemporaryModifier['rule']>>();
   const damageImmunities: EffectiveUnitState['damageImmunities'] = [];
 
   for (const cm of continuousMods) {
     if (cm.layer !== 4 || cm.modifier.type !== 'PROHIBITION') continue;
-    prohibitions.add(cm.modifier.rule);
-    if (cm.modifier.rule === 'CANT_RECEIVE_BATTLE_DAMAGE') {
-      const apM = cm.raw.match(/(\d+)\s+or less AP/i);
-      const lvM = cm.raw.match(/Lv\.(\d+)\s+or lower/i);
-      damageImmunities.push({
-        damageType: 'BATTLE',
-        ...(apM ? { apMax: parseInt(apM[1], 10) } : {}),
-        ...(lvM ? { lvMax: parseInt(lvM[1], 10) } : {}),
-      });
+    const mod = cm.modifier;
+    const allRules = [mod.rule, ...(mod.additionalRules ?? [])];
+    for (const r of allRules) {
+      prohibitions.add(r);
+      if (r === 'CANT_RECEIVE_BATTLE_DAMAGE' || r === 'CANT_RECEIVE_EFFECT_DAMAGE' || r === 'CANT_RECEIVE_DAMAGE') {
+        damageImmunities.push({
+          damageType:
+            r === 'CANT_RECEIVE_BATTLE_DAMAGE' ? 'BATTLE' : r === 'CANT_RECEIVE_EFFECT_DAMAGE' ? 'EFFECT' : 'ANY',
+          ...(mod.sourceFilter?.apMax !== undefined ? { apMax: mod.sourceFilter.apMax } : {}),
+          ...(mod.sourceFilter?.lvMax !== undefined ? { lvMax: mod.sourceFilter.lvMax } : {}),
+        });
+      }
     }
   }
   for (const tm of unit.temporaryModifiers) {

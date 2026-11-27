@@ -3,7 +3,7 @@ import { doesPilotLinkUnit, isCommandPilot } from '@/lib/gundam-keywords';
 import { scoreSingleCardSignals } from '@/lib/deck-engine';
 import { applySandboxMove, canActivateUnitMain, canPayCard, canUnitAttack } from './moves';
 import { getLegalTargetOptions } from './targeting';
-import { effectiveAp, effectiveRemainingHp, unitHasKeyword } from './unit-stats';
+import { effectiveAp, effectiveRemainingHp, unitHasKeyword, unitHasProhibition } from './unit-stats';
 
 export function estimateBoardWinScore(state: SandboxMatchState, perspective: SandboxSide): number {
   const me = state.players[perspective];
@@ -41,7 +41,7 @@ export function evaluateSandboxBestMoves(
   for (const card of player.hand) {
     if (seenCardNos.has(card.cardNo)) continue;
     seenCardNos.add(card.cardNo);
-    if (!canPayCard(player, card)) continue;
+    if (!canPayCard(player, card, state, side)) continue;
 
     if (card.type === 'UNIT' && player.battleArea.length < 6) {
       const sig = scoreSingleCardSignals(card);
@@ -168,12 +168,18 @@ export function evaluateSandboxBestMoves(
 
   // 3. Evaluate Attacks (Shields vs Rested Enemy Units)
   for (const unit of player.battleArea) {
-    if (!canUnitAttack(unit, state.turn)) continue;
-    const myAp = effectiveAp(unit);
-    const myHp = effectiveRemainingHp(unit);
+    if (!canUnitAttack(unit, state.turn, state, side)) continue;
+    if (unitHasProhibition(unit, 'CANT_CHOOSE_ENEMY_PLAYER', state, side)) continue;
+    const myAp = effectiveAp(unit, state, side);
+    const myHp = effectiveRemainingHp(unit, state, side);
     const highManeuver = unitHasKeyword(unit, 'High-Maneuver', state, side);
     const oppBlocker = !highManeuver
-      ? opponent.battleArea.find((u) => !u.rested && unitHasKeyword(u, 'Blocker', state, oppSide))
+      ? opponent.battleArea.find(
+          (u) =>
+            !u.rested &&
+            unitHasKeyword(u, 'Blocker', state, oppSide) &&
+            !unitHasProhibition(u, 'CANT_ACTIVATE_BLOCKER', state, oppSide)
+        )
       : undefined;
 
     const isLethal = opponent.shields === 0 && !opponent.base && !oppBlocker;

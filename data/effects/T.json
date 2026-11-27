@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "T",
   "cardCount": 37,
   "effects": {
@@ -227,7 +227,10 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
-            }
+            },
+            "additionalRules": [
+              "CANT_BE_PAIRED"
+            ]
           }
         }
       ],
@@ -496,7 +499,10 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
-            }
+            },
+            "additionalRules": [
+              "CANT_ATTACK"
+            ]
           }
         }
       ],

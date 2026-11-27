@@ -1,6 +1,12 @@
 import type { GundamCardPrint } from '../../types/gundam.ts';
 import type { ProhibitionRule } from '../cfg-parser.ts';
-import { type EffectDuration, type KeywordAbility, type KeywordName, type TargetSelector } from '../effect-parser.ts';
+import {
+  type EffectDuration,
+  type EffectStep,
+  type KeywordAbility,
+  type KeywordName,
+  type TargetSelector,
+} from '../effect-parser.ts';
 
 export type ChainSide = 'A' | 'B';
 
@@ -30,7 +36,7 @@ export interface TemporaryModifier {
   delta?: number;
   keyword?: KeywordAbility;
   traits?: string[];
-  rule?: ProhibitionRule;
+  rule?: ProhibitionRule | Extract<EffectStep, { action: 'RESTRICTION' }>['rule'];
   sourceFilter?: TargetSelector;
 }
 
@@ -173,7 +179,7 @@ export interface EffectiveUnitState {
   keywords: Set<KeywordName>;
   keywordValues: Map<KeywordName, number | null>;
   traits: Set<string>;
-  prohibitions: Set<ProhibitionRule>;
+  prohibitions: Set<NonNullable<TemporaryModifier['rule']>>;
   damageImmunities: { damageType: 'BATTLE' | 'EFFECT' | 'ANY'; apMax?: number; lvMax?: number }[];
   canAttack: boolean;
   canAttackPlayer: boolean;

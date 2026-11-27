@@ -179,8 +179,15 @@ export function evaluateCondition(
       if (cond.paired && !selfUnit.pairedPilot) return false;
       if (cond.damaged && selfUnit.damage <= 0) return false;
       if (cond.keyword) {
-        const kw = getCardAbilities(selfUnit.card).keywords.some((k) => k.name === cond.keyword);
-        if (!kw) return false;
+        const hasBaseKw = getCardAbilities(selfUnit.card).keywords.some((k) => k.name === cond.keyword);
+        const hasPilotKw =
+          selfUnit.pairedPilot
+            ? getCardAbilities(selfUnit.pairedPilot).keywords.some((k) => k.name === cond.keyword)
+            : false;
+        const hasTempKw = selfUnit.temporaryModifiers.some(
+          (tm) => tm.layer === 2 && tm.keyword?.name === cond.keyword
+        );
+        if (!hasBaseKw && !hasPilotKw && !hasTempKw) return false;
       }
       if (
         cond.traits?.length &&

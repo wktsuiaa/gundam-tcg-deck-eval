@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST03",
   "cardCount": 16,
   "effects": {
@@ -45,7 +45,7 @@
             "actor": "SELF",
             "targetKind": "SHIELD",
             "damageType": "BATTLE",
-            "raw": "when this Unit destroys an enemy shield area card with battle damage"
+            "raw": "when this Unit destroys an enemy shield area card with battle damage ,"
           },
           "condition": {
             "kind": "IS_YOUR_TURN"
@@ -82,7 +82,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】<Support 2>",
+          "raw": "【Activate<DOT>Main】<Support 2>",
           "timings": [
             "ACTIVATE_MAIN"
           ],
@@ -134,7 +134,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Activate･Main】<Support 2>",
+          "raw": "【Activate<DOT>Main】<Support 2>",
           "timings": [
             "ACTIVATE_MAIN"
           ],
@@ -195,14 +195,11 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
-              "action": "LOOK_TOP",
-              "count": 1,
-              "revealSearch": true,
-              "trait": "Zeon"
+              "action": "REVEAL_TOP",
+              "count": 1
             },
             {
               "action": "RETURN_TO_DECK",
@@ -220,15 +217,7 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "Zeon",
-          "minCopies": 8,
-          "reason": "Searches (Zeon) cards",
-          "primaryClause": false
-        }
-      ]
+      "prerequisites": []
     },
     "ST03-007": {
       "cardNo": "ST03-007",
@@ -293,7 +282,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Deploy】Deploy 1 rested [Zaku Ⅱ]((Zeon)･AP1･HP1) Unit token.",
+          "raw": "【Deploy】Deploy 1 rested [Zaku Ⅱ]((Zeon)<DOT>AP1<DOT>HP1) Unit token.",
           "timings": [
             "DEPLOY"
           ],
@@ -306,7 +295,7 @@
               "hp": 1,
               "name": "Zaku Ⅱ",
               "traits": [
-                "(Zeon"
+                "Zeon"
               ]
             }
           ]
@@ -423,11 +412,34 @@
             {
               "action": "MODIFY_AP",
               "delta": 1,
+              "duration": "THIS_TURN",
               "target": {
                 "owner": "SELF",
                 "self": true,
-                "cardType": "UNIT",
-                "count": 1
+                "cardType": "UNIT"
+              }
+            },
+            {
+              "action": "MODIFY_AP",
+              "delta": 1,
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
+              }
+            },
+            {
+              "action": "GRANT_KEYWORD",
+              "keyword": {
+                "name": "High-Maneuver",
+                "value": null
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "SELF",
+                "self": true,
+                "cardType": "UNIT"
               }
             }
           ]
@@ -562,13 +574,18 @@
           "steps": [
             {
               "action": "DAMAGE_PROOF",
-              "summary": "It can't receive battle damage from enemy Units with 2 or less AP during this battle.",
               "damageType": "BATTLE",
               "duration": "THIS_BATTLE",
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
                 "count": 1
+              },
+              "sourceFilter": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "apMax": 2
               }
             }
           ]
@@ -672,7 +689,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 1,
-          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, deploy 1 rested [Char's Zaku Ⅱ]((Zeon)･AP3･HP1) Unit token.",
+          "raw": "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, deploy 1 rested [Char's Zaku Ⅱ]((Zeon)<DOT>AP3<DOT>HP1) Unit token.",
           "timings": [
             "DEPLOY"
           ],
@@ -695,7 +712,7 @@
                   "hp": 1,
                   "name": "Char's Zaku Ⅱ",
                   "traits": [
-                    "(Zeon"
+                    "Zeon"
                   ]
                 }
               ]

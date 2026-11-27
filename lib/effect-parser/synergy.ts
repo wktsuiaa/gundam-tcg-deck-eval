@@ -1,5 +1,5 @@
 import type { GundamCardPrint } from '@/types/gundam';
-import { parseCardEffects } from './clause-compile.ts';
+import { type CfgParseResult, getAbilitySteps, parseCardAbilities } from '../cfg-parser.ts';
 import { type EffectCondition, type EffectStep } from './types.ts';
 
 export type SynergyNodeKey =
@@ -40,19 +40,22 @@ export function flattenEffectSteps(steps: EffectStep[]): EffectStep[] {
   return out;
 }
 
-/** Derives high-signal Enabler <-> Payoff Knowledge Map edges from parsed Effect Clauses. */
+/** Derives high-signal Enabler <-> Payoff Knowledge Map edges strictly from structured AbilityAst nodes. */
 export function extractSynergyProfile(
   card: Pick<GundamCardPrint, 'cardNo' | 'type' | 'ap' | 'effect'> &
     Partial<Pick<GundamCardPrint, 'name' | 'traits' | 'link'>>,
-  parsed = parseCardEffects(card)
+  parsed: Pick<CfgParseResult, 'keywords' | 'abilities'> = parseCardAbilities(card)
 ): CardSynergyProfile {
   const requires = new Set<SynergyNodeKey>();
   const enables = new Set<SynergyNodeKey>();
 
-  for (const clause of parsed.clauses) {
+  for (const ab of parsed.abilities) {
     const conds: EffectCondition[] = [];
-    collectNestedConditions(clause.condition, conds);
-    for (const step of flattenEffectSteps(clause.steps)) {
+    if ('condition' in ab && ab.condition) {
+      collectNestedConditions(ab.condition, conds);
+    }
+    const flatSteps = flattenEffectSteps(getAbilitySteps(ab));
+    for (const step of flatSteps) {
       if (step.action === 'IF_CONDITION') collectNestedConditions(step.condition, conds);
       if (step.action === 'GRANT_CLAUSE') collectNestedConditions(step.clause.condition, conds);
     }
@@ -69,7 +72,7 @@ export function extractSynergyProfile(
       }
     }
 
-    for (const step of flattenEffectSteps(clause.steps)) {
+    for (const step of flatSteps) {
       if (step.action === 'DEPLOY_FROM_TRASH') enables.add('DEPLOY_FROM_TRASH');
       if (step.action === 'DISCARD' || step.action === 'MILL' || (step.action === 'LOOK_TOP' && step.trashRest)) {
         enables.add('TRASH_COUNT_FUEL');

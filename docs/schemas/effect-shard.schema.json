@@ -9,7 +9,7 @@
   "properties": {
     "schemaVersion": {
       "type": "integer",
-      "const": 1
+      "const": 2
     },
     "setPrefix": {
       "type": "string",
@@ -389,6 +389,7 @@
             "kind": { "const": "SELF_STATE" },
             "color": { "$ref": "#/$defs/CardColor" },
             "traits": { "type": "array", "items": { "type": "string" } },
+            "linked": { "type": "boolean" },
             "paired": { "type": "boolean" },
             "pairedPilotLvMax": { "type": "integer" },
             "damaged": { "type": "boolean" },
@@ -520,15 +521,6 @@
           "required": ["kind"],
           "additionalProperties": false,
           "properties": { "kind": { "const": "PHASE_AT_START_OF_OPPONENT_TURN" } }
-        },
-        {
-          "type": "object",
-          "required": ["kind", "text"],
-          "additionalProperties": false,
-          "properties": {
-            "kind": { "const": "RAW_CONDITION" },
-            "text": { "type": "string" }
-          }
         }
       ]
     },
@@ -833,16 +825,16 @@
         },
         {
           "type": "object",
-          "required": ["action", "summary"],
+          "required": ["action"],
           "additionalProperties": false,
           "properties": {
             "action": { "const": "DAMAGE_PROOF" },
-            "summary": { "type": "string" },
             "amount": { "type": "integer" },
             "maxDamage": { "type": "integer" },
             "damageType": { "type": "string", "enum": ["BATTLE", "EFFECT", "ANY"] },
             "duration": { "$ref": "#/$defs/EffectDuration" },
-            "target": { "$ref": "#/$defs/TargetSelector" }
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "sourceFilter": { "$ref": "#/$defs/TargetSelector" }
           }
         },
         {
@@ -986,7 +978,7 @@
         },
         {
           "type": "object",
-          "required": ["action", "rule", "target", "summary"],
+          "required": ["action", "rule", "target"],
           "additionalProperties": false,
           "properties": {
             "action": { "const": "RESTRICTION" },
@@ -1000,12 +992,18 @@
                 "ONLY_ATTACK_WHEN_DEPLOYED",
                 "DEPLOYED_RESTED",
                 "INSTEAD_REST_TARGET",
-                "CANT_ACTIVATE_BLOCKER"
+                "CANT_ACTIVATE_BLOCKER",
+                "CANT_BE_DESTROYED",
+                "CANT_BE_CHOSEN",
+                "CANT_BLOCK",
+                "CANT_CHOOSE_ENEMY_PLAYER",
+                "CANT_ATTACK",
+                "CANT_REDUCE_AP"
               ]
             },
             "target": { "$ref": "#/$defs/TargetSelector" },
-            "duration": { "$ref": "#/$defs/EffectDuration" },
-            "summary": { "type": "string" }
+            "sourceFilter": { "$ref": "#/$defs/TargetSelector" },
+            "duration": { "$ref": "#/$defs/EffectDuration" }
           }
         },
         {
@@ -1057,7 +1055,7 @@
     },
     "EffectClause": {
       "type": "object",
-      "required": ["raw", "timings", "oncePerTurn", "steps", "unparsedResidual"],
+      "required": ["raw", "timings", "oncePerTurn", "steps"],
       "additionalProperties": false,
       "properties": {
         "raw": { "type": "string" },
@@ -1075,8 +1073,7 @@
         "steps": {
           "type": "array",
           "items": { "$ref": "#/$defs/EffectStep" }
-        },
-        "unparsedResidual": { "type": "string" }
+        }
       }
     },
     "SynergyNodeKey": {
@@ -1115,6 +1112,39 @@
         "reason": { "type": "string" }
       }
     },
+    "ProhibitionRule": {
+      "type": "string",
+      "enum": [
+        "CANT_ATTACK",
+        "CANT_BLOCK",
+        "CANT_ACTIVATE_BLOCKER",
+        "CANT_RECEIVE_BATTLE_DAMAGE",
+        "CANT_RECEIVE_EFFECT_DAMAGE",
+        "CANT_RECEIVE_DAMAGE",
+        "CANT_REDUCE_AP",
+        "CANT_CHOOSE_ENEMY_PLAYER",
+        "CANT_BE_CHOSEN",
+        "CANT_SET_ACTIVE",
+        "CANT_BE_RESTED",
+        "CANT_BE_PAIRED",
+        "CANT_DEPLOY",
+        "CANT_BE_DESTROYED"
+      ]
+    },
+    "ReplacementOutcome": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["PREVENT_DAMAGE", "REST_OTHER", "PREVENT_DESTROY", "PREVENT_MOVE"]
+        },
+        "damageType": { "type": "string", "enum": ["BATTLE", "EFFECT", "ANY"] },
+        "target": { "$ref": "#/$defs/TargetSelector" },
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/EffectStep" } }
+      }
+    },
     "EffectClauseAst": {
       "type": "object",
       "required": ["kind", "clauseIndex", "raw", "timings", "oncePerTurn", "steps"],
@@ -1131,16 +1161,7 @@
         "cost": { "$ref": "#/$defs/ActivationCost" },
         "condition": { "$ref": "#/$defs/EffectCondition" },
         "steps": { "type": "array", "items": { "$ref": "#/$defs/EffectStep" } },
-        "modalGroup": { "type": "string" },
-        "insteadUpgrade": {
-          "type": "object",
-          "required": ["rawUpgrade"],
-          "additionalProperties": false,
-          "properties": {
-            "condition": { "$ref": "#/$defs/EffectCondition" },
-            "rawUpgrade": { "type": "string" }
-          }
-        }
+        "modalGroup": { "type": "string" }
       }
     },
     "ReplacementEffectAst": {
@@ -1153,7 +1174,7 @@
         "intercepts",
         "subject",
         "optional",
-        "replacementSummary",
+        "outcome",
         "maxPerEventInstance"
       ],
       "additionalProperties": false,
@@ -1167,12 +1188,14 @@
           "enum": ["WOULD_BE_DESTROYED", "WOULD_TAKE_DAMAGE", "WOULD_REST", "WOULD_MOVE_ZONE"]
         },
         "subject": { "$ref": "#/$defs/TargetSelector" },
+        "sourceFilter": { "$ref": "#/$defs/TargetSelector" },
         "pairFilter": { "$ref": "#/$defs/PairFilter" },
+        "oncePerTurn": { "type": "boolean" },
         "condition": { "$ref": "#/$defs/EffectCondition" },
         "optional": { "type": "boolean" },
         "duration": { "$ref": "#/$defs/EffectDuration" },
         "steps": { "type": "array", "items": { "$ref": "#/$defs/EffectStep" } },
-        "replacementSummary": { "type": "string" },
+        "outcome": { "$ref": "#/$defs/ReplacementOutcome" },
         "maxPerEventInstance": { "const": 1 }
       }
     },
@@ -1192,12 +1215,134 @@
         "oncePerTurn": { "type": "boolean" },
         "condition": { "$ref": "#/$defs/EffectCondition" },
         "duration": { "$ref": "#/$defs/EffectDuration" },
-        "modifier": { "type": "object" }
+        "modifier": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["type", "stat", "delta", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "MODIFY_STAT" },
+                "stat": { "type": "string", "enum": ["AP", "HP"] },
+                "delta": { "type": "integer" },
+                "scaleBy": { "$ref": "#/$defs/ScaleMetric" },
+                "target": { "$ref": "#/$defs/TargetSelector" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "amount", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "COST_REDUCTION" },
+                "amount": { "type": "integer" },
+                "lvDelta": { "type": "integer" },
+                "perTarget": { "$ref": "#/$defs/ScaleMetric" },
+                "target": { "$ref": "#/$defs/TargetSelector" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "keyword", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "GRANT_KEYWORD" },
+                "keyword": { "$ref": "#/$defs/KeywordAbility" },
+                "scaleBy": { "$ref": "#/$defs/ScaleMetric" },
+                "target": { "$ref": "#/$defs/TargetSelector" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "traits", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "GRANT_TRAIT" },
+                "traits": { "type": "array", "items": { "type": "string" } },
+                "target": { "$ref": "#/$defs/TargetSelector" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "alias"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "NAME_ALIAS" },
+                "alias": { "type": "string" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "pilotName"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "GRANT_PILOT_MODE" },
+                "pilotName": { "type": "string" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "rule", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "PROHIBITION" },
+                "rule": { "$ref": "#/$defs/ProhibitionRule" },
+                "target": { "$ref": "#/$defs/TargetSelector" },
+                "sourceFilter": { "$ref": "#/$defs/TargetSelector" },
+                "damageMax": { "type": "integer" },
+                "additionalRules": { "type": "array", "items": { "$ref": "#/$defs/ProhibitionRule" } }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "ALLOW_ATTACK_ACTIVE" },
+                "target": { "$ref": "#/$defs/TargetSelector" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "FREEZE_AURA" },
+                "target": { "$ref": "#/$defs/TargetSelector" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "rule", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "RESTRICTION" },
+                "rule": { "type": "string" },
+                "target": { "$ref": "#/$defs/TargetSelector" },
+                "sourceFilter": { "$ref": "#/$defs/TargetSelector" }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["type", "rule", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "const": "REDIRECT_ATTACK_TARGET" },
+                "rule": {
+                  "type": "string",
+                  "enum": ["MUST_ATTACK_TARGET", "CANT_CHOOSE_TARGET", "CANT_CHOOSE_SAME_PLAYER"]
+                },
+                "target": { "$ref": "#/$defs/TargetSelector" },
+                "attackerFilter": { "$ref": "#/$defs/TargetSelector" }
+              }
+            }
+          ]
+        }
       }
     },
     "CustomHookAst": {
       "type": "object",
-      "required": ["kind", "clauseIndex", "hookId", "version", "raw", "prerequisites"],
+      "required": ["kind", "clauseIndex", "hookId", "version", "raw", "timings", "steps", "prerequisites"],
       "additionalProperties": false,
       "properties": {
         "kind": { "const": "CUSTOM_HOOK" },
@@ -1205,6 +1350,9 @@
         "hookId": { "type": "string", "minLength": 1 },
         "version": { "type": "integer", "minimum": 1 },
         "raw": { "type": "string" },
+        "timings": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/EffectTiming" } },
+        "cost": { "$ref": "#/$defs/ActivationCost" },
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/EffectStep" } },
         "prerequisites": { "type": "array", "items": { "$ref": "#/$defs/EffectPrerequisite" } }
       }
     },
@@ -1252,10 +1400,6 @@
         "keywords": {
           "type": "array",
           "items": { "$ref": "#/$defs/KeywordAbility" }
-        },
-        "clauses": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/EffectClause" }
         },
         "abilities": {
           "type": "array",

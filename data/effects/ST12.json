@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST12",
   "cardCount": 16,
   "effects": {
@@ -14,7 +14,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【During Pair･Lv.5 or Higher Pilot】During your turn, when this Unit destroys an enemy Unit with damage, deal 2 damage to all enemy Units with 5 or less AP.",
+          "raw": "【During Pair<DOT>Lv.5 or Higher Pilot】During your turn, when this Unit destroys an enemy Unit with damage, deal 2 damage to all enemy Units with 5 or less AP.",
           "timings": [
             "DURING_PAIR",
             "WHEN_DESTROY_BY_BATTLE"
@@ -30,7 +30,7 @@
               "count": 1
             },
             "damageType": "ANY",
-            "raw": "when this Unit destroys an enemy Unit with damage"
+            "raw": "when this Unit destroys an enemy Unit with damage ,"
           },
           "pairFilter": {
             "lvMin": 5
@@ -146,7 +146,7 @@
               "count": 1
             },
             "damageType": "ANY",
-            "raw": "when this Unit destroys an enemy Unit with damage"
+            "raw": "when this Unit destroys an enemy Unit with damage ,"
           },
           "condition": {
             "kind": "IS_YOUR_TURN"
@@ -212,6 +212,7 @@
             {
               "action": "DISCARD",
               "count": 1,
+              "targetOwner": "SELF",
               "optional": true
             },
             {
@@ -219,8 +220,7 @@
               "thenSteps": [
                 {
                   "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
+                  "count": 1
                 }
               ]
             }
@@ -246,15 +246,20 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【During Pair】【Activate･Main】Exile 4 cards in your trash from the game：This Unit gains <First Strike> during this turn.",
+          "raw": "【During Pair】【Activate<DOT>Main】Exile 4 cards in your trash from the game<COST_SEP>This Unit gains <First Strike> during this turn.",
           "timings": [
             "DURING_PAIR",
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "Exile 4 cards in your trash from the game",
-            "exileFromTrashCount": 4
+            "exileFromTrashCount": 4,
+            "exileFilter": {
+              "owner": "SELF",
+              "cardType": "CARD",
+              "count": 4,
+              "zone": "TRASH"
+            }
           },
           "steps": [
             {
@@ -275,14 +280,19 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 1,
-          "raw": "【Activate･Action】Exile 4 cards in your trash from the game：This Unit gains <Suppression> during this battle.",
+          "raw": "【Activate<DOT>Action】Exile 4 cards in your trash from the game<COST_SEP>This Unit gains <Suppression> during this battle.",
           "timings": [
             "ACTIVATE_ACTION"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "Exile 4 cards in your trash from the game",
-            "exileFromTrashCount": 4
+            "exileFromTrashCount": 4,
+            "exileFilter": {
+              "owner": "SELF",
+              "cardType": "CARD",
+              "count": 4,
+              "zone": "TRASH"
+            }
           },
           "steps": [
             {
@@ -416,7 +426,8 @@
               "thenSteps": [
                 {
                   "action": "DISCARD",
-                  "count": 1
+                  "count": 1,
+                  "targetOwner": "SELF"
                 }
               ]
             }
@@ -481,7 +492,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 2,
-          "raw": "【Activate･Action】【Once per Turn】Choose 1 damaged enemy Unit battling this Unit. Deal 2 damage to it.",
+          "raw": "【Activate<DOT>Action】【Once per Turn】Choose 1 damaged enemy Unit battling this Unit. Deal 2 damage to it.",
           "timings": [
             "ACTIVATE_ACTION"
           ],
@@ -566,8 +577,7 @@
             {
               "action": "LOOK_TOP",
               "count": 2,
-              "revealSearch": false,
-              "trashRest": false
+              "remainderPosition": "TOP"
             },
             {
               "action": "MILL",
@@ -582,9 +592,8 @@
               },
               "thenSteps": [
                 {
-                  "action": "LOOK_TOP",
-                  "count": 1,
-                  "revealSearch": true
+                  "action": "DRAW",
+                  "count": 1
                 }
               ],
               "replacesPrevious": true
@@ -653,21 +662,7 @@
             "MAIN"
           ],
           "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "FORCE_BATTLE_DAMAGE_STEP",
-              "attacker": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              },
-              "defender": {
-                "owner": "ENEMY",
-                "cardType": "UNIT",
-                "count": 1
-              }
-            }
-          ]
+          "steps": []
         }
       ],
       "synergy": {
@@ -689,7 +684,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Action】Choose 1 friendly Unit. It gains the following effect during this battle： When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
+          "raw": "【Action】Choose 1 friendly Unit. It gains the following effect during this battle<COST_SEP> When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
           "timings": [
             "ACTION"
           ],
@@ -697,14 +692,8 @@
           "steps": [
             {
               "action": "GRANT_CLAUSE",
-              "duration": "THIS_BATTLE",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1
-              },
               "clause": {
-                "raw": "When this Unit destroys an enemy Unit with battle damage, choose 1 enemy Unit with 2 or less AP. Destroy it.",
+                "raw": "When this Unit destroys an enemy Unit with battle damage ,, choose 1 enemy Unit with 2 or less AP . Destroy it .",
                 "timings": [
                   "WHEN_DESTROY_BY_BATTLE"
                 ],
@@ -719,7 +708,7 @@
                     "count": 1
                   },
                   "damageType": "BATTLE",
-                  "raw": "When this Unit destroys an enemy Unit with battle damage"
+                  "raw": "When this Unit destroys an enemy Unit with battle damage ,"
                 },
                 "steps": [
                   {
@@ -731,8 +720,13 @@
                       "apMax": 2
                     }
                   }
-                ],
-                "unparsedResidual": ""
+                ]
+              },
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
               }
             }
           ]
@@ -853,13 +847,12 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 2,
-          "raw": "【Activate･Main】Rest this Base：If a friendly Unit paired with a Pilot has destroyed an enemy Unit with battle damage this turn, choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it.",
+          "raw": "【Activate<DOT>Main】Rest this Base<COST_SEP>If a friendly Unit paired with a Pilot has destroyed an enemy Unit with battle damage this turn, choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it.",
           "timings": [
             "ACTIVATE_MAIN"
           ],
           "oncePerTurn": false,
           "cost": {
-            "raw": "Rest this Base",
             "restSelf": true
           },
           "condition": {

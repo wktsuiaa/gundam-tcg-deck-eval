@@ -1,7 +1,13 @@
 import type { CardColor, GundamCardPrint } from '@/types/gundam';
-import { parseCardEffects } from './clause-compile.ts';
+import {
+  type AbilityAst,
+  type CfgParseResult,
+  getAbilitySteps,
+  getAbilityTimings,
+  parseCardAbilities,
+} from '../cfg-parser.ts';
 import { collectNestedConditions, flattenEffectSteps } from './synergy.ts';
-import { type EffectClause, type EffectCondition } from './types.ts';
+import { type EffectCondition, type TargetSelector } from './types.ts';
 
 export interface EffectPrerequisite {
   kind: 'TRAIT' | 'COLOR' | 'CARD_TYPE' | 'NAME' | 'LINK';
@@ -16,69 +22,141 @@ export interface EffectPrerequisite {
   reason: string;
 }
 
-export function isNonFunctionalTag(clause: EffectClause): boolean {
-  return clause.steps.length === 0 && !clause.condition && !clause.pairFilter && !clause.linkRequirement;
+export function isNonFunctionalAbility(ab: AbilityAst): boolean {
+  if (ab.kind === 'DIAGNOSTIC') return true;
+  if (ab.kind !== 'EFFECT_CLAUSE') return false;
+  return ab.steps.length === 0 && !ab.condition && !ab.pairFilter && !ab.linkRequirement;
 }
 
-/** Extracts deck-composition Effect Prerequisites (4 copies for single-target/pair/link, 8 for density/search/mill-scale). */
+function pushSelectorPrerequisites(
+  t: TargetSelector,
+  minCopies: 4 | 8,
+  out: Omit<EffectPrerequisite, 'primaryClause'>[]
+) {
+  if (t.owner !== 'SELF') return;
+  const trait = t.trait ?? t.traits?.[0];
+  const ct =
+    t.cardType === 'UNIT' || t.cardType === 'PILOT' || t.cardType === 'BASE' || t.cardType === 'COMMAND'
+      ? t.cardType
+      : undefined;
+  if (trait) {
+    out.push({
+      kind: 'TRAIT',
+      trait,
+      ...(t.traits && t.traits.length > 1 ? { anyTraits: t.traits } : {}),
+      cardType: ct,
+      minCopies,
+      reason: `Requires (${trait})${ct ? ` ${ct}` : ''} target`,
+    });
+  } else if (t.nameContains) {
+    out.push({
+      kind: 'NAME',
+      nameContains: t.nameContains,
+      cardType: ct,
+      minCopies,
+      reason: `Requires "${t.nameContains}"${ct ? ` ${ct}` : ''}`,
+    });
+  }
+}
+
+/** Extracts deck-composition Effect Prerequisites strictly from structured AbilityAst nodes. */
 export function extractEffectPrerequisites(
   card: Pick<GundamCardPrint, 'cardNo' | 'type' | 'ap' | 'effect'> &
     Partial<Pick<GundamCardPrint, 'name' | 'traits' | 'link'>>,
-  parsed = parseCardEffects(card)
+  parsed: Pick<CfgParseResult, 'keywords' | 'abilities'> = parseCardAbilities(card)
 ): EffectPrerequisite[] {
-  const functionalClauses = parsed.clauses.filter((c) => !isNonFunctionalTag(c));
+  const functionalAbilities = parsed.abilities.filter((ab) => !isNonFunctionalAbility(ab));
   const hasInnateKeyword = parsed.keywords.length > 0;
   const collected = new Map<string, EffectPrerequisite>();
 
-  const perClause = functionalClauses.map((clause) => {
-    const isBurstOnly = clause.timings.length === 1 && clause.timings[0] === 'BURST';
+  const perAbility = functionalAbilities.map((ab) => {
+    const timings = getAbilityTimings(ab);
+    const steps = getAbilitySteps(ab);
+    const flatSteps = flattenEffectSteps(steps);
+    const isBurstOnly = timings.length === 1 && timings[0] === 'BURST';
     const clausePrereqs: Omit<EffectPrerequisite, 'primaryClause'>[] = [];
     let hasUnrestrictedStep = false;
 
+    if (ab.kind === 'CUSTOM_HOOK' && ab.prerequisites.length > 0) {
+      for (const p of ab.prerequisites) {
+        clausePrereqs.push({
+          kind: p.kind,
+          ...(p.trait ? { trait: p.trait } : {}),
+          ...(p.color ? { color: p.color } : {}),
+          ...(p.cardType ? { cardType: p.cardType } : {}),
+          ...(p.nameContains ? { nameContains: p.nameContains } : {}),
+          ...(p.anyNames ? { anyNames: p.anyNames } : {}),
+          ...(p.anyTraits ? { anyTraits: p.anyTraits } : {}),
+          minCopies: p.minCopies,
+          reason: p.reason,
+        });
+      }
+    }
+
     // 1. Pair filter on header e.g. 【During Pair･(Coordinator) Pilot】 or 【When Paired･Purple Pilot】
-    if (clause.pairFilter && (clause.pairFilter.trait || clause.pairFilter.color)) {
-      const parts = [clause.pairFilter.color, clause.pairFilter.trait ? `(${clause.pairFilter.trait})` : undefined, 'Pilot'].filter(Boolean);
+    const pairFilter = 'pairFilter' in ab ? ab.pairFilter : undefined;
+    if (pairFilter && (pairFilter.trait || pairFilter.color)) {
+      const parts = [pairFilter.color, pairFilter.trait ? `(${pairFilter.trait})` : undefined, 'Pilot'].filter(Boolean);
       clausePrereqs.push({
-        kind: clause.pairFilter.trait ? 'TRAIT' : 'COLOR',
-        trait: clause.pairFilter.trait,
-        color: clause.pairFilter.color,
+        kind: pairFilter.trait ? 'TRAIT' : 'COLOR',
+        trait: pairFilter.trait,
+        color: pairFilter.color,
         cardType: 'PILOT',
         minCopies: 4,
         reason: `Requires ${parts.join(' ')}`,
       });
     }
 
-    // 1b. Structured Link requirement on Link-gated clauses (secondary unless the card has no non-link payoff)
-    if (clause.linkRequirement) {
-      const lr = clause.linkRequirement;
-      if (lr.role === 'UNIT_REQUIRES_PILOT' && (lr.names.length > 0 || lr.traits.length > 0)) {
+    // 1b. Structured Link requirement on Link-gated abilities (secondary unless card has no non-link payoff)
+    const linkReq =
+      ab.kind === 'EFFECT_CLAUSE'
+        ? ab.linkRequirement
+        : ab.kind === 'CONTINUOUS_MODIFIER'
+        ? ab.requiresLink
+        : undefined;
+    if (linkReq) {
+      if (linkReq.role === 'UNIT_REQUIRES_PILOT' && (linkReq.names.length > 0 || linkReq.traits.length > 0)) {
         clausePrereqs.push({
           kind: 'LINK',
           cardType: 'PILOT',
-          ...(lr.names.length > 0 ? { anyNames: lr.names } : {}),
-          ...(lr.traits.length > 0 ? { anyTraits: lr.traits } : {}),
+          ...(linkReq.names.length > 0 ? { anyNames: linkReq.names } : {}),
+          ...(linkReq.traits.length > 0 ? { anyTraits: linkReq.traits } : {}),
           minCopies: 4,
-          reason: `Link requires ${lr.raw}`,
+          reason: `Link requires ${linkReq.raw}`,
         });
-      } else if (lr.role === 'PILOT_MATCHING_UNIT' && (lr.names.length > 0 || lr.traits.length > 0)) {
+      } else if (linkReq.role === 'PILOT_MATCHING_UNIT' && (linkReq.names.length > 0 || linkReq.traits.length > 0)) {
         clausePrereqs.push({
           kind: 'LINK',
           cardType: 'UNIT',
-          ...(lr.names.length > 0 ? { anyNames: lr.names } : {}),
-          ...(lr.traits.length > 0 ? { anyTraits: lr.traits } : {}),
+          ...(linkReq.names.length > 0 ? { anyNames: linkReq.names } : {}),
+          ...(linkReq.traits.length > 0 ? { anyTraits: linkReq.traits } : {}),
           minCopies: 4,
-          reason: `Links with Unit matching ${lr.raw}`,
+          reason: `Links with Unit matching ${linkReq.raw}`,
         });
       }
     }
 
-    // 2. Clause conditions (recursive across ALL_OF / ANY_OF / NOT)
+    // 2. Ability & nested IF_CONDITION / GRANT_CLAUSE conditions
     const conds: EffectCondition[] = [];
-    collectNestedConditions(clause.condition, conds);
+    if ('condition' in ab && ab.condition) {
+      collectNestedConditions(ab.condition, conds);
+    }
+    for (const step of flatSteps) {
+      if (step.action === 'IF_CONDITION') collectNestedConditions(step.condition, conds);
+      if (step.action === 'GRANT_CLAUSE') collectNestedConditions(step.clause.condition, conds);
+    }
+
     for (const cond of conds) {
-      if (cond.kind === 'TRASH_COUNT_AT_LEAST' && cond.owner !== 'ENEMY' && (cond.trait || cond.traits?.length || cond.color || cond.cardType)) {
+      if (
+        cond.kind === 'TRASH_COUNT_AT_LEAST' &&
+        cond.owner !== 'ENEMY' &&
+        (cond.trait || cond.traits?.length || cond.color || cond.cardType)
+      ) {
         const trait = cond.trait ?? cond.traits?.[0];
-        const ct = cond.cardType === 'UNIT' || cond.cardType === 'PILOT' || cond.cardType === 'BASE' || cond.cardType === 'COMMAND' ? cond.cardType : undefined;
+        const ct =
+          cond.cardType === 'UNIT' || cond.cardType === 'PILOT' || cond.cardType === 'BASE' || cond.cardType === 'COMMAND'
+            ? cond.cardType
+            : undefined;
         const label = [cond.color, trait ? `(${trait})` : undefined, ct].filter(Boolean).join(' ');
         clausePrereqs.push({
           kind: trait ? 'TRAIT' : cond.color ? 'COLOR' : 'CARD_TYPE',
@@ -93,6 +171,7 @@ export function extractEffectPrerequisites(
         clausePrereqs.push({
           kind: 'TRAIT',
           trait: cond.trait,
+          ...(cond.traits && cond.traits.length > 1 ? { anyTraits: cond.traits } : {}),
           cardType: 'UNIT',
           minCopies: 4,
           reason: `Requires (${cond.trait}) Unit`,
@@ -134,57 +213,45 @@ export function extractEffectPrerequisites(
           minCopies: 4,
           reason: `Requires (${cond.traits[0]})`,
         });
-      } else if (cond.kind === 'RAW_CONDITION') {
-        const traitM = cond.text.match(/\(([^)]+)\)/);
-        if (traitM) {
-          const trait = traitM[1].trim();
-          clausePrereqs.push({
-            kind: 'TRAIT',
-            trait,
-            cardType: /\bunit\b/i.test(cond.text) ? 'UNIT' : /\bpilot\b/i.test(cond.text) ? 'PILOT' : undefined,
-            minCopies: 4,
-            reason: `Requires (${trait})`,
-          });
-        }
+      } else if (cond.kind === 'FRIENDLY_BASE_IN_PLAY' && (cond.trait || cond.color)) {
+        clausePrereqs.push({
+          kind: cond.trait ? 'TRAIT' : 'COLOR',
+          ...(cond.trait ? { trait: cond.trait } : {}),
+          ...(cond.color ? { color: cond.color } : {}),
+          cardType: 'BASE',
+          minCopies: 4,
+          reason: `Requires friendly ${cond.trait ? `(${cond.trait}) ` : cond.color ? `${cond.color} ` : ''}Base`,
+        });
       }
     }
 
-    // 3. Clause steps (including nested IF_CONDITION / IF_PREVIOUS_SUCCEEDED / GRANT_CLAUSE)
-    const stepHasGate = Boolean(clause.pairFilter || (clause.condition && clausePrereqs.some((p) => p.kind !== 'LINK')));
-    for (const step of flattenEffectSteps(clause.steps)) {
-      if (step.action === 'LOOK_TOP' && step.trait) {
+    // 3. Trigger actorFilter / targetFilter when owner === 'SELF'
+    if (ab.kind === 'EFFECT_CLAUSE' && ab.triggerEvent) {
+      if (ab.triggerEvent.actorFilter) pushSelectorPrerequisites(ab.triggerEvent.actorFilter, 4, clausePrereqs);
+      if (ab.triggerEvent.targetFilter) pushSelectorPrerequisites(ab.triggerEvent.targetFilter, 4, clausePrereqs);
+    }
+
+    // 4. Ability steps (including nested IF_CONDITION / IF_PREVIOUS_SUCCEEDED / GRANT_CLAUSE)
+    const abCondition = 'condition' in ab ? ab.condition : undefined;
+    const stepHasGate = Boolean(pairFilter || (abCondition && clausePrereqs.some((p) => p.kind !== 'LINK')));
+    for (const step of flatSteps) {
+      const lookTrait = step.action === 'LOOK_TOP' ? step.trait ?? step.target?.trait ?? step.target?.traits?.[0] : undefined;
+      if (step.action === 'LOOK_TOP' && lookTrait) {
         clausePrereqs.push({
           kind: 'TRAIT',
-          trait: step.trait,
+          trait: lookTrait,
           minCopies: 8,
-          reason: `Searches (${step.trait}) cards`,
+          reason: `Searches (${lookTrait}) cards`,
         });
-      } else if ('target' in step && step.target && step.target.owner === 'SELF' && (step.target.trait || step.target.nameContains)) {
-        const t = step.target;
+      } else if (
+        'target' in step &&
+        step.target &&
+        step.target.owner === 'SELF' &&
+        (step.target.trait || step.target.traits?.length || step.target.nameContains)
+      ) {
         const isTrashDensity = step.action === 'DEPLOY_FROM_TRASH' || step.action === 'ADD_FROM_TRASH_TO_HAND';
-        const minCopies: 4 | 8 = isTrashDensity && t.trait ? 8 : 4;
-        const ct =
-          t.cardType === 'UNIT' || t.cardType === 'PILOT' || t.cardType === 'BASE' || t.cardType === 'COMMAND'
-            ? t.cardType
-            : undefined;
-        if (t.trait) {
-          clausePrereqs.push({
-            kind: 'TRAIT',
-            trait: t.trait,
-            ...(t.traits && t.traits.length > 1 ? { anyTraits: t.traits } : {}),
-            cardType: ct,
-            minCopies,
-            reason: `Requires (${t.trait})${ct ? ` ${ct}` : ''} target`,
-          });
-        } else if (t.nameContains) {
-          clausePrereqs.push({
-            kind: 'NAME',
-            nameContains: t.nameContains,
-            cardType: ct,
-            minCopies,
-            reason: `Requires "${t.nameContains}"${ct ? ` ${ct}` : ''}`,
-          });
-        }
+        const minCopies: 4 | 8 = isTrashDensity && (step.target.trait || step.target.traits?.length) ? 8 : 4;
+        pushSelectorPrerequisites(step.target, minCopies, clausePrereqs);
       } else if (
         !stepHasGate &&
         step.action !== 'ACTIVATE_MAIN_EFFECT' &&
@@ -193,69 +260,62 @@ export function extractEffectPrerequisites(
       ) {
         hasUnrestrictedStep = true;
       }
-    }
 
-    // 4. Residual & scaling trait fallback (also inspects scaleBy on typed steps)
-    for (const step of flattenEffectSteps(clause.steps)) {
-      if ('scaleBy' in step && step.scaleBy?.traits?.length && (step.scaleBy.metric === 'TRASH_COUNT' || step.scaleBy.metric === 'AFFECTED_COUNT')) {
-        const trait = step.scaleBy.traits[0];
-        if (!clausePrereqs.some((p) => p.trait?.toLowerCase() === trait.toLowerCase())) {
-          clausePrereqs.push({
-            kind: 'TRAIT',
-            trait,
-            minCopies: 8,
-            reason: `Scales damage/effect with (${trait}) density`,
-          });
+      if ('sourceFilter' in step && step.sourceFilter) {
+        pushSelectorPrerequisites(step.sourceFilter, 4, clausePrereqs);
+      }
+      if ('scaleBy' in step && step.scaleBy?.traits?.length) {
+        if (
+          step.scaleBy.metric === 'TRASH_COUNT' ||
+          step.scaleBy.metric === 'AFFECTED_COUNT' ||
+          step.scaleBy.metric === 'BOARD_UNIT_COUNT'
+        ) {
+          const trait = step.scaleBy.traits[0];
+          if (!clausePrereqs.some((p) => p.trait?.toLowerCase() === trait.toLowerCase())) {
+            clausePrereqs.push({
+              kind: 'TRAIT',
+              trait,
+              ...(step.scaleBy.traits.length > 1 ? { anyTraits: step.scaleBy.traits } : {}),
+              minCopies: 8,
+              reason: `Scales damage/effect with (${trait}) density`,
+            });
+          }
         }
       }
     }
 
-    const scaleTargetText = clause.unparsedResidual || clause.raw;
-    const scaleMatch = scaleTargetText.match(/equal to the number of (?:friendly )?\(([^)]+)\)/i);
-    if (scaleMatch) {
-      const trait = scaleMatch[1].trim();
-      clausePrereqs.push({
-        kind: 'TRAIT',
-        trait,
-        minCopies: 8,
-        reason: `Scales damage/effect with (${trait}) density`,
-      });
-    }
-    const friendlyMatch = clause.raw.match(
-      /(?:friendly|of your|have a)\s+(?:other\s+|rested\s+|active\s+)?\(([^)]+)\)\s*(?:Link\s+)?(Units?|Pilots?|Bases?|Commands?|cards?)/i
-    );
-    if (friendlyMatch) {
-      const fTrait = friendlyMatch[1].trim();
-      if (!clausePrereqs.some((p) => p.trait?.toLowerCase() === fTrait.toLowerCase())) {
-        const typeRaw = friendlyMatch[2].toUpperCase().replace(/S$/, '');
-        const ct =
-          typeRaw === 'UNIT' || typeRaw === 'PILOT' || typeRaw === 'BASE' || typeRaw === 'COMMAND'
-            ? typeRaw
-            : undefined;
-        clausePrereqs.push({
-          kind: 'TRAIT',
-          trait: fTrait,
-          cardType: ct,
-          minCopies: 4,
-          reason: `Requires (${fTrait})${ct ? ` ${ct}` : ''} target`,
-        });
+    // 5. ContinuousModifier perTarget scaling & sourceFilter
+    if (ab.kind === 'CONTINUOUS_MODIFIER') {
+      if (ab.modifier.type === 'COST_REDUCTION' && ab.modifier.perTarget?.traits?.length) {
+        const trait = ab.modifier.perTarget.traits[0];
+        if (!clausePrereqs.some((p) => p.trait?.toLowerCase() === trait.toLowerCase())) {
+          clausePrereqs.push({
+            kind: 'TRAIT',
+            trait,
+            ...(ab.modifier.perTarget.traits.length > 1 ? { anyTraits: ab.modifier.perTarget.traits } : {}),
+            minCopies: 8,
+            reason: `Scales cost reduction with (${trait}) density`,
+          });
+        }
+      }
+      if ('target' in ab.modifier && ab.modifier.target.owner === 'SELF') {
+        pushSelectorPrerequisites(ab.modifier.target, 4, clausePrereqs);
       }
     }
 
     const isIdentityTagOnly =
-      clause.steps.length > 0 &&
-      clause.steps.every((s) => s.action === 'GRANT_PILOT_MODE' || s.action === 'NAME_ALIAS');
+      steps.length > 0 && steps.every((s) => s.action === 'GRANT_PILOT_MODE' || s.action === 'NAME_ALIAS');
 
     return { isBurstOnly, isIdentityTagOnly, clausePrereqs, hasUnrestrictedStep };
   });
 
-  const nonBurstClauses = perClause.filter((c) => !c.isBurstOnly && !c.isIdentityTagOnly);
-  const hasUnrestrictedActiveClause = nonBurstClauses.some((c) => c.hasUnrestrictedStep || c.clausePrereqs.length === 0);
+  const nonBurstAbilities = perAbility.filter((c) => !c.isBurstOnly && !c.isIdentityTagOnly);
+  const hasUnrestrictedActiveAbility = nonBurstAbilities.some((c) => c.hasUnrestrictedStep || c.clausePrereqs.length === 0);
 
-  for (const c of perClause) {
-    const isPrimaryBase = !hasInnateKeyword && !c.isBurstOnly && !c.isIdentityTagOnly && !c.hasUnrestrictedStep && !hasUnrestrictedActiveClause;
+  for (const c of perAbility) {
+    const isPrimaryBase =
+      !hasInnateKeyword && !c.isBurstOnly && !c.isIdentityTagOnly && !c.hasUnrestrictedStep && !hasUnrestrictedActiveAbility;
     for (const p of c.clausePrereqs) {
-      // Link prerequisites are always secondary synergy requirements (Link Units/Pilots remain playable standalone)
       const isPrimary = p.kind === 'LINK' ? false : isPrimaryBase;
       const key = `${p.kind}|${p.trait ?? ''}|${p.color ?? ''}|${p.cardType ?? ''}|${p.nameContains ?? ''}|${(p.anyNames ?? []).join(',')}`;
       const prev = collected.get(key);

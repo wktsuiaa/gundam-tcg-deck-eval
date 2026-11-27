@@ -210,7 +210,7 @@ export function MatchSandbox({
   const handleManualCardClick = (side: SandboxSide, card: GundamCardPrint) => {
     if (!match || match.winner || match.activeSide !== side) return;
     const player = match.players[side];
-    if (!canPayCard(player, card)) return;
+    if (!canPayCard(player, card, match, side)) return;
 
     const hasUnpairedUnit = player.battleArea.some((u) => !u.pairedPilot);
 
@@ -423,7 +423,7 @@ export function MatchSandbox({
                 {player.battleArea.map((u) => {
                   const totalAp = (u.card.ap ?? 2) + (u.pairedPilot?.ap ?? 0) + u.apBuff;
                   const remHp = (u.card.hp ?? 2) + (u.pairedPilot?.hp ?? 0) - u.damage;
-                  const canAtk = isActive && canUnitAttack(u, match.turn);
+                  const canAtk = isActive && canUnitAttack(u, match.turn, match, side);
                   const canPair = isActive && selectedPilotCard && !u.pairedPilot;
                   const isAttackTarget = isOpponentTargetable && u.rested;
 
@@ -646,7 +646,7 @@ export function MatchSandbox({
           {showHandCards ? (
             <div className="flex gap-2 overflow-x-auto pb-1">
               {player.hand.map((c, idx) => {
-                const playable = isActive && canPayCard(player, c);
+                const playable = isActive && canPayCard(player, c, match, side);
                 const cmdPilot = isCommandPilot(c);
                 return (
                   <div

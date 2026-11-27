@@ -95,6 +95,22 @@ export abstract class ResolutionRunner extends RunnerBase {
         }
         return false;
       }
+      case 'RESTRICTION': {
+        const candidates = step.target.self && selfUnit
+          ? [{ side, unit: selfUnit }]
+          : this.findLegalUnitTargets(step.target, side, selfUnit);
+        if (candidates.length === 0) return false;
+        for (const c of candidates) {
+          c.unit.temporaryModifiers.push({
+            id: this.nextEventId('cant'),
+            layer: 4,
+            rule: step.rule,
+            ...(step.sourceFilter ? { sourceFilter: step.sourceFilter } : {}),
+            duration: step.duration ?? 'THIS_TURN',
+          });
+        }
+        return true;
+      }
       case 'DEAL_DAMAGE': {
         if (step.target.cardType === 'SHIELD') {
           const oppSide = oppositeSide(side);
@@ -253,14 +269,12 @@ export abstract class ResolutionRunner extends RunnerBase {
         return ok;
       }
       case 'DAMAGE_PROOF': {
-        if (/shield area cards/i.test(step.summary)) {
-          const lvM = step.summary.match(/Lv\.(\d+)\s+or lower/i);
-          const apM = step.summary.match(/(\d+)\s+or less AP/i);
+        if (step.target?.cardType === 'SHIELD') {
           this.state.shieldDamageProhibitions = this.state.shieldDamageProhibitions ?? [];
           this.state.shieldDamageProhibitions.push({
             side,
-            ...(lvM ? { lvMax: parseInt(lvM[1], 10) } : {}),
-            ...(apM ? { apMax: parseInt(apM[1], 10) } : {}),
+            ...(step.sourceFilter?.lvMax !== undefined ? { lvMax: step.sourceFilter.lvMax } : {}),
+            ...(step.sourceFilter?.apMax !== undefined ? { apMax: step.sourceFilter.apMax } : {}),
             duration: step.duration ?? 'THIS_BATTLE',
           });
           return true;

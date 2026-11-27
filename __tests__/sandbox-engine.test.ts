@@ -114,6 +114,9 @@ describe('2-Deck Match Sandbox & Reactive Best-Move Advisor', () => {
 
   it('executes moves, switches turns on PASS_TURN, and steps bot cleanly', () => {
     let match = createInitialSandboxMatch(deckA, deckB, 'A', byPrintId, byCardNo);
+    if (!match.players.A.hand.some((c) => c.type === 'UNIT')) {
+      match.players.A.hand[0] = pool[0];
+    }
     match = stepSandboxBot(match);
     expect(match.log.length).toBeGreaterThanOrEqual(2);
 
@@ -1123,6 +1126,207 @@ describe('Seam 3: Fail-Closed Clause Execution & FAQ Conformance in Sandbox', ()
     expect(pairHeine).toBeDefined();
     expect(Number.isNaN(pairHeine!.priorityScore)).toBe(false);
   });
+
+  it('enforces continuous COST_REDUCTION, HP MODIFY_STAT, and Layer-4 PROHIBITION rules (CANT_ATTACK, CANT_ACTIVATE_BLOCKER, CANT_CHOOSE_ENEMY_PLAYER)', () => {
+    const costReducedUnit = makeRealCard({
+      printId: 'TST-COSTRED',
+      cardNo: 'TST-COSTRED',
+      name: 'Cheap Frame',
+      type: 'UNIT',
+      lv: 3,
+      cost: 4,
+      ap: 3,
+      hp: 3,
+      effect: 'While a friendly Base is in play, reduce the cost of this card in your hand by 2.',
+    });
+    const hpBoostUnit = makeRealCard({
+      printId: 'TST-HPBOOST',
+      cardNo: 'TST-HPBOOST',
+      name: 'Armored Frame',
+      type: 'UNIT',
+      lv: 3,
+      cost: 2,
+      ap: 2,
+      hp: 3,
+      effect: 'While a friendly Base is in play, this Unit gets HP+3.',
+    });
+    const noAttackUnit = makeRealCard({
+      printId: 'TST-NOATK',
+      cardNo: 'TST-NOATK',
+      name: 'Pacifist Frame',
+      type: 'UNIT',
+      lv: 2,
+      cost: 1,
+      ap: 3,
+      hp: 3,
+      effect: "This Unit can't attack.",
+    });
+    const noPlayerUnit = makeRealCard({
+      printId: 'TST-NOPLY',
+      cardNo: 'TST-NOPLY',
+      name: 'Duellist Frame',
+      type: 'UNIT',
+      lv: 2,
+      cost: 1,
+      ap: 3,
+      hp: 3,
+      effect: "This Unit can't choose the enemy player as its attack target.",
+    });
+    const noBlockBlocker = makeRealCard({
+      printId: 'TST-NOBLK',
+      cardNo: 'TST-NOBLK',
+      name: 'Jammed Blocker',
+      type: 'UNIT',
+      lv: 2,
+      cost: 1,
+      ap: 2,
+      hp: 2,
+      effect: "<Blocker>\nWhile 2 or more enemy Units are in play, this Unit can't activate <Blocker>.",
+    });
+
+    const state = createInitialSandboxMatch(deck, deck, 'A', byPrintId, byCardNo);
+    state.turn = 4;
+    state.players.A.resourcesTotal = 3;
+    state.players.A.resourcesActive = 2; // Reduced cost 4 - 2 = 2 is affordable
+    state.players.A.base = baseCard;
+    state.players.A.hand = [costReducedUnit];
+
+    const deployed = applySandboxMove(state, {
+      id: 'dep-costred',
+      rank: 1,
+      actionType: 'DEPLOY_UNIT',
+      title: 'Deploy Cheap Frame',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 50,
+      card: costReducedUnit,
+    });
+    expect(deployed.players.A.battleArea.map((u) => u.card.cardNo)).toEqual(['TST-COSTRED']);
+    expect(deployed.players.A.resourcesActive).toBe(0);
+
+    // HP+3 keeps Armored Frame alive after 5 damage (3 + 3 - 5 = 1 > 0)
+    const hpState = createInitialSandboxMatch(deck, deck, 'A', byPrintId, byCardNo);
+    hpState.turn = 4;
+    hpState.players.A.base = baseCard;
+    hpState.players.A.battleArea = [
+      {
+        instanceId: 'hp-u',
+        card: hpBoostUnit,
+        pairedPilot: null,
+        isLinked: false,
+        rested: true,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+    ];
+    hpState.players.B.battleArea = [
+      {
+        instanceId: 'b-atk',
+        card: enemyLv4,
+        pairedPilot: null,
+        isLinked: false,
+        rested: false,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+    ];
+    hpState.activeSide = 'B';
+    const afterHpAtk = applySandboxMove(hpState, {
+      id: 'b-hits-hp',
+      rank: 1,
+      actionType: 'ATTACK_UNIT',
+      title: 'Attack Armored Frame',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 50,
+      unitInstanceId: 'b-atk',
+      targetInstanceId: 'hp-u',
+    });
+    expect(afterHpAtk.players.A.battleArea).toHaveLength(1);
+    expect(afterHpAtk.players.A.battleArea[0].damage).toBe(5);
+
+    // CANT_ATTACK and CANT_CHOOSE_ENEMY_PLAYER prevent ATTACK_SHIELD in sandbox suggestions and execution
+    const prohState = createInitialSandboxMatch(deck, deck, 'A', byPrintId, byCardNo);
+    prohState.turn = 4;
+    prohState.players.A.battleArea = [
+      {
+        instanceId: 'u-noatk',
+        card: noAttackUnit,
+        pairedPilot: null,
+        isLinked: false,
+        rested: false,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+      {
+        instanceId: 'u-noply',
+        card: noPlayerUnit,
+        pairedPilot: null,
+        isLinked: false,
+        rested: false,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+    ];
+    const prohMoves = evaluateSandboxBestMoves(prohState, 'A');
+    expect(prohMoves.some((m) => m.actionType === 'ATTACK_SHIELD')).toBe(false);
+
+    // CANT_ACTIVATE_BLOCKER prevents interception when 2 enemy units are in play
+    const blkState = createInitialSandboxMatch(deck, deck, 'A', byPrintId, byCardNo);
+    blkState.turn = 4;
+    blkState.players.A.battleArea = [
+      {
+        instanceId: 'a-1',
+        card: enemyLv2,
+        pairedPilot: null,
+        isLinked: false,
+        rested: false,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+      {
+        instanceId: 'a-2',
+        card: enemyLv2,
+        pairedPilot: null,
+        isLinked: false,
+        rested: false,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+    ];
+    blkState.players.B.shields = 5;
+    blkState.players.B.battleArea = [
+      {
+        instanceId: 'b-blk',
+        card: noBlockBlocker,
+        pairedPilot: null,
+        isLinked: false,
+        rested: false,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+    ];
+    const afterBypass = applySandboxMove(blkState, {
+      id: 'atk-bypass',
+      rank: 1,
+      actionType: 'ATTACK_SHIELD',
+      title: 'Attack Shield past disabled Blocker',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 50,
+      unitInstanceId: 'a-1',
+    });
+    expect(afterBypass.players.B.shields).toBe(4);
+    expect(afterBypass.players.B.battleArea).toHaveLength(1);
+  });
 });
+
 
 

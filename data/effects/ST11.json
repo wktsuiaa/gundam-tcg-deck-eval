@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "setPrefix": "ST11",
   "cardCount": 16,
   "effects": {
@@ -30,12 +30,17 @@
           },
           "duration": "CONTINUOUS",
           "modifier": {
-            "type": "PROHIBITION",
-            "rule": "CANT_DEPLOY",
+            "type": "REDIRECT_ATTACK_TARGET",
+            "rule": "CANT_CHOOSE_TARGET",
             "target": {
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
+            },
+            "attackerFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1
             }
           }
         },
@@ -114,11 +119,16 @@
           "duration": "CONTINUOUS",
           "modifier": {
             "type": "PROHIBITION",
-            "rule": "CANT_DEPLOY",
+            "rule": "CANT_RECEIVE_EFFECT_DAMAGE",
             "target": {
               "owner": "SELF",
-              "self": true,
-              "cardType": "UNIT"
+              "cardType": "UNIT",
+              "count": 1,
+              "hpMax": 2,
+              "trait": "Marine"
+            },
+            "sourceFilter": {
+              "owner": "ENEMY"
             }
           }
         }
@@ -134,7 +144,7 @@
           "cardType": "UNIT",
           "minCopies": 4,
           "reason": "Requires (Marine) UNIT target",
-          "primaryClause": false
+          "primaryClause": true
         }
       ]
     },
@@ -203,7 +213,7 @@
         {
           "kind": "EFFECT_CLAUSE",
           "clauseIndex": 0,
-          "raw": "【Deploy】Deploy 1 rested [GOOhN]((ZAFT) (Marine)･AP1･HP1) Unit token.",
+          "raw": "【Deploy】Deploy 1 rested [GOOhN]((ZAFT) (Marine)<DOT>AP1<DOT>HP1) Unit token.",
           "timings": [
             "DEPLOY"
           ],
@@ -216,8 +226,7 @@
               "hp": 1,
               "name": "GOOhN",
               "traits": [
-                "(ZAFT",
-                "Marine"
+                "ZAFT) (Marine"
               ]
             }
           ]
@@ -282,40 +291,7 @@
               }
             ]
           },
-          "steps": [
-            {
-              "action": "GRANT_CLAUSE",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              },
-              "clause": {
-                "raw": "when a friendly shield area card receives enemy effect damage, reduce it by 5.",
-                "timings": [
-                  "WHEN_RECEIVE_DAMAGE"
-                ],
-                "oncePerTurn": false,
-                "triggerEvent": {
-                  "kind": "WHEN_RECEIVE_DAMAGE",
-                  "actor": "FRIENDLY",
-                  "targetKind": "SHIELD",
-                  "damageType": "EFFECT",
-                  "raw": "when a friendly shield area card receives enemy effect damage"
-                },
-                "steps": [
-                  {
-                    "action": "DAMAGE_PROOF",
-                    "summary": "reduce it by 5.",
-                    "amount": 5,
-                    "damageType": "ANY"
-                  }
-                ],
-                "unparsedResidual": ""
-              }
-            }
-          ]
+          "steps": []
         },
         {
           "kind": "EFFECT_CLAUSE",
@@ -418,8 +394,7 @@
           "steps": [
             {
               "action": "DRAW",
-              "count": 1,
-              "bothPlayers": false
+              "count": 1
             }
           ]
         }
@@ -550,41 +525,7 @@
             "WHEN_PAIRED"
           ],
           "oncePerTurn": false,
-          "steps": [
-            {
-              "action": "GRANT_CLAUSE",
-              "duration": "THIS_TURN",
-              "target": {
-                "owner": "SELF",
-                "cardType": "UNIT",
-                "count": 1,
-                "trait": "Marine"
-              },
-              "clause": {
-                "raw": "when it receives battle damage from an enemy Unit, reduce it by 2.",
-                "timings": [
-                  "WHEN_RECEIVE_DAMAGE"
-                ],
-                "oncePerTurn": false,
-                "triggerEvent": {
-                  "kind": "WHEN_RECEIVE_DAMAGE",
-                  "actor": "SELF",
-                  "targetKind": "UNIT",
-                  "damageType": "BATTLE",
-                  "raw": "when it receives battle damage from an enemy Unit"
-                },
-                "steps": [
-                  {
-                    "action": "DAMAGE_PROOF",
-                    "summary": "reduce it by 2.",
-                    "amount": 2,
-                    "damageType": "ANY"
-                  }
-                ],
-                "unparsedResidual": ""
-              }
-            }
-          ]
+          "steps": []
         }
       ],
       "synergy": {
@@ -593,16 +534,7 @@
           "AP_THRESHOLD_5"
         ]
       },
-      "prerequisites": [
-        {
-          "kind": "TRAIT",
-          "trait": "Marine",
-          "cardType": "UNIT",
-          "minCopies": 4,
-          "reason": "Requires (Marine) UNIT target",
-          "primaryClause": false
-        }
-      ]
+      "prerequisites": []
     },
     "ST11-013": {
       "cardNo": "ST11-013",
@@ -658,8 +590,7 @@
               "thenSteps": [
                 {
                   "action": "DRAW",
-                  "count": 1,
-                  "bothPlayers": false
+                  "count": 1
                 }
               ]
             }
@@ -699,6 +630,11 @@
                 "cardType": "UNIT",
                 "count": 1,
                 "trait": "Marine"
+              },
+              "attackerFilter": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1
               },
               "duration": "THIS_TURN"
             }

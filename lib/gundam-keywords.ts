@@ -1,4 +1,6 @@
 import type { CardColor, GundamCardGroup, GundamCardPrint } from '@/types/gundam';
+import { getAbilityTimings, parseCardAbilities } from './cfg-parser.ts';
+import type { EffectTiming } from './effect-parser.ts';
 
 export interface KeywordDefinition {
   tag: string;
@@ -94,10 +96,63 @@ export const GUNDAM_KEYWORDS: KeywordDefinition[] = [
   },
 ];
 
-export function extractCardKeywords(effect: string): KeywordDefinition[] {
-  if (!effect) return [];
-  const lower = effect.toLowerCase();
-  return GUNDAM_KEYWORDS.filter((kw) => lower.includes(kw.tag.toLowerCase()));
+const TIMING_TO_KEYWORD_TAG: Partial<Record<EffectTiming, string>> = {
+  WHEN_PAIRED: '【When Paired】',
+  WHEN_LINKED: '【When Linked】',
+  DURING_PAIR: '【During Pair】',
+  DURING_LINK: '【During Link】',
+  DEPLOY: '【Deploy】',
+  ATTACK: '【Attack】',
+  DESTROYED: '【Destroyed】',
+  BURST: '【Burst】',
+  ACTIVATE_MAIN: '【Activate･Main】',
+  ACTIVATE_ACTION: '【Activate･Action】',
+};
+
+function resolveCardAst(
+  card: Pick<GundamCardPrint, 'effect'> &
+    Partial<Pick<GundamCardPrint, 'cardNo' | 'type' | 'name' | 'traits' | 'link' | 'compiledEffect'>>
+) {
+  if (card.compiledEffect) {
+    return { keywords: card.compiledEffect.keywords, abilities: card.compiledEffect.abilities };
+  }
+  if (!card.effect) return { keywords: [], abilities: [] };
+  const parsed = parseCardAbilities({
+    cardNo: card.cardNo ?? 'CARD',
+    effect: card.effect,
+    type: card.type,
+    name: card.name,
+    traits: card.traits,
+    link: card.link,
+  });
+  return { keywords: parsed.keywords, abilities: parsed.abilities };
+}
+
+export function extractCardKeywords(
+  card: Pick<GundamCardPrint, 'effect'> &
+    Partial<Pick<GundamCardPrint, 'cardNo' | 'type' | 'name' | 'traits' | 'link' | 'compiledEffect'>>
+): KeywordDefinition[] {
+  const { keywords, abilities } = resolveCardAst(card);
+  const matchedTags = new Set<string>();
+
+  for (const kw of keywords) {
+    matchedTags.add(`<${kw.name}`);
+  }
+  for (const ab of abilities) {
+    for (const timing of getAbilityTimings(ab)) {
+      const tag = TIMING_TO_KEYWORD_TAG[timing];
+      if (tag) matchedTags.add(tag);
+    }
+    if (ab.kind === 'CONTINUOUS_MODIFIER' && ab.modifier.type === 'GRANT_KEYWORD') {
+      matchedTags.add(`<${ab.modifier.keyword.name}`);
+    } else if (ab.kind === 'EFFECT_CLAUSE') {
+      for (const s of ab.steps) {
+        if (s.action === 'GRANT_KEYWORD') matchedTags.add(`<${s.keyword.name}`);
+      }
+    }
+  }
+
+  return GUNDAM_KEYWORDS.filter((def) => matchedTags.has(def.tag));
 }
 
 export function getCardImageUrl(imagePath: string): string {
@@ -132,12 +187,10 @@ export function groupPrintsByCardNo(cards: GundamCardPrint[]): GundamCardGroup[]
  */
 export function isCommandPilot(card: GundamCardPrint): boolean {
   if (card.type !== 'COMMAND') return false;
-  if (card.compiledEffect?.abilities) {
-    return card.compiledEffect.abilities.some(
-      (ab) => ab.kind === 'CONTINUOUS_MODIFIER' && ab.modifier.type === 'GRANT_PILOT_MODE'
-    );
-  }
-  return /【Pilot】\s*\[([^\]]+)\]/i.test(card.effect ?? '');
+  const { abilities } = resolveCardAst(card);
+  return abilities.some(
+    (ab) => ab.kind === 'CONTINUOUS_MODIFIER' && ab.modifier.type === 'GRANT_PILOT_MODE'
+  );
 }
 
 /**
@@ -147,24 +200,16 @@ export function extractPilotNamesForLink(card: GundamCardPrint): string[] {
   const names: string[] = [];
   if (card.type === 'PILOT' && card.name) names.push(card.name);
 
-  if (card.compiledEffect?.abilities) {
-    for (const ab of card.compiledEffect.abilities) {
-      if (ab.kind === 'CONTINUOUS_MODIFIER') {
-        if (ab.modifier.type === 'GRANT_PILOT_MODE') names.push(ab.modifier.pilotName);
-        else if (ab.modifier.type === 'NAME_ALIAS') names.push(ab.modifier.alias);
-      } else if (ab.kind === 'EFFECT_CLAUSE') {
-        for (const step of ab.steps) {
-          if (step.action === 'GRANT_PILOT_MODE') names.push(step.pilotName);
-          else if (step.action === 'NAME_ALIAS') names.push(step.alias);
-        }
+  const { abilities } = resolveCardAst(card);
+  for (const ab of abilities) {
+    if (ab.kind === 'CONTINUOUS_MODIFIER') {
+      if (ab.modifier.type === 'GRANT_PILOT_MODE') names.push(ab.modifier.pilotName);
+      else if (ab.modifier.type === 'NAME_ALIAS') names.push(ab.modifier.alias);
+    } else if (ab.kind === 'EFFECT_CLAUSE') {
+      for (const step of ab.steps) {
+        if (step.action === 'GRANT_PILOT_MODE') names.push(step.pilotName);
+        else if (step.action === 'NAME_ALIAS') names.push(step.alias);
       }
-    }
-  } else if (card.effect) {
-    for (const m of card.effect.matchAll(/【Pilot】\s*\[([^\]]+)\]/gi)) {
-      names.push(m[1].trim());
-    }
-    for (const m of card.effect.matchAll(/This card'?s name is also treated as \[([^\]]+)\]/gi)) {
-      names.push(m[1].trim());
     }
   }
   return [...new Set(names)];
