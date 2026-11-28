@@ -1,7 +1,7 @@
 import type { GundamCardPrint, SandboxMatchState, SandboxPlayerState, SandboxSide, SandboxUnitInstance } from '@/types/gundam';
 import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
-import type { ActivationCost, EffectTiming } from '@/lib/effect-parser';
-import type { EffectClauseAst } from '@/lib/cfg-parser';
+import type { ActivationCost, EffectStep, EffectTiming, TargetSelector } from '@/lib/effect-parser';
+import type { AbilityAst, EffectClauseAst } from '@/lib/cfg-parser';
 import { checkCondition, evaluateScaleMetric } from './conditions';
 import { destroyUnit } from './match-state';
 import { findBattleAreaTargets, matchesCardSelector, matchesUnitSelector } from './targeting';
@@ -52,49 +52,62 @@ export function payActivationCost(
   }
 }
 
-export function resolveClause(
+function selectorCacheKey(sel: TargetSelector): string {
+  return JSON.stringify([
+    sel.owner,
+    sel.cardType,
+    sel.zone,
+    sel.lvMin,
+    sel.lvMax,
+    sel.lvMaxRef,
+    sel.apMin,
+    sel.apMax,
+    sel.apMaxRef,
+    sel.hpMin,
+    sel.hpMax,
+    sel.state,
+    sel.trait,
+    sel.traits,
+    sel.color,
+    sel.notColor,
+    sel.paired,
+    sel.linked,
+    sel.other,
+    sel.token,
+    sel.excludeToken,
+    sel.count,
+    sel.maxCount,
+  ]);
+}
+
+function resolveSteps(
   state: SandboxMatchState,
   side: SandboxSide,
-  clause: EffectClauseAst,
+  steps: EffectStep[],
+  raw: string,
   sourceCard: GundamCardPrint,
   selfUnit?: SandboxUnitInstance,
   targetInstanceId?: string,
   destroyedByBattle = false
 ): string[] {
   const notes: string[] = [];
-  if (clause.oncePerTurn && selfUnit && !clause.timings.includes('ACTIVATE_MAIN')) {
-    if (selfUnit.triggeredClauseTurns?.[clause.raw] === state.turn) {
-      return notes;
-    }
-  }
-  const unsimulatedCond = { hit: false };
-  if (!checkCondition(clause.condition, state, side, selfUnit, destroyedByBattle, unsimulatedCond)) {
-    if (unsimulatedCond.hit) {
-      notes.push(`Manual resolution required: ${clause.raw}`);
-    }
+  if (steps.length === 0) {
+    notes.push(`Manual resolution required: ${raw}`);
     return notes;
-  }
-
-  if (clause.oncePerTurn && selfUnit && !clause.timings.includes('ACTIVATE_MAIN')) {
-    selfUnit.triggeredClauseTurns = {
-      ...(selfUnit.triggeredClauseTurns ?? {}),
-      [clause.raw]: state.turn,
-    };
   }
 
   const actor = state.players[side];
+  const oppSide: SandboxSide = side === 'A' ? 'B' : 'A';
+  const opp = state.players[oppSide];
+  const chosenCache = new Map<string, { side: SandboxSide; unit: SandboxUnitInstance }[]>();
 
-  if (clause.steps.length === 0) {
-    notes.push(`Manual resolution required: ${clause.raw}`);
-    return notes;
-  }
-
-  for (const step of clause.steps) {
-    switch (step.action) {
+  const executeList = (stepList: EffectStep[]) => {
+    for (const step of stepList) {
+      switch (step.action) {
       case 'DRAW': {
         const factor = evaluateScaleMetric(step.scaleBy, state, side, selfUnit);
         if (factor === null) {
-          notes.push(`Manual resolution required: ${clause.raw}`);
+          notes.push(`Manual resolution required: ${raw}`);
           break;
         }
         const total = step.count * factor;
@@ -142,6 +155,7 @@ export function resolveClause(
             cardNo: 'TOKEN',
             name: step.name ?? `${sourceCard.traits[0] ?? 'Mobile Suit'} Token`,
             type: 'UNIT',
+            traits: step.traits ?? sourceCard.traits,
             lv: 1,
             cost: 1,
             ap: step.ap ?? 2,
@@ -219,16 +233,39 @@ export function resolveClause(
       case 'SET_ACTIVE':
       case 'BOUNCE':
       case 'RECOVER_HP': {
-        const legal = findBattleAreaTargets(state, side, step.target, selfUnit);
-        if (legal.length === 0) break;
+        if (step.action === 'SET_ACTIVE' && step.target.cardType === 'RESOURCE') {
+          const count = step.target.countRef === 'ENEMY_PLAYERS' ? 1 : typeof step.target.count === 'number' ? step.target.count : 1;
+          const resOwner = step.target.owner === 'ENEMY' ? opp : actor;
+          const added = Math.min(count, Math.max(0, resOwner.resourcesTotal - resOwner.resourcesActive));
+          resOwner.resourcesActive += added;
+          if (added > 0) notes.push(`set ${added} Resource active`);
+          break;
+        }
+        const cacheKey = selectorCacheKey(step.target);
+        const cached =
+          !step.target.self && step.target.count !== 'ALL'
+            ? chosenCache.get(cacheKey)?.filter((entry) =>
+                state.players[entry.side].battleArea.some((u) => u.instanceId === entry.unit.instanceId)
+              )
+            : undefined;
+        let chosen: { side: SandboxSide; unit: SandboxUnitInstance }[];
+        if (cached && cached.length > 0) {
+          chosen = cached;
+        } else {
+          const legal = findBattleAreaTargets(state, side, step.target, selfUnit);
+          if (legal.length === 0) break;
 
-        const chosen =
-          step.target.count === 'ALL'
-            ? legal
-            : [
-                (targetInstanceId ? legal.find((x) => x.unit.instanceId === targetInstanceId) : undefined) ??
-                  [...legal].sort((a, b) => effectiveAp(b.unit, state, b.side) - effectiveAp(a.unit, state, a.side))[0],
-              ];
+          chosen =
+            step.target.count === 'ALL'
+              ? legal
+              : [
+                  (targetInstanceId ? legal.find((x) => x.unit.instanceId === targetInstanceId) : undefined) ??
+                    [...legal].sort((a, b) => effectiveAp(b.unit, state, b.side) - effectiveAp(a.unit, state, a.side))[0],
+                ];
+          if (!step.target.self && step.target.count !== 'ALL') {
+            chosenCache.set(cacheKey, chosen);
+          }
+        }
 
         for (const entry of chosen) {
           if (step.action === 'DESTROY') {
@@ -237,7 +274,7 @@ export function resolveClause(
           } else if (step.action === 'DEAL_DAMAGE') {
             const factor = evaluateScaleMetric(step.scaleBy, state, side, selfUnit);
             if (factor === null) {
-              notes.push(`Manual resolution required: ${clause.raw}`);
+              notes.push(`Manual resolution required: ${raw}`);
               break;
             }
             const dmg = step.amount * factor;
@@ -250,7 +287,7 @@ export function resolveClause(
           } else if (step.action === 'MODIFY_AP') {
             const factor = evaluateScaleMetric(step.scaleBy, state, side, selfUnit);
             if (factor === null) {
-              notes.push(`Manual resolution required: ${clause.raw}`);
+              notes.push(`Manual resolution required: ${raw}`);
               break;
             }
             const delta = step.delta * factor;
@@ -275,6 +312,45 @@ export function resolveClause(
             entry.unit.damage = Math.max(0, entry.unit.damage - step.amount);
             notes.push(`repaired ${entry.unit.card.name} +${step.amount} HP`);
           }
+        }
+        break;
+      }
+      case 'EXILE': {
+        if (step.target.zone === 'TRASH') {
+          const ownerPlayer = step.target.owner === 'ENEMY' ? opp : actor;
+          const matchingIndices: number[] = [];
+          for (let i = 0; i < ownerPlayer.trash.length; i += 1) {
+            if (matchesCardSelector(ownerPlayer.trash[i], step.target)) {
+              matchingIndices.push(i);
+            }
+          }
+          const reqCount =
+            step.target.count === 'ALL'
+              ? matchingIndices.length
+              : step.target.count === 'UP_TO'
+              ? Math.min(step.target.maxCount ?? 1, matchingIndices.length)
+              : typeof step.target.count === 'number'
+              ? step.target.count
+              : 1;
+          if (reqCount <= 0 || matchingIndices.length < reqCount) {
+            break;
+          }
+          const toExile = matchingIndices.slice(0, reqCount).sort((a, b) => b - a);
+          for (const idx of toExile) {
+            const [exiled] = ownerPlayer.trash.splice(idx, 1);
+            if (exiled) notes.push(`exiled ${exiled.name} from trash`);
+          }
+        }
+        break;
+      }
+      case 'IF_CONDITION': {
+        const unsimulatedSub = { hit: false };
+        if (checkCondition(step.condition, state, side, selfUnit, destroyedByBattle, unsimulatedSub)) {
+          executeList(step.thenSteps);
+        } else if (unsimulatedSub.hit) {
+          notes.push(`Manual resolution required: ${raw}`);
+        } else if (step.elseSteps) {
+          executeList(step.elseSteps);
         }
         break;
       }
@@ -305,11 +381,64 @@ export function resolveClause(
       case 'NAME_ALIAS':
         break;
       default:
-        notes.push(`Manual resolution required: ${clause.raw}`);
+        notes.push(`Manual resolution required: ${raw}`);
+      }
+    }
+  };
+
+  executeList(steps);
+  return notes;
+}
+
+export function resolveClause(
+  state: SandboxMatchState,
+  side: SandboxSide,
+  clause: EffectClauseAst,
+  sourceCard: GundamCardPrint,
+  selfUnit?: SandboxUnitInstance,
+  targetInstanceId?: string,
+  destroyedByBattle = false
+): string[] {
+  const notes: string[] = [];
+  if (clause.oncePerTurn && selfUnit && !clause.timings.includes('ACTIVATE_MAIN')) {
+    if (selfUnit.triggeredClauseTurns?.[clause.raw] === state.turn) {
+      return notes;
     }
   }
+  const unsimulatedCond = { hit: false };
+  if (!checkCondition(clause.condition, state, side, selfUnit, destroyedByBattle, unsimulatedCond)) {
+    if (unsimulatedCond.hit) {
+      notes.push(`Manual resolution required: ${clause.raw}`);
+    }
+    return notes;
+  }
 
-  return notes;
+  if (clause.oncePerTurn && selfUnit && !clause.timings.includes('ACTIVATE_MAIN')) {
+    selfUnit.triggeredClauseTurns = {
+      ...(selfUnit.triggeredClauseTurns ?? {}),
+      [clause.raw]: state.turn,
+    };
+  }
+
+  return resolveSteps(state, side, clause.steps, clause.raw, sourceCard, selfUnit, targetInstanceId, destroyedByBattle);
+}
+
+export function resolveAbility(
+  state: SandboxMatchState,
+  side: SandboxSide,
+  ability: AbilityAst,
+  sourceCard: GundamCardPrint,
+  selfUnit?: SandboxUnitInstance,
+  targetInstanceId?: string,
+  destroyedByBattle = false
+): string[] {
+  if (ability.kind === 'EFFECT_CLAUSE') {
+    return resolveClause(state, side, ability, sourceCard, selfUnit, targetInstanceId, destroyedByBattle);
+  }
+  if (ability.kind === 'CUSTOM_HOOK') {
+    return resolveSteps(state, side, ability.steps, ability.raw, sourceCard, selfUnit, targetInstanceId, destroyedByBattle);
+  }
+  return [];
 }
 
 export function resolveClausesForTiming(

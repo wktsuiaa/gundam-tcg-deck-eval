@@ -152,7 +152,8 @@
       ],
       "synergy": {
         "requires": [
-          "TRASH_COUNT_FUEL"
+          "TRASH_COUNT_FUEL",
+          "AP_REDUCTION"
         ],
         "enables": []
       },
@@ -342,7 +343,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "AP_THRESHOLD_5"
+          "RESOURCE_ACTIVATE"
         ]
       },
       "prerequisites": [
@@ -388,7 +389,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -437,13 +440,10 @@
                 {
                   "action": "LOOK_TOP",
                   "count": 2,
-                  "remainderPosition": "TOP"
+                  "remainderPosition": "TRASH",
+                  "trashRest": true
                 }
               ]
-            },
-            {
-              "action": "MILL",
-              "count": 1
             }
           ]
         }

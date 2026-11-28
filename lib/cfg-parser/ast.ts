@@ -132,6 +132,7 @@ export interface ContinuousModifierAst {
     | {
         type: 'ALLOW_ATTACK_ACTIVE';
         target: TargetSelector;
+        defenderFilter?: TargetSelector;
       }
     | {
         type: 'FREEZE_AURA';
@@ -198,19 +199,51 @@ export interface CustomHookDefinition {
 export const CUSTOM_HOOK_REGISTRY: Record<string, CustomHookDefinition> = {
   'ST01-015#2': {
     hookId: 'ST01-015#2',
-    version: 2,
+    version: 3,
     description:
       'White Base: Activate-Main pay 2 to deploy 1 Gundam (0 Units), Guncannon (1 Unit), or Guntank (2+ Units) token.',
     timings: ['ACTIVATE_MAIN'],
     cost: { resourceCost: 2 },
     steps: [
       {
-        action: 'DEPLOY_TOKEN',
-        count: 1,
-        name: 'White Base Token',
-        ap: 3,
-        hp: 3,
-        traits: ['White Base Team'],
+        action: 'IF_CONDITION',
+        condition: { kind: 'BOARD_CARD_COUNT', owner: 'SELF', cardType: 'UNIT', min: 0, max: 0 },
+        thenSteps: [
+          {
+            action: 'DEPLOY_TOKEN',
+            count: 1,
+            name: 'Gundam',
+            ap: 3,
+            hp: 3,
+            traits: ['White Base Team'],
+          },
+        ],
+        elseSteps: [
+          {
+            action: 'IF_CONDITION',
+            condition: { kind: 'BOARD_CARD_COUNT', owner: 'SELF', cardType: 'UNIT', min: 1, max: 1 },
+            thenSteps: [
+              {
+                action: 'DEPLOY_TOKEN',
+                count: 1,
+                name: 'Guncannon',
+                ap: 2,
+                hp: 2,
+                traits: ['White Base Team'],
+              },
+            ],
+            elseSteps: [
+              {
+                action: 'DEPLOY_TOKEN',
+                count: 1,
+                name: 'Guntank',
+                ap: 1,
+                hp: 1,
+                traits: ['White Base Team'],
+              },
+            ],
+          },
+        ],
       },
     ],
   },

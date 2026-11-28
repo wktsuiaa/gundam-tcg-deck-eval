@@ -537,7 +537,7 @@ Inside a `CONTINUOUS_MODIFIER`, `modifier` is a `oneOf` union of **11 shapes** d
 | `"NAME_ALIAS"` | `type`, `alias` (`string`) | — | Card name also counts as `[alias]` (`GD02-098`). |
 | `"GRANT_PILOT_MODE"` | `type`, `pilotName` (`string`) | — | Command card can pair as a **Command Pilot** (`EB01-076`). |
 | `"PROHIBITION"` | `type`, `rule` (`ProhibitionRule`), `target` | `sourceFilter` (`TargetSelector`), `damageMax` (`integer`), `additionalRules` (`ProhibitionRule[]`) | Passive `"can't ..."` rule protecting or restricting `target` (e.g. `EB01-014`). |
-| `"ALLOW_ATTACK_ACTIVE"` | `type`, `target` | — | Passive permission to attack active enemy Units (`EB01-031`). |
+| `"ALLOW_ATTACK_ACTIVE"` | `type`, `target` | `defenderFilter` (`TargetSelector`) | Passive permission to attack active enemy Units (`EB01-031`, `ST02-001`). |
 | `"FREEZE_AURA"` | `type`, `target` | — | Passive aura stopping matching enemy Units from setting active (`ST14-001`). |
 | `"RESTRICTION"` | `type`, `rule` (`string`), `target` | `sourceFilter` (`TargetSelector`) | Passive rule restriction (such as `DEPLOYED_RESTED`). |
 | `"REDIRECT_ATTACK_TARGET"` | `type`, `rule` (`"MUST_ATTACK_TARGET" \| "CANT_CHOOSE_TARGET" \| "CANT_CHOOSE_SAME_PLAYER"`), `target` | `attackerFilter` (`TargetSelector`) | Passive attack-target redirection or exclusion. |
@@ -578,15 +578,19 @@ Inside `REPLACEMENT_EFFECT.outcome`, `kind` specifies what replaces the intercep
 
 ### 11.1 `CardSynergyProfile` (`$defs/CardSynergyProfile` & `SynergyNodeKey`)
 
-`synergy` powers the deck builder's Knowledge Map with two arrays (`requires` and `enables`) using five canonical `SynergyNodeKey` mechanics:
+`synergy` powers the deck builder's Knowledge Map with two arrays (`requires` and `enables`) using nine canonical `SynergyNodeKey` mechanics:
 
 | `SynergyNodeKey` | When in `enables` (Card Produces This) | When in `requires` (Card Wants This) |
 | :--- | :--- | :--- |
 | `"DEPLOY_FROM_TRASH"` | Deploys cards from trash (`DEPLOY_FROM_TRASH`). | Has a bonus/condition for being deployed from trash (`DEPLOYED_FROM_ZONE: "trash"`). |
 | `"TRASH_COUNT_FUEL"` | Fills the trash (`DISCARD`, `MILL`, `LOOK_TOP` with `trashRest`). | Scales or gates on trash card count (`TRASH_COUNT_AT_LEAST`). |
-| `"AP_THRESHOLD_5"` | Boosts friendly AP (`MODIFY_AP`, `<Support>`, or Pilot AP >= 1). | Checks `SELF_AP_AT_LEAST` with `minAp >= 5`. |
+| `"AP_THRESHOLD_5"` | Boosts friendly AP (`MODIFY_AP`, `<Support>`). | Checks `SELF_AP_AT_LEAST` with `minAp >= 5`. |
 | `"DAMAGED_ENEMY_TARGET"` | Deals effect damage to enemy cards (`DEAL_DAMAGE`). | Targets `state: "DAMAGED"` enemies. |
 | `"RESTED_ENEMY_TARGET"` | Rests enemy cards (`REST` on `owner: "ENEMY"`). | Targets `state: "RESTED"` enemies. |
+| `"PLAYER_LV_UP"` | Places regular (non-EX) Resources (`ADD_RESOURCE` with `!ex`). | Checks `PLAYER_LV_AT_LEAST` (`You are Lv.X or higher`) or Lv.7+ cards. |
+| `"RESOURCE_RAMP"` | Places temporary EX Resources (`ADD_RESOURCE` with `ex: true`). | Checks `RESOURCE_COUNT` (`ex: true`), `EX_RESOURCE_USED_TO_PLAY`, or EX-Resource play bonuses. |
+| `"RESOURCE_ACTIVATE"` | Sets friendly Resources active (`SET_ACTIVE` on `RESOURCE`). | Requires prior Resource-activation state (`TURN_HISTORY: SET_RESOURCE_ACTIVE_BY_EFFECT`). |
+| `"AP_REDUCTION"` | Reduces enemy Unit AP (`MODIFY_AP` on `ENEMY` with negative `delta`). | Targets `apMax` enemy Units (`apMax` filter, including `ALLOW_ATTACK_ACTIVE` `defenderFilter.apMax`). |
 
 ### 11.2 `EffectPrerequisite` (`$defs/EffectPrerequisite`)
 
@@ -718,8 +722,8 @@ Lists deck-building support requirements inferred from `abilities` so the deck b
 > `【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play.`
 
 **How to read `abilities[2]` in `data/effects/ST01.json`:**
-- `kind: "CUSTOM_HOOK"`, `hookId: "ST01-015#2"`, `version: 2`, `timings: ["ACTIVATE_MAIN"]`, `cost: { "resourceCost": 2 }`.
-- Because the 3-way unit-count token choice uses a dedicated handler in `CUSTOM_HOOK_REGISTRY`, the JSON records `hookId` + `version` plus a representative `DEPLOY_TOKEN` step (`White Base Token`, `ap: 3`, `hp: 3`, `traits: ["White Base Team"]`) for deck analysis.
+- `kind: "CUSTOM_HOOK"`, `hookId: "ST01-015#2"`, `version: 3`, `timings: ["ACTIVATE_MAIN"]`, `cost: { "resourceCost": 2 }`.
+- Because the 3-way unit-count token choice uses a dedicated handler in `CUSTOM_HOOK_REGISTRY`, the JSON records `hookId` + `version` plus three `IF_CONDITION` branches checking `BOARD_CARD_COUNT` (`0` -> `Gundam` 3/3, `1` -> `Guncannon` 2/2, `2+` -> `Guntank` 1/1) for both deck analysis and runtime token deployment.
 
 ---
 

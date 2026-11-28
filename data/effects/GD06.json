@@ -1164,7 +1164,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -1278,21 +1280,39 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Neo Zeon"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "apMax": 4
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Neo Zeon",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Neo Zeon) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "GD06-028": {
       "cardNo": "GD06-028",
@@ -1420,20 +1440,20 @@
             {
               "action": "LOOK_TOP",
               "count": 2,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Ghingnham Fleet",
+                "traits": [
+                  "Ghingnham Fleet",
+                  "Dianna Counter"
+                ],
+                "zone": "DECK"
+              },
+              "trait": "Ghingnham Fleet",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -1442,7 +1462,15 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Ghingnham Fleet",
+          "minCopies": 8,
+          "reason": "Searches (Ghingnham Fleet) cards",
+          "primaryClause": true
+        }
+      ]
     },
     "GD06-033": {
       "cardNo": "GD06-033",
@@ -1534,15 +1562,22 @@
             {
               "action": "LOOK_TOP",
               "count": 4,
-              "remainderPosition": "TOP"
+              "trait": "Gjallarhorn",
+              "remainderPosition": "BOTTOM"
             },
             {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "action": "DEPLOY_FROM_TOP_DECK",
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 6,
+                "trait": "Gjallarhorn",
+                "traits": [
+                  "Gjallarhorn",
+                  "Tekkadan"
+                ],
+                "zone": "DECK"
               }
             }
           ]
@@ -1560,6 +1595,18 @@
           "trait": "Gjallarhorn",
           "minCopies": 8,
           "reason": "Requires 4+ (Gjallarhorn) cards in trash",
+          "primaryClause": false
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "Gjallarhorn",
+          "anyTraits": [
+            "Gjallarhorn",
+            "Tekkadan"
+          ],
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Gjallarhorn) UNIT target",
           "primaryClause": false
         }
       ]
@@ -1610,7 +1657,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "DAMAGED_ENEMY_TARGET"
         ]
@@ -1725,7 +1774,7 @@
             "target": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1
+              "count": "ALL"
             },
             "sourceFilter": {
               "owner": "ENEMY"
@@ -1864,7 +1913,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "DAMAGED_ENEMY_TARGET"
         ]
@@ -1891,25 +1942,22 @@
             {
               "action": "LOOK_TOP",
               "count": 4,
-              "remainderPosition": "TOP"
+              "trait": "Biological CPU",
+              "remainderPosition": "BOTTOM"
             },
             {
               "action": "PAIR_FROM_HAND",
               "target": {
                 "owner": "SELF",
                 "self": true,
-                "cardType": "UNIT",
+                "cardType": "UNIT"
+              },
+              "pilotFilter": {
+                "owner": "SELF",
+                "cardType": "PILOT",
                 "count": 1,
-                "trait": "Biological CPU"
-              }
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
+                "trait": "Biological CPU",
+                "zone": "DECK"
               }
             }
           ]
@@ -1923,9 +1971,8 @@
         {
           "kind": "TRAIT",
           "trait": "Biological CPU",
-          "cardType": "UNIT",
-          "minCopies": 4,
-          "reason": "Requires (Biological CPU) UNIT target",
+          "minCopies": 8,
+          "reason": "Searches (Biological CPU) cards",
           "primaryClause": false
         }
       ]
@@ -2221,15 +2268,17 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "MILL",
-              "count": 1
+              "revealSearch": true,
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Delaz Fleet",
+                "zone": "DECK"
+              },
+              "trait": "Delaz Fleet",
+              "trashRest": true,
+              "remainderPosition": "TRASH"
             }
           ]
         }
@@ -2249,7 +2298,14 @@
           "cardType": "UNIT",
           "minCopies": 8,
           "reason": "Requires 10+ (Zeon) UNIT cards in trash",
-          "primaryClause": false
+          "primaryClause": true
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "Delaz Fleet",
+          "minCopies": 8,
+          "reason": "Searches (Delaz Fleet) cards",
+          "primaryClause": true
         }
       ]
     },
@@ -2436,7 +2492,8 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "DEPLOY_FROM_TRASH"
+          "DEPLOY_FROM_TRASH",
+          "RESOURCE_ACTIVATE"
         ]
       },
       "prerequisites": [
@@ -2525,7 +2582,8 @@
       ],
       "synergy": {
         "requires": [
-          "TRASH_COUNT_FUEL"
+          "TRASH_COUNT_FUEL",
+          "AP_REDUCTION"
         ],
         "enables": [
           "TRASH_COUNT_FUEL",
@@ -2578,7 +2636,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_ACTIVATE"
+        ]
       },
       "prerequisites": []
     },
@@ -3225,7 +3285,8 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "RESTED_ENEMY_TARGET"
+          "RESTED_ENEMY_TARGET",
+          "AP_REDUCTION"
         ]
       },
       "prerequisites": [
@@ -3355,7 +3416,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -3414,6 +3477,7 @@
       "synergy": {
         "requires": [],
         "enables": [
+          "AP_REDUCTION",
           "AP_THRESHOLD_5"
         ]
       },
@@ -3732,9 +3796,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -3788,9 +3850,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -3852,8 +3912,7 @@
           "RESTED_ENEMY_TARGET"
         ],
         "enables": [
-          "DAMAGED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "DAMAGED_ENEMY_TARGET"
         ]
       },
       "prerequisites": []
@@ -3917,9 +3976,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -3987,9 +4044,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -4161,23 +4216,37 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Ghingnham Fleet"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "lvMax": 4
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Ghingnham Fleet",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Ghingnham Fleet) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "GD06-088": {
       "cardNo": "GD06-088",
@@ -4239,9 +4308,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4322,21 +4389,26 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Gjallarhorn"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "lvMax": 5
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4352,6 +4424,14 @@
           "minCopies": 4,
           "reason": "Links with Unit matching [McGillis Fareed]",
           "primaryClause": false
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "Gjallarhorn",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Gjallarhorn) UNIT target",
+          "primaryClause": true
         }
       ]
     },
@@ -4420,10 +4500,11 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
-          "DAMAGED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "DAMAGED_ENEMY_TARGET"
         ]
       },
       "prerequisites": [
@@ -4487,9 +4568,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4556,8 +4635,7 @@
               "action": "DEAL_DAMAGE",
               "amount": 1,
               "target": {
-                "owner": "SELF",
-                "self": true,
+                "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1
               }
@@ -4568,7 +4646,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "AP_THRESHOLD_5"
+          "DAMAGED_ENEMY_TARGET"
         ]
       },
       "prerequisites": [
@@ -4621,9 +4699,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -4702,9 +4778,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -4860,7 +4934,7 @@
         "requires": [],
         "enables": [
           "TRASH_COUNT_FUEL",
-          "AP_THRESHOLD_5"
+          "AP_REDUCTION"
         ]
       },
       "prerequisites": [
@@ -4929,9 +5003,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -4973,12 +5045,12 @@
             "target": {
               "owner": "SELF",
               "cardType": "BASE",
-              "count": 1
+              "count": "ALL"
             },
             "sourceFilter": {
-              "owner": "SELF",
-              "self": true,
-              "cardType": "UNIT"
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": "ALL"
             }
           },
           "requiresLink": {
@@ -4996,9 +5068,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -5065,7 +5135,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "AP_THRESHOLD_5"
+          "AP_REDUCTION"
         ]
       },
       "prerequisites": []
@@ -5119,9 +5189,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -5424,13 +5492,13 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "SHIELD",
-                "count": 1,
+                "count": "ALL",
                 "zone": "SHIELD"
               },
               "sourceFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1,
+                "count": "ALL",
                 "apMax": 6
               }
             }
@@ -5438,7 +5506,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -5494,7 +5564,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": [
@@ -6083,7 +6155,7 @@
               "target": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1,
+                "count": "ALL",
                 "color": "White",
                 "keyword": "Blocker"
               }
@@ -6093,7 +6165,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -6282,7 +6356,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -6412,7 +6488,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": [
@@ -6764,7 +6842,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "TRASH_COUNT_FUEL"
         ]
@@ -6937,10 +7017,21 @@
             {
               "action": "MODIFY_AP",
               "delta": -1,
+              "scaleBy": {
+                "metric": "BOARD_UNIT_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "traits": [
+                  "Dianna Counter",
+                  "Militia"
+                ]
+              },
               "duration": "THIS_TURN",
               "target": {
-                "owner": "ANY",
-                "count": 1
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "paired": "NONE"
               }
             }
           ]
@@ -6948,9 +7039,23 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Dianna Counter",
+          "anyTraits": [
+            "Dianna Counter",
+            "Militia"
+          ],
+          "minCopies": 8,
+          "reason": "Scales damage/effect with (Dianna Counter) density",
+          "primaryClause": false
+        }
+      ]
     }
   }
 }

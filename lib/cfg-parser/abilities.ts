@@ -334,7 +334,14 @@ export function getAbilitySteps(ab: AbilityAst): EffectStep[] {
           }
           return [];
         case 'ALLOW_ATTACK_ACTIVE':
-          return [{ action: 'ALLOW_ATTACK_ACTIVE', target: m.target }];
+          return [
+            {
+              action: 'ALLOW_ATTACK_ACTIVE',
+              target: m.target,
+              ...(m.defenderFilter ? { defenderFilter: m.defenderFilter } : {}),
+              ...(ab.duration ? { duration: ab.duration } : {}),
+            },
+          ];
         case 'FREEZE_AURA':
           return [{ action: 'FREEZE', target: m.target }];
         case 'RESTRICTION':

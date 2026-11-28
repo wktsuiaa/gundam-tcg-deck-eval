@@ -195,20 +195,20 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Zeon",
+                "traits": [
+                  "Zeon",
+                  "Neo Zeon"
+                ],
+                "zone": "DECK"
+              },
+              "trait": "Zeon",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -217,7 +217,15 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Zeon",
+          "minCopies": 8,
+          "reason": "Searches (Zeon) cards",
+          "primaryClause": true
+        }
+      ]
     },
     "ST03-007": {
       "cardNo": "ST03-007",
@@ -359,9 +367,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -584,7 +590,7 @@
               "sourceFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1,
+                "count": "ALL",
                 "apMax": 2
               }
             }
@@ -603,7 +609,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -657,7 +665,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "DAMAGED_ENEMY_TARGET"
         ]

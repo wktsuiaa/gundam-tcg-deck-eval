@@ -48,6 +48,7 @@ export function matchesTargetSelectorSimple(
   const eff = evaluateUnitEffectiveState(targetUnit, state, ownerSide);
   if (selector.lvMin !== undefined && eff.lv < selector.lvMin) return false;
   if (selector.lvMax !== undefined && eff.lv > selector.lvMax) return false;
+  if (selector.lvMaxRef === 'SELF_LV' && sourceUnit && eff.lv > (sourceUnit.card.lv ?? 1)) return false;
   if (selector.apMin !== undefined && eff.ap < selector.apMin) return false;
   if (selector.apMax !== undefined && eff.ap > selector.apMax) return false;
   if (selector.hpMin !== undefined && eff.remainingHp < selector.hpMin) return false;

@@ -73,7 +73,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "DAMAGED_ENEMY_TARGET"
         ]
@@ -166,7 +168,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "DAMAGED_ENEMY_TARGET"
         ]
@@ -514,9 +518,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -577,11 +579,8 @@
             {
               "action": "LOOK_TOP",
               "count": 2,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "MILL",
-              "count": 1
+              "remainderPosition": "TRASH",
+              "trashRest": true
             },
             {
               "action": "IF_CONDITION",
@@ -604,8 +603,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "TRASH_COUNT_FUEL",
-          "AP_THRESHOLD_5"
+          "TRASH_COUNT_FUEL"
         ]
       },
       "prerequisites": [
@@ -744,7 +742,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": []

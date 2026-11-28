@@ -29,6 +29,13 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
+            },
+            "defenderFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1,
+              "state": "ACTIVE",
+              "lvMax": 4
             }
           }
         }
@@ -66,7 +73,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": []
     },
@@ -380,9 +389,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -474,13 +481,13 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "SHIELD",
-                "count": 1,
+                "count": "ALL",
                 "zone": "SHIELD"
               },
               "sourceFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1,
+                "count": "ALL",
                 "lvMax": 4
               }
             }

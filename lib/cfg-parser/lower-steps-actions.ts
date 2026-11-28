@@ -43,7 +43,10 @@ export const SELF_UNIT_TARGET: TargetSelector = { owner: 'SELF', self: true, car
 
 export function resolveSubjectTokens(toks: IToken[], state: LoweringState): TargetSelector {
   const head = toks[0]?.image.toLowerCase();
-  if ((head === 'it' || head === 'them' || head === 'they' || head === 'that' || head === 'those') && state.chosenTarget) {
+  if (
+    (head === 'it' || head === 'its' || head === 'them' || head === 'they' || head === 'their' || head === 'that' || head === 'those') &&
+    state.chosenTarget
+  ) {
     return state.chosenTarget;
   }
   if (
@@ -226,15 +229,33 @@ export function lowerVerbActionSentence(
   }
 
   if (firstTok.tokenType === VLook) {
-    const cnt = parseIntTok(toks.find((t) => t.tokenType === NumberTok)) ?? 3;
+    const topIdx = findWordSeq(toks, ['top']);
+    const afterTop = topIdx >= 0 ? toks.slice(topIdx + 1) : toks;
+    const cnt =
+      afterTop[0]?.tokenType === NumberTok
+        ? parseIntTok(afterTop[0]) ?? 1
+        : afterTop[0]?.image.toLowerCase() === 'card'
+        ? 1
+        : parseIntTok(toks.find((t) => t.tokenType === NumberTok)) ?? 3;
+    const remAnchor = [
+      findWordSeq(toks, ['remaining']),
+      findWordSeq(toks, ['rest']),
+      findWordSeq(toks, ['return']),
+      findWordSeq(toks, ['place']),
+    ].filter((x) => x >= 0);
+    const remIdx = remAnchor.length > 0 ? Math.min(...remAnchor) : -1;
+    const remToks = remIdx >= 0 ? toks.slice(remIdx) : [];
     const revealSearch = hasAnyWord(toks, ['reveal']) || hasWordSeq(toks, ['add', '1']) || hasWordSeq(toks, ['add', 'it']);
-    const trashRest = hasWordSeq(toks, ['trash']) && hasAnyWord(toks, ['rest', 'remaining']);
+    const trashRest = remToks.length > 0 && hasAnyWord(remToks, ['trash']);
     const traits = extractAllTraitsFromTokens(toks);
-    const remainderPosition = hasWordSeq(toks, ['top'])
-      ? ('TOP' as const)
-      : trashRest
-      ? ('TRASH' as const)
-      : ('BOTTOM' as const);
+    const remainderPosition =
+      remToks.length === 0
+        ? undefined
+        : trashRest
+        ? ('TRASH' as const)
+        : hasWordSeq(remToks, ['top'])
+        ? ('TOP' as const)
+        : ('BOTTOM' as const);
     return [
       {
         action: 'LOOK_TOP',
@@ -243,7 +264,7 @@ export function lowerVerbActionSentence(
         ...(trashRest ? { trashRest: true } : {}),
         ...(traits.length > 0 ? { trait: traits[0] } : {}),
         ...(revealSearch ? { target: lowerTargetSelector(toks) } : {}),
-        remainderPosition,
+        ...(remainderPosition ? { remainderPosition } : {}),
       },
     ];
   }
@@ -260,6 +281,10 @@ export function lowerVerbActionSentence(
     if (hasWordSeq(toks, ['ex', 'resource']) || hasWordSeq(toks, ['ex', 'resources'])) {
       const cnt = parseIntTok(toks.find((t) => t.tokenType === NumberTok)) ?? 1;
       return [{ action: 'ADD_RESOURCE', count: cnt, ex: true, ...(hasAnyWord(toks, ['rested']) ? { rested: true } : {}) }];
+    }
+    if (hasAnyWord(toks, ['resource', 'resources'])) {
+      const cnt = parseIntTok(toks.find((t) => t.tokenType === NumberTok)) ?? 1;
+      return [{ action: 'ADD_RESOURCE', count: cnt, ...(hasAnyWord(toks, ['rested']) ? { rested: true } : {}) }];
     }
     if (hasWordSeq(toks, ['ex', 'base'])) {
       return [{ action: 'DEPLOY_TOKEN', count: 1, exBase: true, baseToken: true }];

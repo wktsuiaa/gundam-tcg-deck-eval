@@ -1,9 +1,9 @@
 import type { EffectClauseAst } from '../cfg-parser.ts';
 import { CombatRunner } from './combat-runner';
 import { evaluateCondition } from './conditions';
-import { evaluateUnitEffectiveState } from './effective-state';
+import { evaluateUnitEffectiveState, getActiveContinuousModifiers } from './effective-state';
 import { ChainFailError, QueuedTrigger } from './runner-support';
-import { findUnitById, getCardAbilities, isUnitLinked, oppositeSide } from './state-helpers';
+import { findUnitById, getCardAbilities, isUnitLinked, matchesTargetSelectorSimple, oppositeSide } from './state-helpers';
 import { ChainSide, ChainUnitInstance, PlayerAction } from './types';
 
 export class VerifierRunner extends CombatRunner {
@@ -268,7 +268,24 @@ export class VerifierRunner extends CombatRunner {
         throw new ChainFailError('INVALID_TARGET', `Target Unit ${currentTargetId} not found.`);
       }
       if (!defFound.unit.rested) {
-        throw new ChainFailError('INVALID_ACTION', `Cannot attack active enemy Unit ${currentTargetId}.`);
+        const tempAllowed = attacker.temporaryModifiers.some(
+          (tm) =>
+            tm.layer === 2 &&
+            tm.rule === 'ALLOW_ATTACK_ACTIVE' &&
+            (!tm.defenderFilter ||
+              matchesTargetSelectorSimple(defFound.unit, tm.defenderFilter, this.state, side, attacker))
+        );
+        const contAllowed = getActiveContinuousModifiers(attacker, this.state, side).some(
+          (cm) =>
+            cm.layer === 2 &&
+            cm.modifier.type === 'ALLOW_ATTACK_ACTIVE' &&
+            cm.modifier.target.self &&
+            (!cm.modifier.defenderFilter ||
+              matchesTargetSelectorSimple(defFound.unit, cm.modifier.defenderFilter, this.state, side, attacker))
+        );
+        if (!tempAllowed && !contAllowed) {
+          throw new ChainFailError('INVALID_ACTION', `Cannot attack active enemy Unit ${currentTargetId}.`);
+        }
       }
     }
 

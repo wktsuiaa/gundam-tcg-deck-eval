@@ -74,6 +74,7 @@
           "TRASH_COUNT_FUEL"
         ],
         "enables": [
+          "RESOURCE_ACTIVATE",
           "TRASH_COUNT_FUEL"
         ]
       },
@@ -492,9 +493,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -547,19 +546,23 @@
               "target": {
                 "owner": "SELF",
                 "self": true,
+                "cardType": "UNIT"
+              },
+              "defenderFilter": {
+                "owner": "ENEMY",
                 "cardType": "UNIT",
+                "count": 1,
                 "state": "ACTIVE",
                 "lvMaxRef": "SELF_LV"
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -630,17 +633,17 @@
             "sourceFilter": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1,
+              "count": "ALL",
               "apMax": 3
             }
           }
         }
       ],
       "synergy": {
-        "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "requires": [
+          "AP_REDUCTION"
+        ],
+        "enables": []
       },
       "prerequisites": [
         {
@@ -734,20 +737,16 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
-                "count": 1
-              }
+                "count": 1,
+                "trait": "CB",
+                "zone": "DECK"
+              },
+              "trait": "CB",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -756,7 +755,15 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "minCopies": 8,
+          "reason": "Searches (CB) cards",
+          "primaryClause": true
+        }
+      ]
     },
     "ST07-015": {
       "cardNo": "ST07-015",
@@ -824,7 +831,7 @@
               "owner": "ENEMY",
               "excludeToken": true,
               "cardType": "UNIT",
-              "count": 1,
+              "count": "ALL",
               "lvMax": 3
             }
           }

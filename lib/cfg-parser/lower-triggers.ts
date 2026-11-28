@@ -75,12 +75,17 @@ export function lowerScaleMetric(toks: IToken[]): ScaleMetric | undefined {
       traits: extractAllTraitsFromTokens(toks),
     };
   }
-  if (hasWordSeq(toks, ['in', 'play']) && hasAnyWord(toks, ['unit', 'units'])) {
+  if (
+    (hasWordSeq(toks, ['in', 'play']) || hasAnyWord(toks, ['friendly', 'your'])) &&
+    hasAnyWord(toks, ['unit', 'units']) &&
+    !hasWordSeq(toks, ['in', 'your', 'trash'])
+  ) {
+    const traits = extractAllTraitsFromTokens(toks);
     return {
       metric: 'BOARD_UNIT_COUNT',
       owner: hasAnyWord(toks, ['enemy', 'opponent']) ? 'ENEMY' : 'SELF',
       cardType: 'UNIT',
-      traits: extractAllTraitsFromTokens(toks),
+      ...(traits.length > 0 ? { traits } : {}),
     };
   }
   return undefined;

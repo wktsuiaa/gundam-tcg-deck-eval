@@ -346,20 +346,25 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Mafty"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE"
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -430,9 +435,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },

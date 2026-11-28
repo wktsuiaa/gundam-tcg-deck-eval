@@ -273,7 +273,7 @@ export type EffectStep =
   | { action: 'PAY_RESOURCE'; amount: number; optional?: boolean }
   | { action: 'COST_REDUCTION'; amount: number; lvDelta?: number; zone?: 'HAND' | 'TRASH'; perTarget?: ScaleMetric; exactCost?: number; exactLv?: number }
   | { action: 'CANT_ATTACK'; duration?: EffectDuration; target: TargetSelector }
-  | { action: 'ALLOW_ATTACK_ACTIVE'; target: TargetSelector }
+  | { action: 'ALLOW_ATTACK_ACTIVE'; target: TargetSelector; defenderFilter?: TargetSelector; duration?: EffectDuration }
   | { action: 'MILL'; count: number }
   | { action: 'EXILE'; target: TargetSelector }
   | { action: 'REVEAL_FROM_HAND'; target: TargetSelector }

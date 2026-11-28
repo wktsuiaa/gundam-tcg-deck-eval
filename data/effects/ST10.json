@@ -447,8 +447,7 @@
             {
               "action": "REST",
               "target": {
-                "owner": "SELF",
-                "self": true,
+                "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "lvMaxRef": "SELF_LV"
@@ -460,7 +459,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "AP_THRESHOLD_5"
+          "RESTED_ENEMY_TARGET"
         ]
       },
       "prerequisites": [
@@ -528,7 +527,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "AP_THRESHOLD_5"
+          "AP_REDUCTION"
         ]
       },
       "prerequisites": []
@@ -647,7 +646,8 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "TRASH_COUNT_FUEL"
+          "TRASH_COUNT_FUEL",
+          "RESOURCE_RAMP"
         ]
       },
       "prerequisites": []
@@ -704,7 +704,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": [
         {

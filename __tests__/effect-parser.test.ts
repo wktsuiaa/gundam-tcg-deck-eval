@@ -381,4 +381,30 @@ describe('Seam 1: Schema v2 CST Lowering & Compiler Pipeline', () => {
       expect(compiledByNo.get(cardNo)).toEqual(compileCardEffect(card));
     }
   });
+
+  it('classifies RESOURCE_RAMP, RESOURCE_ACTIVATE, PLAYER_LV_UP, and AP_REDUCTION synergies without false Pilot AP_THRESHOLD_5', () => {
+    const st14011 = compileCardEffect(corpus.get('ST14-011')!);
+    expect(st14011.synergy.enables).toContain('AP_REDUCTION');
+    expect(st14011.synergy.enables).not.toContain('AP_THRESHOLD_5');
+
+    const st14012 = compileCardEffect(corpus.get('ST14-012')!);
+    expect(st14012.synergy.requires).toContain('AP_REDUCTION');
+    expect(st14012.synergy.enables).not.toContain('AP_THRESHOLD_5');
+
+    const st14015 = compileCardEffect(corpus.get('ST14-015')!);
+    expect(st14015.synergy.enables).toEqual(
+      expect.arrayContaining(['RESOURCE_RAMP', 'PLAYER_LV_UP', 'RESOURCE_ACTIVATE'])
+    );
+    expect(st14015.synergy.requires).toContain('RESOURCE_ACTIVATE');
+
+    const st14009 = compileCardEffect(corpus.get('ST14-009')!);
+    expect(st14009.synergy.enables).toContain('RESOURCE_RAMP');
+    expect(st14009.synergy.enables).not.toContain('PLAYER_LV_UP');
+
+    const gd02026 = compileCardEffect(corpus.get('GD02-026')!);
+    expect(gd02026.synergy.requires).toContain('PLAYER_LV_UP');
+
+    const gd04085 = compileCardEffect(corpus.get('GD04-085')!);
+    expect(gd04085.synergy.requires).toContain('RESOURCE_RAMP');
+  });
 });

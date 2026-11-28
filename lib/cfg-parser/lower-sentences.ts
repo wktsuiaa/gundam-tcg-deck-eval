@@ -7,6 +7,7 @@ import type {
   LinkRequirement,
 } from '../effect-parser.ts';
 import { lowerConditionTokens } from './lower-conditions.ts';
+import { consumeLookTopFollowUps, findTrailingLookTop } from './lower-looktop.ts';
 import {
   lowerDuration,
   lowerTargetSelector,
@@ -211,6 +212,33 @@ export function lowerSentenceNodes(
         }
 
         // Otherwise reactive triggered grant clause ("During this turn, when a friendly ... destroys ..., <body + followups>")
+        const subState: LoweringState = { chosenTarget: state.chosenTarget, depth: state.depth + 1 };
+        const initSteps = lowerBasicSentenceTokens(bodyToks, subState);
+        const lookStep = findTrailingLookTop(initSteps);
+        if (lookStep) {
+          const { extraSteps, nextIdx, consumedRaw } = consumeLookTopFollowUps(lookStep, sentenceNodes, i + 1);
+          const triggerParsed = lowerTriggerEventFromTokens(whenToks, undefined, lowerConditionTokens);
+          const resolvedTimings: EffectTiming[] = [triggerParsed.triggerEvent.kind];
+          const linkReq = buildLinkReqFn?.(resolvedTimings);
+          const clause: EffectClause = {
+            raw: [whenToks.map((t) => t.image).join(' ') + ',', bodyToks.map((t) => t.image).join(' '), ...consumedRaw].join(' '),
+            timings: resolvedTimings,
+            oncePerTurn: false,
+            triggerEvent: triggerParsed.triggerEvent,
+            ...(triggerParsed.extraCondition ? { condition: triggerParsed.extraCondition } : {}),
+            ...(linkReq ? { linkRequirement: linkReq } : {}),
+            steps: [...initSteps, ...extraSteps],
+          };
+          steps.push({
+            action: 'GRANT_CLAUSE',
+            clause,
+            duration,
+            target: state.chosenTarget ?? { owner: 'SELF', self: true, cardType: 'UNIT' },
+          });
+          i = nextIdx;
+          continue;
+        }
+
         const followToksList: IToken[][] = [bodyToks];
         while (i + 1 < sentenceNodes.length) {
           const nextToks = flattenCstTokens(sentenceNodes[i + 1]);
@@ -229,8 +257,7 @@ export function lowerSentenceNodes(
             break;
           }
         }
-        const subState: LoweringState = { chosenTarget: state.chosenTarget, depth: state.depth + 1 };
-        const clause = buildInlineGrantClause([], whenToks, followToksList, subState, buildLinkReqFn);
+        const clause = buildInlineGrantClause([], whenToks, followToksList, { chosenTarget: state.chosenTarget, depth: state.depth + 1 }, buildLinkReqFn);
         steps.push({
           action: 'GRANT_CLAUSE',
           clause,
@@ -301,13 +328,23 @@ export function lowerSentenceNodes(
       const duration = lowerDuration(whenToks) ?? 'THIS_TURN';
       const subState: LoweringState = { chosenTarget: state.chosenTarget, depth: state.depth + 1 };
       const clause = buildInlineGrantClause([], whenToks, [bodyToks], subState, buildLinkReqFn);
+      const lookStep = findTrailingLookTop(clause.steps);
+      let nextIdx = i + 1;
+      if (lookStep) {
+        const res = consumeLookTopFollowUps(lookStep, sentenceNodes, i + 1);
+        clause.steps.push(...res.extraSteps);
+        if (res.consumedRaw.length > 0) {
+          clause.raw = [clause.raw, ...res.consumedRaw].join(' ');
+        }
+        nextIdx = res.nextIdx;
+      }
       steps.push({
         action: 'GRANT_CLAUSE',
         clause,
         duration,
         target: state.chosenTarget ?? { owner: 'SELF', self: true, cardType: 'UNIT' },
       });
-      i += 1;
+      i = nextIdx;
       continue;
     }
 
@@ -335,8 +372,15 @@ export function lowerSentenceNodes(
           ifPrev.thenSteps.push(...lowerBasicSentenceTokens(nextToks, state));
           i += 1;
         }
+        let nextIdx = i + 1;
+        const lookStep = findTrailingLookTop(ifPrev.thenSteps);
+        if (lookStep) {
+          const res = consumeLookTopFollowUps(lookStep, sentenceNodes, nextIdx);
+          ifPrev.thenSteps.push(...res.extraSteps);
+          nextIdx = res.nextIdx;
+        }
         steps.push(ifPrev);
-        i += 1;
+        i = nextIdx;
         continue;
       }
 
@@ -354,6 +398,13 @@ export function lowerSentenceNodes(
           i += 1;
         }
       }
+      let nextIdx = i + 1;
+      const lookStep = findTrailingLookTop(thenSteps);
+      if (lookStep) {
+        const res = consumeLookTopFollowUps(lookStep, sentenceNodes, nextIdx);
+        thenSteps.push(...res.extraSteps);
+        nextIdx = res.nextIdx;
+      }
       if (cond) {
         steps.push({
           action: 'IF_CONDITION',
@@ -364,16 +415,22 @@ export function lowerSentenceNodes(
       } else {
         steps.push(...thenSteps);
       }
-      i += 1;
+      i = nextIdx;
       continue;
     }
 
     // 5. Imperative or Subject-Predicate sentence
     const sToks = flattenCstTokens(node);
-    // Check "Look at the top N cards ... Return the remaining cards to the bottom"
     const sSteps = lowerBasicSentenceTokens(sToks, state);
+    let nextIdx = i + 1;
+    const lookStep = findTrailingLookTop(sSteps);
+    if (lookStep) {
+      const res = consumeLookTopFollowUps(lookStep, sentenceNodes, nextIdx);
+      sSteps.push(...res.extraSteps);
+      nextIdx = res.nextIdx;
+    }
     steps.push(...sSteps);
-    i += 1;
+    i = nextIdx;
   }
 
   return { steps };

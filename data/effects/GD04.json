@@ -795,7 +795,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": []
     },
@@ -824,20 +826,17 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 5,
+                "trait": "CB",
+                "zone": "DECK"
+              },
+              "trait": "CB",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -846,7 +845,15 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "minCopies": 8,
+          "reason": "Searches (CB) cards",
+          "primaryClause": false
+        }
+      ]
     },
     "GD04-020": {
       "cardNo": "GD04-020",
@@ -887,7 +894,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESOURCE_RAMP"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -942,7 +951,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESOURCE_RAMP"
+        ],
         "enables": []
       },
       "prerequisites": [
@@ -1050,12 +1061,20 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "paired": true,
+                "trait": "Super Soldier"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "lvMax": 4
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
@@ -1064,7 +1083,16 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Super Soldier",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Super Soldier) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "GD04-024": {
       "cardNo": "GD04-024",
@@ -1086,20 +1114,16 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
-                "count": 1
-              }
+                "count": 1,
+                "trait": "Academy",
+                "zone": "DECK"
+              },
+              "trait": "Academy",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -1108,7 +1132,15 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Academy",
+          "minCopies": 8,
+          "reason": "Searches (Academy) cards",
+          "primaryClause": true
+        }
+      ]
     },
     "GD04-025": {
       "cardNo": "GD04-025",
@@ -1155,7 +1187,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": [
         {
@@ -1187,17 +1221,8 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 3,
+              "count": 1,
               "remainderPosition": "TOP"
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "TOP",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
             }
           ]
         }
@@ -1350,12 +1375,20 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "other": true,
+                "trait": "Academy"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "lvMax": 3
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
@@ -1364,7 +1397,16 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Academy",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Academy) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "GD04-031": {
       "cardNo": "GD04-031",
@@ -1417,6 +1459,7 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT",
+              "count": 1,
               "trait": "Neo Zeon"
             },
             "raw": "When this Unit or one of your (Neo Zeon) Units is deployed ,"
@@ -2002,7 +2045,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "DAMAGED_ENEMY_TARGET"
         ]
@@ -2126,11 +2171,18 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "CB"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE"
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
@@ -2152,6 +2204,14 @@
           "minCopies": 4,
           "reason": "Link requires (Trinity) Trait / [Ali al-Saachez]",
           "primaryClause": false
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "CB",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (CB) UNIT target",
+          "primaryClause": true
         }
       ]
     },
@@ -2363,6 +2423,12 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
+            },
+            "defenderFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1,
+              "state": "ACTIVE"
             }
           }
         }
@@ -2578,7 +2644,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "RESTED_ENEMY_TARGET"
         ]
@@ -2601,12 +2669,31 @@
             "DEPLOY"
           ],
           "oncePerTurn": false,
-          "steps": []
+          "steps": [
+            {
+              "action": "MODIFY_AP",
+              "delta": -1,
+              "scaleBy": {
+                "metric": "TRASH_COUNT",
+                "owner": "SELF",
+                "nameContains": "Gundam Virtue"
+              },
+              "duration": "THIS_TURN",
+              "target": {
+                "owner": "ENEMY",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMax": 6
+              }
+            }
+          ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -2801,7 +2888,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -2900,7 +2989,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": [
         {
@@ -2957,7 +3048,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -3545,7 +3638,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": [
         {
@@ -3744,9 +3839,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -3816,9 +3909,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4028,9 +4119,11 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESOURCE_RAMP"
+        ],
         "enables": [
-          "AP_THRESHOLD_5"
+          "RESOURCE_RAMP"
         ]
       },
       "prerequisites": [
@@ -4107,9 +4200,11 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESOURCE_RAMP"
+        ],
         "enables": [
-          "AP_THRESHOLD_5"
+          "RESOURCE_RAMP"
         ]
       },
       "prerequisites": [
@@ -4190,9 +4285,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4261,9 +4354,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -4379,41 +4470,24 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "SELF_STATE",
-                "traits": [
-                  "CB"
-                ]
-              },
-              "thenSteps": [
-                {
-                  "action": "REVEAL_TOP",
-                  "count": 1
-                }
-              ]
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "count": 1,
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
-                "count": 1
-              }
+                "count": 1,
+                "trait": "CB",
+                "zone": "DECK"
+              },
+              "trait": "CB",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4433,9 +4507,8 @@
         {
           "kind": "TRAIT",
           "trait": "CB",
-          "cardType": "UNIT",
-          "minCopies": 4,
-          "reason": "Requires (CB) Unit",
+          "minCopies": 8,
+          "reason": "Searches (CB) cards",
           "primaryClause": true
         }
       ]
@@ -4486,8 +4559,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "DAMAGED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "DAMAGED_ENEMY_TARGET"
         ]
       },
       "prerequisites": []
@@ -4552,8 +4624,7 @@
           "DAMAGED_ENEMY_TARGET"
         ],
         "enables": [
-          "DAMAGED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "DAMAGED_ENEMY_TARGET"
         ]
       },
       "prerequisites": [
@@ -4633,9 +4704,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4720,9 +4789,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4804,9 +4871,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4894,9 +4959,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4970,9 +5033,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -5045,9 +5106,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -5122,9 +5181,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -5241,7 +5298,7 @@
               "target": {
                 "owner": "SELF",
                 "cardType": "UNIT",
-                "count": 1
+                "count": "ALL"
               },
               "duration": "THIS_TURN"
             },
@@ -5422,20 +5479,14 @@
             {
               "action": "LOOK_TOP",
               "count": 5,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "PILOT",
+                "count": 1,
+                "zone": "DECK"
+              },
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -5466,12 +5517,19 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Academy"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "apMax": 5
-              }
+              },
+              "duration": "THIS_TURN"
             },
             {
               "action": "IF_CONDITION",
@@ -5487,7 +5545,15 @@
                     "count": "UP_TO",
                     "maxCount": 2,
                     "trait": "Academy"
-                  }
+                  },
+                  "defenderFilter": {
+                    "owner": "ENEMY",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "state": "ACTIVE",
+                    "apMax": 5
+                  },
+                  "duration": "THIS_TURN"
                 }
               ],
               "replacesPrevious": true
@@ -5507,7 +5573,10 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESOURCE_RAMP",
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": [
@@ -5625,7 +5694,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESOURCE_RAMP"
+        ],
         "enables": []
       },
       "prerequisites": [
@@ -5855,12 +5926,26 @@
             "ACTION"
           ],
           "oncePerTurn": false,
-          "steps": []
+          "steps": [
+            {
+              "action": "DAMAGE_PROOF",
+              "amount": 3,
+              "damageType": "BATTLE",
+              "duration": "THIS_BATTLE",
+              "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1
+              }
+            }
+          ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -6076,7 +6161,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "TRASH_COUNT_FUEL",
           "DAMAGED_ENEMY_TARGET"
@@ -6240,7 +6327,7 @@
               "sourceFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1
+                "count": "ALL"
               }
             }
           ]
@@ -6516,7 +6603,7 @@
             "sourceFilter": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1,
+              "count": "ALL",
               "lvMax": 4
             }
           }
@@ -6603,7 +6690,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESOURCE_RAMP"
+        ],
         "enables": [
           "AP_THRESHOLD_5"
         ]
@@ -6822,7 +6911,8 @@
       ],
       "synergy": {
         "requires": [
-          "TRASH_COUNT_FUEL"
+          "TRASH_COUNT_FUEL",
+          "AP_REDUCTION"
         ],
         "enables": []
       },
@@ -7048,7 +7138,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     }

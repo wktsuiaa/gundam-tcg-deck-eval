@@ -825,7 +825,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": []
     },
@@ -849,20 +851,16 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Londo Bell",
+                "zone": "DECK"
+              },
+              "trait": "Londo Bell",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -871,7 +869,15 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Londo Bell",
+          "minCopies": 8,
+          "reason": "Searches (Londo Bell) cards",
+          "primaryClause": true
+        }
+      ]
     },
     "GD05-020": {
       "cardNo": "GD05-020",
@@ -931,7 +937,9 @@
         "requires": [
           "TRASH_COUNT_FUEL"
         ],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": [
         {
@@ -1085,7 +1093,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": []
     },
@@ -1167,20 +1177,14 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "COMMAND",
+                "count": 1,
+                "zone": "DECK"
+              },
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -1269,21 +1273,39 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "Londo Bell"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "apMax": 4
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Londo Bell",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Londo Bell) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "GD05-029": {
       "cardNo": "GD05-029",
@@ -1304,17 +1326,8 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 3,
+              "count": 1,
               "remainderPosition": "TOP"
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "TOP",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
             }
           ]
         }
@@ -1571,7 +1584,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "DAMAGED_ENEMY_TARGET"
         ]
@@ -2932,7 +2947,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_ACTIVATE"
+        ]
       },
       "prerequisites": [
         {
@@ -3138,20 +3155,16 @@
             {
               "action": "LOOK_TOP",
               "count": 4,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "COMMAND",
+                "count": 1,
+                "trait": "Special Move",
+                "zone": "DECK"
+              },
+              "trait": "Special Move",
+              "remainderPosition": "BOTTOM"
             }
           ]
         },
@@ -3184,6 +3197,13 @@
         "enables": []
       },
       "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Special Move",
+          "minCopies": 8,
+          "reason": "Searches (Special Move) cards",
+          "primaryClause": true
+        },
         {
           "kind": "LINK",
           "cardType": "PILOT",
@@ -3324,7 +3344,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": [
         {
@@ -3652,7 +3674,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": [
         {
@@ -3741,9 +3765,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -3830,9 +3852,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -3897,9 +3917,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -3945,9 +3963,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -4011,9 +4027,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -4063,9 +4077,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4134,9 +4146,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4288,8 +4298,7 @@
           "TRASH_COUNT_FUEL"
         ],
         "enables": [
-          "DAMAGED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "DAMAGED_ENEMY_TARGET"
         ]
       },
       "prerequisites": [
@@ -4355,50 +4364,32 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "SELF_STATE",
-                "traits": [
-                  "Phantom Pain"
-                ]
-              },
-              "thenSteps": [
-                {
-                  "action": "REVEAL_TOP",
-                  "count": 1
-                }
-              ]
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "count": 1,
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
-                "count": 1
-              }
+                "count": 1,
+                "trait": "Phantom Pain",
+                "zone": "DECK"
+              },
+              "trait": "Phantom Pain",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
           "kind": "TRAIT",
           "trait": "Phantom Pain",
-          "cardType": "UNIT",
-          "minCopies": 4,
-          "reason": "Requires (Phantom Pain) Unit",
-          "primaryClause": false
+          "minCopies": 8,
+          "reason": "Searches (Phantom Pain) cards",
+          "primaryClause": true
         }
       ]
     },
@@ -4598,8 +4589,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "DEPLOY_FROM_TRASH",
-          "AP_THRESHOLD_5"
+          "DEPLOY_FROM_TRASH"
         ]
       },
       "prerequisites": [
@@ -4662,9 +4652,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -4718,9 +4706,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -4866,8 +4852,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "TRASH_COUNT_FUEL",
-          "AP_THRESHOLD_5"
+          "TRASH_COUNT_FUEL"
         ]
       },
       "prerequisites": []
@@ -4926,7 +4911,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "AP_THRESHOLD_5"
+          "AP_REDUCTION"
         ]
       },
       "prerequisites": []
@@ -4992,8 +4977,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "TRASH_COUNT_FUEL",
-          "AP_THRESHOLD_5"
+          "TRASH_COUNT_FUEL"
         ]
       },
       "prerequisites": []
@@ -5044,8 +5028,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "RESTED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "RESTED_ENEMY_TARGET"
         ]
       },
       "prerequisites": []
@@ -5103,9 +5086,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -5383,7 +5364,13 @@
             "MAIN"
           ],
           "oncePerTurn": false,
-          "steps": []
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "rested": true
+            }
+          ]
         },
         {
           "kind": "EFFECT_CLAUSE",
@@ -5409,7 +5396,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "PLAYER_LV_UP"
+        ]
       },
       "prerequisites": []
     },
@@ -5460,7 +5449,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": []
     },
@@ -6077,8 +6068,11 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "RESOURCE_RAMP"
+        ],
         "enables": [
+          "AP_REDUCTION",
           "RESTED_ENEMY_TARGET"
         ]
       },
@@ -6128,7 +6122,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -6260,7 +6256,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": [
         {
@@ -6393,7 +6391,7 @@
             "target": {
               "owner": "SELF",
               "cardType": "UNIT",
-              "count": 1,
+              "count": "ALL",
               "trait": "Orb"
             },
             "sourceFilter": {

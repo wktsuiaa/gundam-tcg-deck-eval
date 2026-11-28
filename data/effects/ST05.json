@@ -205,7 +205,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": [
           "RESTED_ENEMY_TARGET"
         ]
@@ -264,7 +266,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -347,8 +351,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "DAMAGED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "DAMAGED_ENEMY_TARGET"
         ]
       },
       "prerequisites": []
@@ -427,9 +430,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -513,8 +514,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "RESTED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "RESTED_ENEMY_TARGET"
         ]
       },
       "prerequisites": [

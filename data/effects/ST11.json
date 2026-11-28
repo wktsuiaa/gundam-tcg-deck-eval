@@ -40,7 +40,7 @@
             "attackerFilter": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1
+              "count": "ALL"
             }
           }
         },
@@ -123,7 +123,7 @@
             "target": {
               "owner": "SELF",
               "cardType": "UNIT",
-              "count": 1,
+              "count": "ALL",
               "hpMax": 2,
               "trait": "Marine"
             },
@@ -530,9 +530,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -634,7 +632,7 @@
               "attackerFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1
+                "count": "ALL"
               },
               "duration": "THIS_TURN"
             }

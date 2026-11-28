@@ -81,6 +81,10 @@ export function generateDeckPlaybook(
     AP_THRESHOLD_5: { title: '5+ AP Threshold Boost', verb: 'pushes AP to 5+ for' },
     DAMAGED_ENEMY_TARGET: { title: 'Ping & Punish', verb: 'marks damaged enemy Units for' },
     RESTED_ENEMY_TARGET: { title: 'Rest & Punish', verb: 'rests enemy Units for' },
+    PLAYER_LV_UP: { title: 'Lv. Acceleration', verb: 'adds permanent Resources to unlock' },
+    RESOURCE_RAMP: { title: 'EX Resource Ramp', verb: 'supplies EX Resources / cost relief for' },
+    RESOURCE_ACTIVATE: { title: 'Resource Refresh', verb: 'sets Resources active to enable' },
+    AP_REDUCTION: { title: 'AP Shrink & Punish', verb: 'reduces enemy AP into range for' },
   };
   const profiles = mainExpanded.map((x) => ({
     card: x.card,

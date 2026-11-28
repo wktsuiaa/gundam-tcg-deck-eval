@@ -1,7 +1,7 @@
 import type { SandboxMatchState, SandboxMoveSuggestion, SandboxSide, SandboxUnitInstance } from '@/types/gundam';
 import { doesPilotLinkUnit, isCommandPilot } from '@/lib/gundam-keywords';
 import { scoreSingleCardSignals } from '@/lib/deck-engine';
-import { applySandboxMove, canActivateUnitMain, canPayCard, canUnitAttack } from './moves';
+import { applySandboxMove, canActivateBaseMain, canActivateUnitMain, canPayCard, canUnitAttack } from './moves';
 import { getLegalTargetOptions } from './targeting';
 import { effectiveAp, effectiveRemainingHp, unitHasKeyword, unitHasProhibition } from './unit-stats';
 
@@ -163,6 +163,19 @@ export function evaluateSandboxBestMoves(
       priorityScore: 84,
       card: unit.card,
       unitInstanceId: unit.instanceId,
+    });
+  }
+
+  if (player.base && canActivateBaseMain(state, side)) {
+    candidates.push({
+      id: `act-base-${player.base.printId}`,
+      actionType: 'ACTIVATE_MAIN',
+      title: `Activate Base ${player.base.name}`,
+      reason: `Triggers 【Activate･Main】 on Base ${player.base.name}.`,
+      winDeltaPct: 8,
+      priorityScore: 80,
+      card: player.base,
+      unitInstanceId: 'BASE',
     });
   }
 

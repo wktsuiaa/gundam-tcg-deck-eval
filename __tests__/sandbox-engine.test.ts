@@ -1326,6 +1326,185 @@ describe('Seam 3: Fail-Closed Clause Execution & FAQ Conformance in Sandbox', ()
     expect(afterBypass.players.B.shields).toBe(4);
     expect(afterBypass.players.B.battleArea).toHaveLength(1);
   });
+
+  it('executes ST01-015 White Base 【Activate･Main】 dynamically (0->Gundam, 1->Guncannon, 2+->Guntank), ST14-003 no-partial EXILE, and ST14-005 same-unit AP-2', () => {
+    const st01015 = makeRealCard({
+      printId: 'ST01-015',
+      cardNo: 'ST01-015',
+      name: 'White Base',
+      type: 'BASE',
+      lv: 2,
+      cost: 2,
+      ap: null,
+      hp: 5,
+      traits: ['White Base Team'],
+      effect:
+        '【Burst】Deploy this card.\n【Deploy】Add 1 of your Shields to your hand.\n【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play.',
+    });
+    const st14003 = makeRealCard({
+      printId: 'ST14-003',
+      cardNo: 'ST14-003',
+      name: 'Palace Athene',
+      type: 'UNIT',
+      lv: 5,
+      cost: 3,
+      ap: 4,
+      hp: 5,
+      effect: '【Deploy】Choose 1 enemy player. That player chooses 2 Unit cards from their trash. Exile them from the game.',
+    });
+    const st14005 = makeRealCard({
+      printId: 'ST14-005',
+      cardNo: 'ST14-005',
+      name: 'G-Falcon DX',
+      type: 'UNIT',
+      lv: 5,
+      cost: 4,
+      ap: 5,
+      hp: 5,
+      effect:
+        '【Deploy】Choose 1 enemy Unit that is Lv.6 or lower. Rest it. Then, if there are 7 or more cards in your trash, it gets AP-2 during this turn.',
+    });
+
+    // 1. ST01-015 Base Activate-Main with 0 -> Gundam (3/3), then next turn 1 -> Guncannon (2/2), then 2 -> Guntank (1/1)
+    const wbState = createInitialSandboxMatch(deck, deck, 'A', byPrintId, byCardNo);
+    wbState.turn = 3;
+    wbState.players.A.base = st01015;
+    wbState.players.A.resourcesTotal = 5;
+    wbState.players.A.resourcesActive = 5;
+    wbState.players.A.battleArea = [];
+
+    let wbNext = applySandboxMove(wbState, {
+      id: 'wb-act-1',
+      rank: 1,
+      actionType: 'ACTIVATE_MAIN',
+      title: 'Activate White Base',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 80,
+      card: st01015,
+      unitInstanceId: 'BASE',
+    });
+    expect(wbNext.players.A.battleArea.map((u) => [u.card.name, u.card.ap, u.card.hp])).toEqual([['Gundam', 3, 3]]);
+    expect(wbNext.players.A.resourcesActive).toBe(3);
+
+    wbNext.turn = 5;
+    wbNext.players.A.resourcesActive = 5;
+    wbNext = applySandboxMove(wbNext, {
+      id: 'wb-act-2',
+      rank: 1,
+      actionType: 'ACTIVATE_MAIN',
+      title: 'Activate White Base',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 80,
+      card: st01015,
+      unitInstanceId: 'BASE',
+    });
+    expect(wbNext.players.A.battleArea.map((u) => [u.card.name, u.card.ap, u.card.hp])).toEqual([
+      ['Gundam', 3, 3],
+      ['Guncannon', 2, 2],
+    ]);
+
+    wbNext.turn = 7;
+    wbNext.players.A.resourcesActive = 5;
+    wbNext = applySandboxMove(wbNext, {
+      id: 'wb-act-3',
+      rank: 1,
+      actionType: 'ACTIVATE_MAIN',
+      title: 'Activate White Base',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 80,
+      card: st01015,
+      unitInstanceId: 'BASE',
+    });
+    expect(wbNext.players.A.battleArea.map((u) => [u.card.name, u.card.ap, u.card.hp])).toEqual([
+      ['Gundam', 3, 3],
+      ['Guncannon', 2, 2],
+      ['Guntank', 1, 1],
+    ]);
+
+    // 2. ST14-003 EXILE FAQ: <2 Unit cards in opponent trash -> 0 exiled; >=2 Unit cards -> 2 exiled
+    const oneTrashState = createInitialSandboxMatch(deck, deck, 'A', byPrintId, byCardNo);
+    oneTrashState.players.A.resourcesTotal = 5;
+    oneTrashState.players.A.resourcesActive = 5;
+    oneTrashState.players.A.hand = [st14003];
+    oneTrashState.players.B.trash = [enemyLv2];
+    const afterOne = applySandboxMove(oneTrashState, {
+      id: 'dep-003-one',
+      rank: 1,
+      actionType: 'DEPLOY_UNIT',
+      title: 'Deploy Palace Athene',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 50,
+      card: st14003,
+    });
+    expect(afterOne.players.B.trash).toHaveLength(1);
+
+    const twoTrashState = createInitialSandboxMatch(deck, deck, 'A', byPrintId, byCardNo);
+    twoTrashState.players.A.resourcesTotal = 5;
+    twoTrashState.players.A.resourcesActive = 5;
+    twoTrashState.players.A.hand = [st14003];
+    twoTrashState.players.B.trash = [enemyLv2, enemyLv4];
+    const afterTwo = applySandboxMove(twoTrashState, {
+      id: 'dep-003-two',
+      rank: 1,
+      actionType: 'DEPLOY_UNIT',
+      title: 'Deploy Palace Athene',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 50,
+      card: st14003,
+    });
+    expect(afterTwo.players.B.trash).toHaveLength(0);
+
+    // 3. ST14-005 rests chosen target AND applies AP-2 to that exact same target (even if already rested while a bigger active unit exists)
+    const fState = createInitialSandboxMatch(deck, deck, 'A', byPrintId, byCardNo);
+    fState.players.A.resourcesTotal = 5;
+    fState.players.A.resourcesActive = 5;
+    fState.players.A.hand = [st14005];
+    fState.players.A.trash = Array.from({ length: 7 }, () => enemyLv2);
+    fState.players.B.battleArea = [
+      {
+        instanceId: 'opp-big',
+        card: enemyLv4, // 5 AP
+        pairedPilot: null,
+        isLinked: false,
+        rested: false,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+      {
+        instanceId: 'opp-already-rested',
+        card: enemyLv2, // 2 AP
+        pairedPilot: null,
+        isLinked: false,
+        rested: true,
+        damage: 0,
+        apBuff: 0,
+        summonedTurn: 1,
+      },
+    ];
+    const afterFalcon = applySandboxMove(fState, {
+      id: 'dep-005',
+      rank: 1,
+      actionType: 'DEPLOY_UNIT',
+      title: 'Deploy G-Falcon DX',
+      reason: 'test',
+      winDeltaPct: 0,
+      priorityScore: 50,
+      card: st14005,
+      targetInstanceId: 'opp-already-rested',
+    });
+    const bigAfter = afterFalcon.players.B.battleArea.find((u) => u.instanceId === 'opp-big')!;
+    const smallAfter = afterFalcon.players.B.battleArea.find((u) => u.instanceId === 'opp-already-rested')!;
+    expect(bigAfter.rested).toBe(false);
+    expect(bigAfter.apBuff).toBe(0);
+    expect(smallAfter.rested).toBe(true);
+    expect(smallAfter.apBuff).toBe(-2);
+  });
 });
 
 

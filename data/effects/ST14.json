@@ -28,7 +28,7 @@
             "target": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1,
+              "count": "ALL",
               "state": "RESTED",
               "lvRank": "LOWEST"
             }
@@ -83,7 +83,9 @@
               "action": "EXILE",
               "target": {
                 "owner": "ENEMY",
-                "count": 1
+                "cardType": "UNIT",
+                "count": 2,
+                "zone": "TRASH"
               }
             }
           ]
@@ -186,7 +188,8 @@
           "TRASH_COUNT_FUEL"
         ],
         "enables": [
-          "RESTED_ENEMY_TARGET"
+          "RESTED_ENEMY_TARGET",
+          "AP_REDUCTION"
         ]
       },
       "prerequisites": []
@@ -211,20 +214,15 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
-                "count": 1
-              }
+                "countRef": "ENEMY_PLAYERS",
+                "count": "UP_TO",
+                "zone": "DECK"
+              },
+              "remainderPosition": "BOTTOM"
             }
           ]
         },
@@ -256,7 +254,9 @@
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
       "prerequisites": []
@@ -321,7 +321,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": []
     },
@@ -381,7 +383,8 @@
               },
               "duration": "THIS_BATTLE",
               "target": {
-                "owner": "SELF",
+                "owner": "ENEMY",
+                "cardType": "UNIT",
                 "count": 1
               }
             }
@@ -391,7 +394,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "AP_THRESHOLD_5"
+          "AP_REDUCTION"
         ]
       },
       "prerequisites": []
@@ -430,21 +433,28 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 5
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "apMax": 5
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
-        "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "requires": [
+          "AP_REDUCTION"
+        ],
+        "enables": []
       },
       "prerequisites": []
     },
@@ -525,6 +535,7 @@
       "synergy": {
         "requires": [],
         "enables": [
+          "AP_REDUCTION",
           "RESTED_ENEMY_TARGET"
         ]
       },
@@ -598,7 +609,9 @@
         "requires": [
           "TRASH_COUNT_FUEL"
         ],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": [
         {
@@ -644,6 +657,11 @@
           "oncePerTurn": false,
           "steps": [
             {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "rested": true
+            },
+            {
               "action": "IF_CONDITION",
               "condition": {
                 "kind": "NOT",
@@ -656,7 +674,7 @@
                 {
                   "action": "SET_ACTIVE",
                   "target": {
-                    "owner": "ENEMY",
+                    "owner": "SELF",
                     "cardType": "RESOURCE",
                     "countRef": "ENEMY_PLAYERS",
                     "count": "UP_TO"
@@ -668,8 +686,14 @@
         }
       ],
       "synergy": {
-        "requires": [],
-        "enables": []
+        "requires": [
+          "RESOURCE_ACTIVATE"
+        ],
+        "enables": [
+          "RESOURCE_RAMP",
+          "PLAYER_LV_UP",
+          "RESOURCE_ACTIVATE"
+        ]
       },
       "prerequisites": []
     },
@@ -748,7 +772,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     }

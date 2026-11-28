@@ -25,6 +25,7 @@ export function matchesUnitSelector(
   if (sel.notColor && u.card.color === sel.notColor) return false;
   const lv = u.card.lv ?? 1;
   if (sel.lvMax !== undefined && lv > sel.lvMax) return false;
+  if (sel.lvMaxRef === 'SELF_LV' && selfUnit && lv > (selfUnit.card.lv ?? 1)) return false;
   if (sel.lvMin !== undefined && lv < sel.lvMin) return false;
   const ap = effectiveAp(u, state, unitSide);
   if (sel.apMax !== undefined && ap > sel.apMax) return false;

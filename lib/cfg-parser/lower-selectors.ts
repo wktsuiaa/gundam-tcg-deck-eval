@@ -27,13 +27,28 @@ function lowerBoardOwner(toks: IToken[]): TargetSelector['owner'] {
   return 'ANY';
 }
 
+function hasNonComparativeWordSeq(toks: IToken[], seq: string[]): boolean {
+  let idx = findWordSeq(toks, seq);
+  while (idx >= 0) {
+    const prev = toks[idx - 1]?.image.toLowerCase();
+    if (prev !== 'than') return true;
+    idx = findWordSeq(toks, seq, idx + 1);
+  }
+  return false;
+}
+
 export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
-  // Trim trailing "from your/any player's trash/hand" for owner check if "any player's" is at end
+  // Trim trailing "from your/any player's trash/hand" or "equal to ..." for owner check
   const anyPlayerTrashIdx = findWordSeq(rawToks, ['any', "player's"]);
+  const equalToIdx = findWordSeq(rawToks, ['equal', 'to']);
+  const ownerStopIdx = [anyPlayerTrashIdx, equalToIdx]
+    .filter((idx) => idx >= 0)
+    .reduce((min, idx) => Math.min(min, idx), rawToks.length);
+  const ownerToks = rawToks.slice(0, ownerStopIdx);
   const mainToks = anyPlayerTrashIdx >= 0 ? rawToks.slice(0, anyPlayerTrashIdx) : rawToks;
 
   const sel: TargetSelector = {
-    owner: lowerBoardOwner(mainToks),
+    owner: lowerBoardOwner(ownerToks),
   };
 
   if (hasWordSeq(rawToks, ['belonging', 'to', 'each', 'enemy', 'player'])) {
@@ -48,11 +63,11 @@ export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
   }
 
   const isThisUnit =
-    hasWordSeq(rawToks, ['this', 'unit']) ||
-    hasWordSeq(rawToks, ['this', "unit's"]) ||
-    hasWordSeq(rawToks, ['this', 'rested', 'unit']) ||
-    hasWordSeq(rawToks, ['this', 'active', 'unit']) ||
-    hasWordSeq(rawToks, ['this', 'base']);
+    hasNonComparativeWordSeq(rawToks, ['this', 'unit']) ||
+    hasNonComparativeWordSeq(rawToks, ['this', "unit's"]) ||
+    hasNonComparativeWordSeq(rawToks, ['this', 'rested', 'unit']) ||
+    hasNonComparativeWordSeq(rawToks, ['this', 'active', 'unit']) ||
+    hasNonComparativeWordSeq(rawToks, ['this', 'base']);
 
   if (
     hasWordSeq(rawToks, ['this', "unit's", 'paired', 'pilot']) ||
@@ -61,7 +76,7 @@ export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
     sel.owner = 'SELF';
     sel.self = true;
     sel.cardType = 'PILOT';
-  } else if (hasWordSeq(rawToks, ['this', 'base'])) {
+  } else if (hasNonComparativeWordSeq(rawToks, ['this', 'base'])) {
     sel.owner = 'SELF';
     sel.self = true;
     sel.cardType = 'BASE';
@@ -75,8 +90,6 @@ export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
   } else if (hasWordSeq(rawToks, ['unit', 'tokens']) || hasWordSeq(rawToks, ['unit', 'token'])) {
     sel.cardType = 'UNIT_TOKEN';
     sel.token = true;
-  } else if (hasAnyWord(rawToks, ['base', 'bases'])) {
-    sel.cardType = 'BASE';
   } else if (hasAnyWord(rawToks, ['shield', 'shields'])) {
     sel.cardType = 'SHIELD';
   } else if (hasWordSeq(rawToks, ['ex', 'resource']) || hasWordSeq(rawToks, ['ex', 'resources'])) {
@@ -85,9 +98,20 @@ export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
     sel.cardType = 'RESOURCE';
   } else if (
     hasWordSeq(rawToks, ['with', 'no', 'paired', 'pilot']) ||
+    hasWordSeq(rawToks, ['no', 'pilot', 'paired']) ||
     hasWordSeq(rawToks, ['paired', 'with'])
   ) {
     sel.cardType = 'UNIT';
+  } else if (
+    hasWordSeq(mainToks, ['unit', 'card', '/']) ||
+    hasWordSeq(mainToks, ['units', '/']) ||
+    hasWordSeq(mainToks, ['pilot', 'card', '/']) ||
+    hasWordSeq(mainToks, ['command', 'card', '/']) ||
+    hasWordSeq(mainToks, ['base', 'card', '/'])
+  ) {
+    sel.cardType = 'CARD';
+  } else if (hasAnyWord(rawToks, ['base', 'bases'])) {
+    sel.cardType = 'BASE';
   } else if (hasAnyWord(rawToks, ['pilot', 'pilots'])) {
     sel.cardType = 'PILOT';
   } else if (hasAnyWord(rawToks, ['command', 'commands'])) {
@@ -104,6 +128,11 @@ export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
   } else if (hasWordSeq(mainToks, ['equal', 'to', 'the', 'number', 'of', 'enemy', 'players'])) {
     sel.countRef = 'ENEMY_PLAYERS';
     sel.count = 'UP_TO';
+  } else if (
+    hasWordSeq(mainToks, ['one', 'of']) ||
+    hasWordSeq(mainToks, ['specified', 'number', 'of'])
+  ) {
+    sel.count = 1;
   } else {
     let foundCount = false;
     for (let i = 0; i < mainToks.length; i += 1) {
@@ -137,7 +166,16 @@ export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
       break;
     }
     if (!foundCount && !sel.self) {
-      sel.count = 1;
+      const isPluralTarget =
+        (sel.cardType === 'UNIT' && hasAnyWord(mainToks, ['units'])) ||
+        (sel.cardType === 'UNIT_TOKEN' && hasAnyWord(mainToks, ['tokens'])) ||
+        (sel.cardType === 'PILOT' && hasAnyWord(mainToks, ['pilots'])) ||
+        (sel.cardType === 'BASE' && hasAnyWord(mainToks, ['bases'])) ||
+        (sel.cardType === 'COMMAND' && hasAnyWord(mainToks, ['commands'])) ||
+        ((sel.cardType === 'RESOURCE' || sel.cardType === 'EX_RESOURCE') && hasAnyWord(mainToks, ['resources'])) ||
+        (sel.cardType === 'SHIELD' && hasAnyWord(mainToks, ['shields', 'cards'])) ||
+        ((sel.cardType === 'CARD' || !sel.cardType) && hasAnyWord(mainToks, ['cards']));
+      sel.count = isPluralTarget ? 'ALL' : 1;
     }
   }
 
@@ -154,7 +192,7 @@ export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
   if (hasWordSeq(mainToks, ['link', 'unit']) || hasWordSeq(mainToks, ['link', 'units'])) {
     sel.linked = true;
   }
-  if (hasWordSeq(mainToks, ['with', 'no', 'paired', 'pilot'])) {
+  if (hasWordSeq(mainToks, ['with', 'no', 'paired', 'pilot']) || hasWordSeq(mainToks, ['no', 'pilot', 'paired'])) {
     sel.paired = 'NONE';
   } else if (hasWordSeq(mainToks, ['paired', 'with'])) {
     sel.paired = true;
@@ -243,6 +281,7 @@ export function lowerTargetSelector(rawToks: IToken[]): TargetSelector {
   }
 
   if (hasWordSeq(rawToks, ['from', 'your', 'trash']) || hasWordSeq(rawToks, ['in', 'your', 'trash']) ||
+      hasWordSeq(rawToks, ['from', 'their', 'trash']) || hasWordSeq(rawToks, ['in', 'their', 'trash']) ||
       hasWordSeq(rawToks, ['from', 'any', "player's", 'trash']) || hasWordSeq(rawToks, ['in', 'any', "player's", 'trash'])) {
     sel.zone = 'TRASH';
   } else if (hasWordSeq(rawToks, ['from', 'your', 'hand']) || hasWordSeq(rawToks, ['in', 'your', 'hand'])) {

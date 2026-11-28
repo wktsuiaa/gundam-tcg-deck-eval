@@ -314,6 +314,7 @@ export interface SandboxPlayerState {
   resourcesActive: number;
   base: GundamCardPrint | null;
   baseDamage: number;
+  activatedBaseMainTurn?: number;
   battleArea: SandboxUnitInstance[];
   trash: GundamCardPrint[];
 }

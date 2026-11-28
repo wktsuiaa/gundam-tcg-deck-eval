@@ -674,5 +674,86 @@ describe('Seam 3: Rules-Accurate Chain Verifier (Core Gates & 4-Layer Modifiers)
       expect(bigRes.finalState.players.B.battleArea).toHaveLength(0);
     }
   });
+
+  it('enforces ST14-003 no-partial EXILE, ST14-005 same-unit target continuity, and ST14-012 ALLOW_ATTACK_ACTIVE', () => {
+    const st14003 = corpus.get('ST14-003')!;
+    const unitCard = makeCard({ cardNo: 'TST-U', type: 'UNIT', lv: 2, ap: 2, hp: 2 });
+
+    // Only 1 Unit card in opponent trash -> ST14-003 exiles 0 cards per FAQ
+    const exFailState = makeBaseState({ turn: 5 });
+    exFailState.players.A.activeResources = 5;
+    exFailState.players.A.hand = [st14003];
+    exFailState.players.B.trash = [unitCard, makeCard({ cardNo: 'TST-CMD', type: 'COMMAND' })];
+    const exFail = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state: exFailState },
+      playLine: [{ type: 'DEPLOY_UNIT', side: 'A', handIndex: 0 }],
+      witness: {},
+    });
+    expect(exFail.legal).toBe(true);
+    if (exFail.legal) {
+      expect(exFail.finalState.players.B.trash).toHaveLength(2);
+      expect(exFail.finalState.players.B.exiled ?? []).toHaveLength(0);
+    }
+
+    // 2 Unit cards in opponent trash -> exiles both
+    const exOkState = makeBaseState({ turn: 5 });
+    exOkState.players.A.activeResources = 5;
+    exOkState.players.A.hand = [st14003];
+    exOkState.players.B.trash = [unitCard, unitCard, makeCard({ cardNo: 'TST-CMD', type: 'COMMAND' })];
+    const exOk = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state: exOkState },
+      playLine: [{ type: 'DEPLOY_UNIT', side: 'A', handIndex: 0 }],
+      witness: {},
+    });
+    expect(exOk.legal).toBe(true);
+    if (exOk.legal) {
+      expect(exOk.finalState.players.B.trash).toHaveLength(1);
+      expect(exOk.finalState.players.B.exiled ?? []).toHaveLength(2);
+    }
+
+    // ST14-005 rests chosen target and applies AP-2 to the exact same unit instance
+    const st14005 = corpus.get('ST14-005')!;
+    const fState = makeBaseState({ turn: 7 });
+    fState.players.A.activeResources = 7;
+    fState.players.A.hand = [st14005];
+    fState.players.A.trash = Array.from({ length: 7 }, () => unitCard);
+    fState.players.B.battleArea = [
+      makeUnit('B-1', makeCard({ cardNo: 'B1', lv: 4, ap: 4, hp: 4 }), { rested: false }),
+      makeUnit('B-2', makeCard({ cardNo: 'B2', lv: 5, ap: 5, hp: 5 }), { rested: true }),
+    ];
+    const fRes = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state: fState },
+      playLine: [{ type: 'DEPLOY_UNIT', side: 'A', handIndex: 0 }],
+      witness: { targets: [['B-2']] },
+    });
+    expect(fRes.legal).toBe(true);
+    if (fRes.legal) {
+      expect(evaluateUnitEffectiveState(fRes.finalState.players.B.battleArea[0], fRes.finalState, 'B').ap).toBe(4);
+      expect(evaluateUnitEffectiveState(fRes.finalState.players.B.battleArea[1], fRes.finalState, 'B').ap).toBe(3);
+    }
+
+    // ST14-012 allows chosen Lv.5+ friendly Unit to attack active <=5 AP enemy Unit
+    const st14012 = corpus.get('ST14-012')!;
+    const lv5Unit = makeCard({ cardNo: 'TST-LV5', type: 'UNIT', lv: 5, ap: 5, hp: 6 });
+    const aState = makeBaseState({ turn: 5 });
+    aState.players.A.activeResources = 5;
+    aState.players.A.battleArea = [makeUnit('A-LV5', lv5Unit, { deployedTurn: 1 })];
+    aState.players.A.hand = [st14012];
+    aState.players.B.battleArea = [
+      makeUnit('B-ACT5', makeCard({ cardNo: 'B5', lv: 4, ap: 5, hp: 4 }), { rested: false }),
+    ];
+    const atkActive = verifyPlayLine({
+      mode: { kind: 'CONCRETE_SNAPSHOT', state: aState },
+      playLine: [
+        { type: 'PAIR_PILOT', side: 'A', handIndex: 0, targetUnitId: 'A-LV5' },
+        { type: 'ATTACK_UNIT', side: 'A', attackerId: 'A-LV5', targetId: 'B-ACT5' },
+      ],
+      witness: { targets: [['A-LV5']] },
+    });
+    expect(atkActive.legal).toBe(true);
+    if (atkActive.legal) {
+      expect(atkActive.finalState.players.B.battleArea).toHaveLength(0);
+    }
+  });
 });
 

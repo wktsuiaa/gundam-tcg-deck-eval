@@ -888,7 +888,9 @@
           "additionalProperties": false,
           "properties": {
             "action": { "const": "ALLOW_ATTACK_ACTIVE" },
-            "target": { "$ref": "#/$defs/TargetSelector" }
+            "target": { "$ref": "#/$defs/TargetSelector" },
+            "defenderFilter": { "$ref": "#/$defs/TargetSelector" },
+            "duration": { "$ref": "#/$defs/EffectDuration" }
           }
         },
         {
@@ -1083,7 +1085,11 @@
         "TRASH_COUNT_FUEL",
         "AP_THRESHOLD_5",
         "DAMAGED_ENEMY_TARGET",
-        "RESTED_ENEMY_TARGET"
+        "RESTED_ENEMY_TARGET",
+        "PLAYER_LV_UP",
+        "RESOURCE_RAMP",
+        "RESOURCE_ACTIVATE",
+        "AP_REDUCTION"
       ]
     },
     "CardSynergyProfile": {
@@ -1299,7 +1305,8 @@
               "additionalProperties": false,
               "properties": {
                 "type": { "const": "ALLOW_ATTACK_ACTIVE" },
-                "target": { "$ref": "#/$defs/TargetSelector" }
+                "target": { "$ref": "#/$defs/TargetSelector" },
+                "defenderFilter": { "$ref": "#/$defs/TargetSelector" }
               }
             },
             {

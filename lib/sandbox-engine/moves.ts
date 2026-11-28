@@ -1,8 +1,8 @@
 import type { GundamCardPrint, SandboxMatchState, SandboxMoveSuggestion, SandboxPlayerState, SandboxSide, SandboxUnitInstance } from '@/types/gundam';
 import { doesPilotLinkUnit } from '@/lib/gundam-keywords';
-import type { EffectClauseAst } from '@/lib/cfg-parser';
+import type { AbilityAst } from '@/lib/cfg-parser';
 import { checkCondition } from './conditions';
-import { canPayActivationCost, payActivationCost, resolveClause, resolveClausesForTiming, resolveStartOfTurn } from './effects';
+import { canPayActivationCost, payActivationCost, resolveAbility, resolveClausesForTiming, resolveStartOfTurn } from './effects';
 import { cloneState, destroyUnit } from './match-state';
 import { matchesCardSelector } from './targeting';
 import { EMPTY_PARSED_EFFECTS, effectiveAp, effectiveRemainingHp, unitHasKeyword, unitHasProhibition, unitKeywordValue } from './unit-stats';
@@ -53,22 +53,27 @@ export function canUnitAttack(
   return true;
 }
 
+function findActivateMainAbility(card: GundamCardPrint): AbilityAst | undefined {
+  const parsed = card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
+  return parsed.abilities.find(
+    (ab) => (ab.kind === 'EFFECT_CLAUSE' || ab.kind === 'CUSTOM_HOOK') && ab.timings.includes('ACTIVATE_MAIN')
+  );
+}
+
 export function canActivateUnitMain(state: SandboxMatchState, side: SandboxSide, unit: SandboxUnitInstance): boolean {
   const player = state.players[side];
-  const parsed = unit.card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
-  const clause = parsed.abilities.find(
-    (ab): ab is EffectClauseAst => ab.kind === 'EFFECT_CLAUSE' && ab.timings.includes('ACTIVATE_MAIN')
-  );
-  if (!clause) return false;
-  if (clause.oncePerTurn && unit.activatedMainTurn === state.turn) return false;
-  if (!canPayActivationCost(player, clause.cost, unit)) return false;
-  if (!checkCondition(clause.condition, state, side, unit)) return false;
+  const ab = findActivateMainAbility(unit.card);
+  if (!ab || (ab.kind !== 'EFFECT_CLAUSE' && ab.kind !== 'CUSTOM_HOOK')) return false;
+  const oncePerTurn = ab.kind === 'EFFECT_CLAUSE' ? ab.oncePerTurn : ab.hookId === 'ST01-015#2';
+  if (oncePerTurn && unit.activatedMainTurn === state.turn) return false;
+  if (!canPayActivationCost(player, ab.cost, unit)) return false;
+  if (ab.kind === 'EFFECT_CLAUSE' && !checkCondition(ab.condition, state, side, unit)) return false;
 
-  const freesSlot = Boolean(clause.cost?.returnSelfToDeckBottom || clause.cost?.destroySelf);
-  for (const step of clause.steps) {
+  const freesSlot = Boolean(ab.cost?.returnSelfToDeckBottom || ab.cost?.destroySelf);
+  for (const step of ab.steps) {
     if (step.action === 'DEPLOY_FROM_TRASH') {
       if (player.battleArea.length - (freesSlot ? 1 : 0) >= 6) return false;
-      const resAfterCost = player.resourcesActive - (clause.cost?.resourceCost ?? 0);
+      const resAfterCost = player.resourcesActive - (ab.cost?.resourceCost ?? 0);
       const hasValid = player.trash.some(
         (c) => matchesCardSelector(c, step.target) && (step.free || resAfterCost >= (c.cost ?? 0))
       );
@@ -77,6 +82,18 @@ export function canActivateUnitMain(state: SandboxMatchState, side: SandboxSide,
       if (!player.trash.some((c) => matchesCardSelector(c, step.target))) return false;
     }
   }
+  return true;
+}
+
+export function canActivateBaseMain(state: SandboxMatchState, side: SandboxSide): boolean {
+  const player = state.players[side];
+  if (!player.base) return false;
+  const ab = findActivateMainAbility(player.base);
+  if (!ab || (ab.kind !== 'EFFECT_CLAUSE' && ab.kind !== 'CUSTOM_HOOK')) return false;
+  const oncePerTurn = ab.kind === 'EFFECT_CLAUSE' ? ab.oncePerTurn : ab.hookId === 'ST01-015#2';
+  if (oncePerTurn && player.activatedBaseMainTurn === state.turn) return false;
+  if (!canPayActivationCost(player, ab.cost)) return false;
+  if (ab.kind === 'EFFECT_CLAUSE' && !checkCondition(ab.condition, state, side)) return false;
   return true;
 }
 
@@ -147,6 +164,7 @@ export function applySandboxMove(
       if (player.base) player.trash.push(player.base);
       player.base = baseCard;
       player.baseDamage = 0;
+      player.activatedBaseMainTurn = undefined;
       const effNotes = resolveClausesForTiming(next, side, baseCard, 'DEPLOY', undefined, move.targetInstanceId);
       summary = `Deployed Base ${baseCard.name} (HP ${baseCard.hp ?? 5})${
         effNotes.length > 0 ? ` — ${effNotes.join(', ')}` : ''
@@ -161,18 +179,27 @@ export function applySandboxMove(
       const effNotes = resolveClausesForTiming(next, side, cmd, 'MAIN', undefined, move.targetInstanceId);
       summary = `Played Command ${cmd.name}${effNotes.length > 0 ? ` — ${effNotes.join(', ')}` : ''}.`;
     }
-  } else if (move.actionType === 'ACTIVATE_MAIN' && move.unitInstanceId) {
-    const unit = player.battleArea.find((u) => u.instanceId === move.unitInstanceId);
-    if (unit && canActivateUnitMain(next, side, unit)) {
-      const parsed = unit.card.compiledEffect ?? EMPTY_PARSED_EFFECTS;
-      const clause = parsed.abilities.find(
-        (ab): ab is EffectClauseAst => ab.kind === 'EFFECT_CLAUSE' && ab.timings.includes('ACTIVATE_MAIN')
-      );
-      if (clause) {
-        unit.activatedMainTurn = next.turn;
-        payActivationCost(next, side, clause.cost, unit);
-        const effNotes = resolveClause(next, side, clause, unit.card, unit, move.targetInstanceId);
-        summary = `Activated ${unit.card.name}${effNotes.length > 0 ? ` — ${effNotes.join(', ')}` : ''}.`;
+  } else if (move.actionType === 'ACTIVATE_MAIN') {
+    if (move.unitInstanceId === 'BASE' || !move.unitInstanceId) {
+      if (player.base && canActivateBaseMain(next, side)) {
+        const ab = findActivateMainAbility(player.base);
+        if (ab && (ab.kind === 'EFFECT_CLAUSE' || ab.kind === 'CUSTOM_HOOK')) {
+          player.activatedBaseMainTurn = next.turn;
+          payActivationCost(next, side, ab.cost);
+          const effNotes = resolveAbility(next, side, ab, player.base, undefined, move.targetInstanceId);
+          summary = `Activated Base ${player.base.name}${effNotes.length > 0 ? ` — ${effNotes.join(', ')}` : ''}.`;
+        }
+      }
+    } else {
+      const unit = player.battleArea.find((u) => u.instanceId === move.unitInstanceId);
+      if (unit && canActivateUnitMain(next, side, unit)) {
+        const ab = findActivateMainAbility(unit.card);
+        if (ab && (ab.kind === 'EFFECT_CLAUSE' || ab.kind === 'CUSTOM_HOOK')) {
+          unit.activatedMainTurn = next.turn;
+          payActivationCost(next, side, ab.cost, unit);
+          const effNotes = resolveAbility(next, side, ab, unit.card, unit, move.targetInstanceId);
+          summary = `Activated ${unit.card.name}${effNotes.length > 0 ? ` — ${effNotes.join(', ')}` : ''}.`;
+        }
       }
     }
   } else if (move.actionType === 'ATTACK_SHIELD' && move.unitInstanceId) {

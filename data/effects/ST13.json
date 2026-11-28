@@ -129,17 +129,8 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 3,
+              "count": 1,
               "remainderPosition": "TOP"
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "TOP",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
             }
           ]
         }
@@ -175,20 +166,14 @@
             {
               "action": "LOOK_TOP",
               "count": 5,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "PILOT",
+                "count": 1,
+                "zone": "DECK"
+              },
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -332,7 +317,9 @@
               "action": "EXILE",
               "target": {
                 "owner": "ENEMY",
-                "count": 1
+                "cardType": "UNIT",
+                "count": 2,
+                "zone": "TRASH"
               }
             }
           ]
@@ -418,29 +405,22 @@
             {
               "action": "LOOK_TOP",
               "count": 5,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "PILOT",
+                "count": 1,
+                "lvMaxRef": "SELF_LV",
+                "zone": "DECK"
+              },
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -497,9 +477,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -581,18 +559,19 @@
                 {
                   "action": "LOOK_TOP",
                   "count": 4,
-                  "remainderPosition": "TOP"
+                  "remainderPosition": "BOTTOM"
+                },
+                {
+                  "action": "DEPLOY_FROM_TOP_DECK",
+                  "target": {
+                    "owner": "SELF",
+                    "cardType": "UNIT",
+                    "count": 1,
+                    "lvMax": 4,
+                    "zone": "DECK"
+                  }
                 }
               ]
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
             }
           ]
         }

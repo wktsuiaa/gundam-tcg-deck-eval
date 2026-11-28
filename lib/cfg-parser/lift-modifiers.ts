@@ -239,6 +239,16 @@ export function liftContinuousModifier(
       };
     }
     if (hasWordSeq(mainToks, ['active', 'enemy', 'unit'])) {
+      const mayIdx = findWordSeq(mainToks, ['may']);
+      const asIdx = splitAs >= 0 ? splitAs : findWordSeq(mainToks, ['as']);
+      const subjToks = mayIdx > 0 ? mainToks.slice(0, mayIdx) : [];
+      const isSelfRef =
+        subjToks.length === 0 ||
+        (subjToks.length === 1 && subjToks[0].image.toLowerCase() === 'it');
+      const target: TargetSelector = isSelfRef
+        ? { owner: 'SELF', self: true, cardType: 'UNIT' }
+        : lowerTargetSelector(subjToks);
+      const defToks = chooseIdx >= 0 && asIdx > chooseIdx ? mainToks.slice(chooseIdx + 1, asIdx) : mainToks;
       return {
         kind: 'CONTINUOUS_MODIFIER',
         clauseIndex,
@@ -248,7 +258,8 @@ export function liftContinuousModifier(
         ...sharedMeta,
         modifier: {
           type: 'ALLOW_ATTACK_ACTIVE',
-          target: { owner: 'SELF', self: true, cardType: 'UNIT' },
+          target,
+          defenderFilter: lowerTargetSelector(defToks),
         },
       };
     }

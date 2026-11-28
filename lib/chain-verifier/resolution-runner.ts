@@ -1,6 +1,6 @@
 import type { GundamCardPrint } from '../../types/gundam.ts';
 import type { CustomHookAst, EffectClauseAst } from '../cfg-parser.ts';
-import { type EffectStep } from '../effect-parser.ts';
+import { type EffectStep, type TargetSelector } from '../effect-parser.ts';
 import { evaluateCondition } from './conditions';
 import { evaluateUnitEffectiveState } from './effective-state';
 import { RunnerBase } from './runner-base';
@@ -39,6 +39,52 @@ export abstract class ResolutionRunner extends RunnerBase {
     }
   }
 
+  protected selectorCacheKey(sel: TargetSelector): string {
+    return JSON.stringify([
+      sel.owner,
+      sel.cardType,
+      sel.zone,
+      sel.lvMin,
+      sel.lvMax,
+      sel.lvMaxRef,
+      sel.apMin,
+      sel.apMax,
+      sel.apMaxRef,
+      sel.hpMin,
+      sel.hpMax,
+      sel.state,
+      sel.trait,
+      sel.traits,
+      sel.color,
+      sel.notColor,
+      sel.paired,
+      sel.linked,
+      sel.other,
+      sel.token,
+      sel.excludeToken,
+      sel.count,
+      sel.maxCount,
+    ]);
+  }
+
+  protected pickUnitTargetIds(
+    target: TargetSelector,
+    candidates: { side: ChainSide; unit: ChainUnitInstance }[],
+    chosenByKey?: Map<string, string[]>
+  ): string[] {
+    if (target.count === 'ALL') return candidates.map((c) => c.unit.instanceId);
+    const key = this.selectorCacheKey(target);
+    if (!target.self && chosenByKey) {
+      const prev = chosenByKey.get(key)?.filter((id) => findUnitById(this.state, id));
+      if (prev && prev.length > 0) return prev;
+    }
+    const picked = this.witness.nextTargets() ?? [candidates[0].unit.instanceId];
+    if (!target.self && chosenByKey) {
+      chosenByKey.set(key, picked);
+    }
+    return picked;
+  }
+
   protected resolveClause(
     side: ChainSide,
     clause: EffectClauseAst,
@@ -46,8 +92,9 @@ export abstract class ResolutionRunner extends RunnerBase {
     selfUnit?: ChainUnitInstance
   ): void {
     let prevSucceeded = true;
+    const chosenByKey = new Map<string, string[]>();
     for (const step of clause.steps) {
-      prevSucceeded = this.executeStep(side, step, sourceCard, selfUnit, prevSucceeded);
+      prevSucceeded = this.executeStep(side, step, sourceCard, selfUnit, prevSucceeded, chosenByKey);
     }
   }
 
@@ -56,7 +103,8 @@ export abstract class ResolutionRunner extends RunnerBase {
     step: EffectStep,
     sourceCard: GundamCardPrint,
     selfUnit: ChainUnitInstance | undefined,
-    prevSucceeded: boolean
+    prevSucceeded: boolean,
+    chosenByKey?: Map<string, string[]>
   ): boolean {
     const player = this.state.players[side];
     switch (step.action) {
@@ -111,6 +159,28 @@ export abstract class ResolutionRunner extends RunnerBase {
         }
         return true;
       }
+      case 'ALLOW_ATTACK_ACTIVE': {
+        const candidates = step.target.self && selfUnit
+          ? [{ side, unit: selfUnit }]
+          : this.findLegalUnitTargets(step.target, side, selfUnit);
+        if (candidates.length === 0) return false;
+        const chosenIds = step.target.self && selfUnit
+          ? [selfUnit.instanceId]
+          : this.pickUnitTargetIds(step.target, candidates, chosenByKey);
+        for (const id of chosenIds) {
+          const found = findUnitById(this.state, id);
+          if (found) {
+            found.unit.temporaryModifiers.push({
+              id: this.nextEventId('atk-act'),
+              layer: 2,
+              rule: 'ALLOW_ATTACK_ACTIVE',
+              ...(step.defenderFilter ? { defenderFilter: step.defenderFilter } : {}),
+              duration: step.duration ?? 'THIS_TURN',
+            });
+          }
+        }
+        return true;
+      }
       case 'DEAL_DAMAGE': {
         if (step.target.cardType === 'SHIELD') {
           const oppSide = oppositeSide(side);
@@ -121,10 +191,7 @@ export abstract class ResolutionRunner extends RunnerBase {
         }
         const candidates = this.findLegalUnitTargets(step.target, side, selfUnit);
         if (candidates.length === 0) return false;
-        const chosenIds =
-          step.target.count === 'ALL'
-            ? candidates.map((c) => c.unit.instanceId)
-            : this.witness.nextTargets() ?? [candidates[0].unit.instanceId];
+        const chosenIds = this.pickUnitTargetIds(step.target, candidates, chosenByKey);
         for (const id of chosenIds) {
           const found = findUnitById(this.state, id);
           if (found) this.dealDamageToUnit(found.side, found.unit, step.amount, 'EFFECT', selfUnit, side);
@@ -136,10 +203,9 @@ export abstract class ResolutionRunner extends RunnerBase {
           ? [{ side, unit: selfUnit }]
           : this.findLegalUnitTargets(step.target, side, selfUnit);
         if (candidates.length === 0) return false;
-        const chosenIds =
-          step.target.count === 'ALL'
-            ? candidates.map((c) => c.unit.instanceId)
-            : this.witness.nextTargets() ?? [candidates[0].unit.instanceId];
+        const chosenIds = step.target.self && selfUnit
+          ? [selfUnit.instanceId]
+          : this.pickUnitTargetIds(step.target, candidates, chosenByKey);
         for (const id of chosenIds) {
           const found = findUnitById(this.state, id);
           if (found) {
@@ -163,10 +229,9 @@ export abstract class ResolutionRunner extends RunnerBase {
           ? [{ side, unit: selfUnit }]
           : this.findLegalUnitTargets(step.target, side, selfUnit);
         if (candidates.length === 0) return false;
-        const chosenIds =
-          step.target.count === 'ALL'
-            ? candidates.map((c) => c.unit.instanceId)
-            : this.witness.nextTargets() ?? [candidates[0].unit.instanceId];
+        const chosenIds = step.target.self && selfUnit
+          ? [selfUnit.instanceId]
+          : this.pickUnitTargetIds(step.target, candidates, chosenByKey);
         for (const id of chosenIds) {
           const found = findUnitById(this.state, id);
           if (found) {
@@ -184,10 +249,7 @@ export abstract class ResolutionRunner extends RunnerBase {
       case 'DESTROY': {
         const candidates = this.findLegalUnitTargets(step.target, side, selfUnit);
         if (candidates.length === 0) return false;
-        const chosenIds =
-          step.target.count === 'ALL'
-            ? candidates.map((c) => c.unit.instanceId)
-            : this.witness.nextTargets() ?? [candidates[0].unit.instanceId];
+        const chosenIds = this.pickUnitTargetIds(step.target, candidates, chosenByKey);
         const frame: QueuedTrigger[] = [];
         for (const id of chosenIds) {
           const found = findUnitById(this.state, id);
@@ -207,7 +269,7 @@ export abstract class ResolutionRunner extends RunnerBase {
       case 'REST': {
         const candidates = this.findLegalUnitTargets(step.target, side, selfUnit);
         if (candidates.length === 0) return false;
-        const chosenIds = this.witness.nextTargets() ?? [candidates[0].unit.instanceId];
+        const chosenIds = this.pickUnitTargetIds(step.target, candidates, chosenByKey);
         for (const id of chosenIds) {
           const found = findUnitById(this.state, id);
           if (found) {
@@ -215,6 +277,56 @@ export abstract class ResolutionRunner extends RunnerBase {
             const repChoice = this.tryRunRestReplacement(found.side, found.unit);
             if (!repChoice) found.unit.rested = true;
           }
+        }
+        return true;
+      }
+      case 'EXILE': {
+        if (step.target.zone === 'TRASH') {
+          const ownerPlayer = step.target.owner === 'ENEMY' ? this.state.players[oppositeSide(side)] : player;
+          const matchingIndices: number[] = [];
+          for (let i = 0; i < ownerPlayer.trash.length; i += 1) {
+            const c = ownerPlayer.trash[i];
+            if (step.target.cardType && step.target.cardType !== 'CARD' && c.type !== step.target.cardType) continue;
+            if (step.target.lvMin !== undefined && (c.lv ?? 1) < step.target.lvMin) continue;
+            if (step.target.lvMax !== undefined && (c.lv ?? 1) > step.target.lvMax) continue;
+            if (step.target.color && c.color !== step.target.color) continue;
+            if (
+              step.target.traits?.length &&
+              !step.target.traits.some((tr) => c.traits.some((t) => t.toLowerCase() === tr.toLowerCase()))
+            ) {
+              continue;
+            } else if (
+              step.target.trait &&
+              !c.traits.some((t) => t.toLowerCase() === step.target.trait!.toLowerCase())
+            ) {
+              continue;
+            }
+            if (
+              step.target.nameContains &&
+              !c.name.toLowerCase().includes(step.target.nameContains.toLowerCase())
+            ) {
+              continue;
+            }
+            matchingIndices.push(i);
+          }
+          const reqCount =
+            step.target.count === 'ALL'
+              ? matchingIndices.length
+              : step.target.count === 'UP_TO'
+              ? Math.min(step.target.maxCount ?? 1, matchingIndices.length)
+              : typeof step.target.count === 'number'
+              ? step.target.count
+              : 1;
+          if (reqCount <= 0 || matchingIndices.length < reqCount) {
+            return false;
+          }
+          const toExile = matchingIndices.slice(0, reqCount).sort((a, b) => b - a);
+          ownerPlayer.exiled = ownerPlayer.exiled ?? [];
+          for (const idx of toExile) {
+            const [exiled] = ownerPlayer.trash.splice(idx, 1);
+            if (exiled) ownerPlayer.exiled.push(exiled);
+          }
+          return true;
         }
         return true;
       }
@@ -252,11 +364,11 @@ export abstract class ResolutionRunner extends RunnerBase {
       case 'IF_CONDITION': {
         if (evaluateCondition(step.condition, this.state, side, selfUnit)) {
           let ok = true;
-          for (const sub of step.thenSteps) ok = this.executeStep(side, sub, sourceCard, selfUnit, ok);
+          for (const sub of step.thenSteps) ok = this.executeStep(side, sub, sourceCard, selfUnit, ok, chosenByKey);
           return ok;
         } else if (step.elseSteps) {
           let ok = true;
-          for (const sub of step.elseSteps) ok = this.executeStep(side, sub, sourceCard, selfUnit, ok);
+          for (const sub of step.elseSteps) ok = this.executeStep(side, sub, sourceCard, selfUnit, ok, chosenByKey);
           return ok;
         }
         return false;
@@ -265,7 +377,7 @@ export abstract class ResolutionRunner extends RunnerBase {
         const matches = step.negated ? !prevSucceeded : prevSucceeded;
         if (!matches) return false;
         let ok = true;
-        for (const sub of step.thenSteps) ok = this.executeStep(side, sub, sourceCard, selfUnit, ok);
+        for (const sub of step.thenSteps) ok = this.executeStep(side, sub, sourceCard, selfUnit, ok, chosenByKey);
         return ok;
       }
       case 'DAMAGE_PROOF': {

@@ -85,15 +85,36 @@ export function lowerBasicSentenceTokens(
     const commaIdx = toks.findIndex((t) => t.tokenType === Comma);
     if (commaIdx >= 0) toks = toks.slice(commaIdx + 1);
   }
+  const leadDuration = lowerDuration(toks);
+  if (
+    hasWordSeq(toks.slice(0, 4), ['during', 'this', 'turn', ',']) ||
+    hasWordSeq(toks.slice(0, 4), ['during', 'this', 'battle', ','])
+  ) {
+    toks = toks.slice(4);
+  } else if (hasWordSeq(toks.slice(0, 5), ['until', 'end', 'of', 'turn', ','])) {
+    toks = toks.slice(5);
+  } else if (hasWordSeq(toks.slice(0, 7), ['until', 'the', 'end', 'of', 'this', 'turn', ','])) {
+    toks = toks.slice(7);
+  }
+
   const optional = toks[0]?.image.toLowerCase() === 'you' && toks[1]?.image.toLowerCase() === 'may';
   if (optional) toks = toks.slice(2);
   if (toks.length === 0) return [];
 
-  const duration = lowerDuration(toks);
+  const duration = leadDuration ?? lowerDuration(toks);
   const firstTok = toks[0];
   const firstLow = firstTok.image.toLowerCase();
 
   // 1. Choose <target> ... (possibly followed by ", and <verb> ..." or "and <verb> ..." within same sentence)
+  if (hasWordSeq(toks.slice(0, 3), ['that', 'player', 'chooses'])) {
+    const sel = lowerTargetSelector(toks.slice(3));
+    if (sel.owner === 'ANY' && state.chosenTarget && (state.chosenTarget.owner === 'ENEMY' || state.chosenTarget.owner === 'SELF')) {
+      sel.owner = state.chosenTarget.owner;
+    }
+    state.chosenTarget = sel;
+    return [];
+  }
+
   if (firstTok.tokenType === VChoose) {
     const restToks = toks.slice(1);
     // Split on ", and <verb>" or " and <verb>" if second clause performs an action on the chosen target
@@ -246,13 +267,18 @@ export function lowerBasicSentenceTokens(
       ];
     }
     if (hasWordSeq(toks, ['active', 'enemy', 'unit'])) {
+      const mayIdx = findWordSeq(toks, ['may']);
       const chooseIdx = findWordSeq(toks, ['choose']);
       const asIdx = findWordSeq(toks, ['as']);
-      const targetToks = chooseIdx >= 0 && asIdx > chooseIdx ? toks.slice(chooseIdx + 1, asIdx) : toks;
+      const subjToks = mayIdx > 0 ? toks.slice(0, mayIdx) : [];
+      const target = subjToks.length > 0 ? resolveSubjectTokens(subjToks, state) : state.chosenTarget ?? SELF_UNIT_TARGET;
+      const defToks = chooseIdx >= 0 && asIdx > chooseIdx ? toks.slice(chooseIdx + 1, asIdx) : toks;
       return [
         {
           action: 'ALLOW_ATTACK_ACTIVE',
-          target: lowerTargetSelector(targetToks),
+          target,
+          defenderFilter: lowerTargetSelector(defToks),
+          ...(duration ? { duration } : {}),
         },
       ];
     }

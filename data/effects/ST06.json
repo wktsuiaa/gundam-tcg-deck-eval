@@ -279,21 +279,40 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "other": true,
+                "trait": "Clan"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "apMax": 3
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
-        "requires": [],
+        "requires": [
+          "AP_REDUCTION"
+        ],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (Clan) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "ST06-008": {
       "cardNo": "ST06-008",
@@ -353,41 +372,24 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "IF_CONDITION",
-              "condition": {
-                "kind": "SELF_STATE",
-                "traits": [
-                  "Clan"
-                ]
-              },
-              "thenSteps": [
-                {
-                  "action": "REVEAL_TOP",
-                  "count": 1
-                }
-              ]
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "count": 1,
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
-                "count": 1
-              }
+                "count": 1,
+                "trait": "Clan",
+                "zone": "DECK"
+              },
+              "trait": "Clan",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -407,10 +409,9 @@
         {
           "kind": "TRAIT",
           "trait": "Clan",
-          "cardType": "UNIT",
-          "minCopies": 4,
-          "reason": "Requires (Clan) Unit",
-          "primaryClause": false
+          "minCopies": 8,
+          "reason": "Searches (Clan) cards",
+          "primaryClause": true
         }
       ]
     },
@@ -468,26 +469,15 @@
           "steps": [
             {
               "action": "LOOK_TOP",
-              "count": 3,
+              "count": 1,
               "remainderPosition": "TOP"
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "TOP",
-              "target": {
-                "owner": "SELF",
-                "self": true,
-                "cardType": "UNIT"
-              }
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -595,20 +585,16 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
+                "owner": "SELF",
                 "cardType": "CARD",
-                "count": 1
-              }
+                "count": 1,
+                "trait": "Clan",
+                "zone": "DECK"
+              },
+              "trait": "Clan",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -617,7 +603,15 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "Clan",
+          "minCopies": 8,
+          "reason": "Searches (Clan) cards",
+          "primaryClause": true
+        }
+      ]
     },
     "ST06-013": {
       "cardNo": "ST06-013",
@@ -650,7 +644,7 @@
               "sourceFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1,
+                "count": "ALL",
                 "lvMax": 2
               }
             }

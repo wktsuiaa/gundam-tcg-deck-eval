@@ -617,7 +617,7 @@
             "sourceFilter": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1,
+              "count": "ALL",
               "lvMax": 5
             }
           }
@@ -889,14 +889,22 @@
             ],
             "cardType": "UNIT"
           },
-          "steps": []
+          "steps": [
+            {
+              "action": "ADD_RESOURCE",
+              "count": 1,
+              "rested": true
+            }
+          ]
         }
       ],
       "synergy": {
         "requires": [
           "TRASH_COUNT_FUEL"
         ],
-        "enables": []
+        "enables": [
+          "PLAYER_LV_UP"
+        ]
       },
       "prerequisites": [
         {
@@ -1111,7 +1119,7 @@
             "sourceFilter": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1,
+              "count": "ALL",
               "lvMax": 5
             }
           }
@@ -1331,20 +1339,18 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 3,
+                "lvMax": 3,
+                "trait": "G Generation",
+                "zone": "DECK"
+              },
+              "trait": "G Generation",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -1353,7 +1359,15 @@
         "requires": [],
         "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 8,
+          "reason": "Searches (G Generation) cards",
+          "primaryClause": true
+        }
+      ]
     },
     "EB01-031": {
       "cardNo": "EB01-031",
@@ -1376,6 +1390,13 @@
               "owner": "SELF",
               "self": true,
               "cardType": "UNIT"
+            },
+            "defenderFilter": {
+              "owner": "ENEMY",
+              "cardType": "UNIT",
+              "count": 1,
+              "state": "ACTIVE",
+              "lvMax": 3
             }
           }
         }
@@ -1468,20 +1489,18 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
+              "revealSearch": true,
               "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "lvMin": 3,
+                "lvMax": 3,
+                "trait": "G Generation",
+                "zone": "DECK"
+              },
+              "trait": "G Generation",
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
@@ -1500,6 +1519,13 @@
           "minCopies": 4,
           "reason": "Link requires (G Generation) Trait",
           "primaryClause": false
+        },
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "minCopies": 8,
+          "reason": "Searches (G Generation) cards",
+          "primaryClause": true
         }
       ]
     },
@@ -1675,7 +1701,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": []
     },
@@ -1718,7 +1746,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "RESOURCE_RAMP"
+        ]
       },
       "prerequisites": []
     },
@@ -1854,7 +1884,7 @@
               "target": {
                 "owner": "ANY",
                 "cardType": "UNIT",
-                "count": 1,
+                "count": "ALL",
                 "lvMax": 7
               },
               "duration": "THIS_BATTLE"
@@ -1908,7 +1938,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -2029,7 +2061,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -2214,7 +2248,8 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "TRASH_COUNT_FUEL"
+          "TRASH_COUNT_FUEL",
+          "AP_REDUCTION"
         ]
       },
       "prerequisites": []
@@ -2339,13 +2374,13 @@
             "target": {
               "owner": "SELF",
               "cardType": "SHIELD",
-              "count": 1,
+              "count": "ALL",
               "zone": "SHIELD"
             },
             "sourceFilter": {
               "owner": "ENEMY",
               "cardType": "UNIT",
-              "count": 1
+              "count": "ALL"
             }
           }
         }
@@ -2626,8 +2661,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "RESTED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "RESTED_ENEMY_TARGET"
         ]
       },
       "prerequisites": [
@@ -2681,9 +2715,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -2740,9 +2772,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -2794,9 +2824,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -2861,9 +2889,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -2924,23 +2950,37 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "G Generation"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE",
                 "keyword": "Blocker"
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
-      "prerequisites": []
+      "prerequisites": [
+        {
+          "kind": "TRAIT",
+          "trait": "G Generation",
+          "cardType": "UNIT",
+          "minCopies": 4,
+          "reason": "Requires (G Generation) UNIT target",
+          "primaryClause": true
+        }
+      ]
     },
     "EB01-067": {
       "cardNo": "EB01-067",
@@ -2976,29 +3016,14 @@
             {
               "action": "LOOK_TOP",
               "count": 3,
-              "remainderPosition": "TOP"
-            },
-            {
-              "action": "REVEAL_TOP",
-              "count": 1
-            },
-            {
-              "action": "RETURN_TO_DECK",
-              "position": "BOTTOM",
-              "target": {
-                "owner": "ANY",
-                "cardType": "CARD",
-                "count": 1
-              }
+              "remainderPosition": "BOTTOM"
             }
           ]
         }
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": []
     },
@@ -3060,9 +3085,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -3198,9 +3221,7 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": [
-          "AP_THRESHOLD_5"
-        ]
+        "enables": []
       },
       "prerequisites": [
         {
@@ -3342,8 +3363,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "RESTED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "RESTED_ENEMY_TARGET"
         ]
       },
       "prerequisites": []
@@ -3702,7 +3722,7 @@
               "sourceFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
-                "count": 1,
+                "count": "ALL",
                 "lvMax": 3
               }
             }
@@ -3745,11 +3765,18 @@
             {
               "action": "ALLOW_ATTACK_ACTIVE",
               "target": {
+                "owner": "ANY",
+                "cardType": "UNIT",
+                "count": 1,
+                "trait": "G Generation"
+              },
+              "defenderFilter": {
                 "owner": "ENEMY",
                 "cardType": "UNIT",
                 "count": 1,
                 "state": "ACTIVE"
-              }
+              },
+              "duration": "THIS_TURN"
             }
           ]
         },

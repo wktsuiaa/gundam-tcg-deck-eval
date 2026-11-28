@@ -36,8 +36,9 @@ export interface TemporaryModifier {
   delta?: number;
   keyword?: KeywordAbility;
   traits?: string[];
-  rule?: ProhibitionRule | Extract<EffectStep, { action: 'RESTRICTION' }>['rule'];
+  rule?: ProhibitionRule | Extract<EffectStep, { action: 'RESTRICTION' }>['rule'] | 'ALLOW_ATTACK_ACTIVE';
   sourceFilter?: TargetSelector;
+  defenderFilter?: TargetSelector;
 }
 
 export interface ChainUnitInstance {

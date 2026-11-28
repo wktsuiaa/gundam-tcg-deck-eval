@@ -272,14 +272,246 @@ describe('Seam 1: Chevrotain CFG Parser & CST Lowering', () => {
     expect(hook).toMatchObject({
       kind: 'CUSTOM_HOOK',
       hookId: 'ST01-015#2',
-      version: 2,
+      version: 3,
       timings: ['ACTIVATE_MAIN'],
       cost: { resourceCost: 2 },
-      steps: [expect.objectContaining({ action: 'DEPLOY_TOKEN', count: 1 })],
+      steps: [
+        {
+          action: 'IF_CONDITION',
+          condition: { kind: 'BOARD_CARD_COUNT', owner: 'SELF', cardType: 'UNIT', min: 0, max: 0 },
+          thenSteps: [expect.objectContaining({ action: 'DEPLOY_TOKEN', name: 'Gundam', ap: 3, hp: 3 })],
+          elseSteps: [
+            {
+              action: 'IF_CONDITION',
+              condition: { kind: 'BOARD_CARD_COUNT', owner: 'SELF', cardType: 'UNIT', min: 1, max: 1 },
+              thenSteps: [expect.objectContaining({ action: 'DEPLOY_TOKEN', name: 'Guncannon', ap: 2, hp: 2 })],
+              elseSteps: [expect.objectContaining({ action: 'DEPLOY_TOKEN', name: 'Guntank', ap: 1, hp: 1 })],
+            },
+          ],
+        },
+      ],
     });
     if (hook && hook.kind === 'CUSTOM_HOOK') {
       expect(CUSTOM_HOOK_REGISTRY[hook.hookId]).toBeDefined();
     }
+  });
+
+  it('lowers ST14-001..015, LOOK_TOP sequences, ALLOW_ATTACK_ACTIVE defenderFilter, and plural targets accurately', () => {
+    const st14001 = parseCardAbilities(corpus.get('ST14-001')!);
+    expect(st14001.abilities[0]).toMatchObject({
+      kind: 'CONTINUOUS_MODIFIER',
+      modifier: {
+        type: 'FREEZE_AURA',
+        target: { owner: 'ENEMY', cardType: 'UNIT', state: 'RESTED', lvRank: 'LOWEST', count: 'ALL' },
+      },
+    });
+
+    for (const no of ['ST14-003', 'ST13-009']) {
+      const ab = parseCardAbilities(corpus.get(no)!);
+      expect(ab.abilities[0]).toMatchObject({
+        kind: 'EFFECT_CLAUSE',
+        steps: [
+          {
+            action: 'EXILE',
+            target: { owner: 'ENEMY', cardType: 'UNIT', count: 2, zone: 'TRASH' },
+          },
+        ],
+      });
+    }
+
+    const st14006 = parseCardAbilities(corpus.get('ST14-006')!);
+    expect(st14006.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        {
+          action: 'LOOK_TOP',
+          count: 3,
+          revealSearch: true,
+          remainderPosition: 'BOTTOM',
+          target: { owner: 'SELF', cardType: 'CARD', count: 'UP_TO', countRef: 'ENEMY_PLAYERS', zone: 'DECK' },
+        },
+      ],
+    });
+
+    const gd01039 = parseCardAbilities(corpus.get('GD01-039')!);
+    expect(gd01039.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [{ action: 'LOOK_TOP', count: 1, remainderPosition: 'TOP' }],
+    });
+
+    const gd01048 = parseCardAbilities(corpus.get('GD01-048')!);
+    expect(gd01048.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        {
+          action: 'LOOK_TOP',
+          count: 1,
+          revealSearch: true,
+          trait: 'Zeon',
+          remainderPosition: 'BOTTOM',
+          target: { owner: 'SELF', cardType: 'UNIT', count: 1, traits: ['Zeon', 'Neo Zeon'], zone: 'DECK' },
+        },
+      ],
+    });
+
+    const gd06049 = parseCardAbilities(corpus.get('GD06-049')!);
+    expect(gd06049.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        {
+          action: 'LOOK_TOP',
+          count: 3,
+          revealSearch: true,
+          trashRest: true,
+          remainderPosition: 'TRASH',
+          trait: 'Delaz Fleet',
+        },
+      ],
+    });
+
+    const gd02038 = parseCardAbilities(corpus.get('GD02-038')!);
+    expect(gd02038.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        { action: 'LOOK_TOP', count: 3, trait: 'Clan', remainderPosition: 'BOTTOM' },
+        { action: 'DEPLOY_FROM_TOP_DECK', target: { owner: 'SELF', cardType: 'UNIT', count: 1, trait: 'Clan', lvMax: 4, zone: 'DECK' } },
+      ],
+    });
+
+    const gd06042 = parseCardAbilities(corpus.get('GD06-042')!);
+    expect(gd06042.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        { action: 'LOOK_TOP', count: 4, trait: 'Biological CPU', remainderPosition: 'BOTTOM' },
+        { action: 'PAIR_FROM_HAND', target: { owner: 'SELF', self: true, cardType: 'UNIT' }, pilotFilter: { owner: 'SELF', cardType: 'PILOT', count: 1, trait: 'Biological CPU', zone: 'DECK' } },
+      ],
+    });
+
+    const st12012 = parseCardAbilities(corpus.get('ST12-012')!);
+    expect(st12012.abilities[2]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        { action: 'LOOK_TOP', count: 2, trashRest: true, remainderPosition: 'TRASH' },
+        { action: 'IF_CONDITION', replacesPrevious: true },
+      ],
+    });
+
+    const st14011 = parseCardAbilities(corpus.get('ST14-011')!);
+    expect(st14011.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        {
+          action: 'MODIFY_AP',
+          delta: -1,
+          duration: 'THIS_BATTLE',
+          scaleBy: { metric: 'RESTED_ENEMY_UNIT_COUNT', owner: 'ENEMY' },
+          target: { owner: 'ENEMY', cardType: 'UNIT', count: 1 },
+        },
+      ],
+    });
+
+    const gd06130 = parseCardAbilities(corpus.get('GD06-130')!);
+    expect(gd06130.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        { action: 'ADD_SHIELD_TO_HAND', count: 1 },
+        {
+          action: 'MODIFY_AP',
+          delta: -1,
+          duration: 'THIS_TURN',
+          scaleBy: { metric: 'BOARD_UNIT_COUNT', owner: 'SELF', traits: ['Dianna Counter', 'Militia'] },
+          target: { owner: 'ENEMY', cardType: 'UNIT', count: 1, paired: 'NONE' },
+        },
+      ],
+    });
+
+    const gd04057 = parseCardAbilities(corpus.get('GD04-057')!);
+    expect(gd04057.abilities[0]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        {
+          action: 'MODIFY_AP',
+          delta: -1,
+          duration: 'THIS_TURN',
+          scaleBy: { metric: 'TRASH_COUNT', owner: 'SELF', nameContains: 'Gundam Virtue' },
+          target: { owner: 'ENEMY', cardType: 'UNIT', count: 1, lvMax: 6 },
+        },
+      ],
+    });
+
+    const st14012 = parseCardAbilities(corpus.get('ST14-012')!);
+    expect(st14012.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        {
+          action: 'ALLOW_ATTACK_ACTIVE',
+          duration: 'THIS_TURN',
+          target: { owner: 'SELF', cardType: 'UNIT', count: 1, lvMin: 5 },
+          defenderFilter: { owner: 'ENEMY', cardType: 'UNIT', count: 1, state: 'ACTIVE', apMax: 5 },
+        },
+      ],
+    });
+
+    const gd03105 = parseCardAbilities(corpus.get('GD03-105')!);
+    expect(gd03105.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        {
+          action: 'ALLOW_ATTACK_ACTIVE',
+          duration: 'THIS_TURN',
+          target: { owner: 'SELF', cardType: 'UNIT', count: 1 },
+          defenderFilter: { owner: 'ENEMY', cardType: 'UNIT', count: 1, state: 'ACTIVE', paired: 'NONE' },
+        },
+      ],
+    });
+
+    const st07011 = parseCardAbilities(corpus.get('ST07-011')!);
+    expect(st07011.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      condition: { kind: 'UNIT_TRAIT_IS', trait: 'CB' },
+      steps: [
+        {
+          action: 'ALLOW_ATTACK_ACTIVE',
+          duration: 'THIS_TURN',
+          target: { owner: 'SELF', self: true, cardType: 'UNIT' },
+          defenderFilter: { owner: 'ENEMY', cardType: 'UNIT', count: 1, state: 'ACTIVE', lvMaxRef: 'SELF_LV' },
+        },
+      ],
+    });
+
+    const st02001 = parseCardAbilities(corpus.get('ST02-001')!);
+    expect(st02001.abilities[0]).toMatchObject({
+      kind: 'CONTINUOUS_MODIFIER',
+      modifier: {
+        type: 'ALLOW_ATTACK_ACTIVE',
+        target: { owner: 'SELF', self: true, cardType: 'UNIT' },
+        defenderFilter: { owner: 'ENEMY', cardType: 'UNIT', count: 1, state: 'ACTIVE', lvMax: 4 },
+      },
+    });
+
+    const st14015 = parseCardAbilities(corpus.get('ST14-015')!);
+    expect(st14015.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [
+        { action: 'ADD_RESOURCE', count: 1, rested: true },
+        {
+          action: 'IF_CONDITION',
+          condition: { kind: 'NOT', condition: { kind: 'TURN_HISTORY', event: 'SET_RESOURCE_ACTIVE_BY_EFFECT' } },
+          thenSteps: [
+            {
+              action: 'SET_ACTIVE',
+              target: { owner: 'SELF', cardType: 'RESOURCE', count: 'UP_TO', countRef: 'ENEMY_PLAYERS' },
+            },
+          ],
+        },
+      ],
+    });
+
+    const gd01107 = parseCardAbilities(corpus.get('GD01-107')!);
+    expect(gd01107.abilities[1]).toMatchObject({
+      kind: 'EFFECT_CLAUSE',
+      steps: [{ action: 'ADD_RESOURCE', count: 1, rested: true }],
+    });
   });
 
   it('lowers lexer failures to explicit DIAGNOSTIC nodes instead of dropping the line', () => {

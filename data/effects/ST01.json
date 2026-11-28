@@ -187,7 +187,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -307,8 +309,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "RESTED_ENEMY_TARGET",
-          "AP_THRESHOLD_5"
+          "RESTED_ENEMY_TARGET"
         ]
       },
       "prerequisites": []
@@ -358,7 +359,7 @@
       "synergy": {
         "requires": [],
         "enables": [
-          "AP_THRESHOLD_5"
+          "RESOURCE_ACTIVATE"
         ]
       },
       "prerequisites": []
@@ -507,7 +508,9 @@
       ],
       "synergy": {
         "requires": [],
-        "enables": []
+        "enables": [
+          "AP_REDUCTION"
+        ]
       },
       "prerequisites": []
     },
@@ -552,7 +555,7 @@
           "kind": "CUSTOM_HOOK",
           "clauseIndex": 2,
           "hookId": "ST01-015#2",
-          "version": 2,
+          "version": 3,
           "raw": "【Activate<DOT>Main】【Once per Turn】<RES_COST:2><COST_SEP>Deploy 1 [Gundam]((White Base Team)<DOT>AP3<DOT>HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)<DOT>AP2<DOT>HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)<DOT>AP1<DOT>HP1) Unit token if you have 2 or more Units in play.",
           "timings": [
             "ACTIVATE_MAIN"
@@ -562,13 +565,61 @@
           },
           "steps": [
             {
-              "action": "DEPLOY_TOKEN",
-              "count": 1,
-              "name": "White Base Token",
-              "ap": 3,
-              "hp": 3,
-              "traits": [
-                "White Base Team"
+              "action": "IF_CONDITION",
+              "condition": {
+                "kind": "BOARD_CARD_COUNT",
+                "owner": "SELF",
+                "cardType": "UNIT",
+                "min": 0,
+                "max": 0
+              },
+              "thenSteps": [
+                {
+                  "action": "DEPLOY_TOKEN",
+                  "count": 1,
+                  "name": "Gundam",
+                  "ap": 3,
+                  "hp": 3,
+                  "traits": [
+                    "White Base Team"
+                  ]
+                }
+              ],
+              "elseSteps": [
+                {
+                  "action": "IF_CONDITION",
+                  "condition": {
+                    "kind": "BOARD_CARD_COUNT",
+                    "owner": "SELF",
+                    "cardType": "UNIT",
+                    "min": 1,
+                    "max": 1
+                  },
+                  "thenSteps": [
+                    {
+                      "action": "DEPLOY_TOKEN",
+                      "count": 1,
+                      "name": "Guncannon",
+                      "ap": 2,
+                      "hp": 2,
+                      "traits": [
+                        "White Base Team"
+                      ]
+                    }
+                  ],
+                  "elseSteps": [
+                    {
+                      "action": "DEPLOY_TOKEN",
+                      "count": 1,
+                      "name": "Guntank",
+                      "ap": 1,
+                      "hp": 1,
+                      "traits": [
+                        "White Base Team"
+                      ]
+                    }
+                  ]
+                }
               ]
             }
           ],
